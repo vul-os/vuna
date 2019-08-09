@@ -7,7 +7,7 @@ import datetime
 from bs4 import BeautifulSoup
 
 SELECTED_URL = 'https://www.trophyseeds.com/product/ethos-genetics-zsweet-inzanity/'
-SELECTED_URL2 = 'https://www.trophyseeds.com/shop/'
+URL = 'https://www.trophyseeds.com/shop/'
 SELECTED_URL3 = 'https://www.trophyseeds.com/shop/page/1'
 
 
@@ -85,18 +85,26 @@ async def get_all_product_data(products, db):
 
 
 async def main(url, addr="localhost", port=27017):
-    client = motor_asyncio.AsyncIOMotorClient(addr, port)
-    db = client.trophyseeds
+    while True:
+        client = motor_asyncio.AsyncIOMotorClient(addr, port)
+        db = client.trophyseeds
 
-    products = await get_all_products(url)
-    result = await db.product_list.insert_one({
-        "products": products,
-        "date": datetime.datetime.utcnow()
-    })
-    # print(f'result {result.inserted_id}')
-    await get_all_product_data(products, db)
+        products = await get_all_products(url)
+        result = await db.product_list.insert_one({
+            "products": products,
+            "date": datetime.datetime.utcnow()
+        })
+        # print(f'result {result.inserted_id}')
+        await get_all_product_data(products, db)
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(main(SELECTED_URL2))
-    loop.close()
+
+    try:
+        loop.create_task(main(URL))
+        loop.run_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        print('step: loop.close()')
+        loop.close()
