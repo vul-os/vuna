@@ -21,11 +21,8 @@ async def parse_sub_list(content):
 async def parse_list(content):
     result = {}
     for sub in content.find_all('li', recursive=False):
-        if sub.ul is None:
-            continue
         data = await get_info(sub)
         if sub.ul is not None:
-            # recurse down
             data['children'] = await parse_sub_list(sub.ul)
         result[sub.a.get_text(strip=True)] = data
     return result
@@ -36,18 +33,6 @@ async def list_helper(content):
     soup = soup.find("ul", {"class": "product-categories"})
     return await parse_list(soup)
 
-# @asyncio.coroutine
-# def parse_ul(elem):
-#     result = {}
-#     for sub in elem.find_all('li', recursive=False):
-#         if sub.ul is None:
-#             continue
-#         data = {k: v for k, v in get_info(sub)}
-#         if sub.ul is not None:
-#             # recurse down
-#             data['children'] = parse_ul(sub.ul)
-#         result[sub.a.get_text(strip=True)] = data
-#     return result
 
 async def main(loop):
     browser = await launch()
@@ -57,7 +42,18 @@ async def main(loop):
     await browser.close()
 
     a = await list_helper(content)
-    print(a)
+
+    links = []
+    for k, v in a.items():
+        if isinstance(v, dict):
+            if 'children' in v.keys():
+                for i, j in v.items():
+
+                    _, __link = zip(*j.items())
+                    links.append(__link)
+            else:
+                links.append(v)
+    print(links)
     return content
 
 

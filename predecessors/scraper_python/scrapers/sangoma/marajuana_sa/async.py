@@ -26,12 +26,61 @@ async def scrape_page(url, page, db):
     print(name, price, stock, meta_sku, meta_cats)
 
 
+async def scrape_categories(url, page, db):
+    await page.goto(url)
+    content = await page.content()
+    return await list_helper(content)
+
+
+async def get_max_pages(page, url):
+    await page.goto(url)
+    content = await page.content()
+    soup = BeautifulSoup(content, 'html5lib')
+    return content.find("ul", {"class": "page-numbers"}).findAll("li")[-2].getText()
+
+
+async def get_info(node):
+    cat = node.find("a")
+    link = cat['href']
+    name = cat.getText()
+    return {name: link}
+
+
+async def parse_sub_list(content):
+    result = {}
+    for sub in content.find_all('li', recursive=False):
+        result[sub.a.get_text(strip=True)] = await get_info(sub)
+    return result
+
+
+async def parse_list(content):
+    result = {}
+    for sub in content.find_all('li', recursive=False):
+        data = await get_info(sub)
+        if sub.ul is not None:
+            data['children'] = await parse_sub_list(sub.ul)
+        result[sub.a.get_text(strip=True)] = data
+    return result
+
+
+async def list_helper(content):
+    soup = BeautifulSoup(content, 'html5lib')
+    soup = soup.find("ul", {"class": "product-categories"})
+    return await parse_list(soup)
+
+
 async def main(url, addr="localhost", port=27017):
     while True:
         client = motor_asyncio.AsyncIOMotorClient(addr, port)
         browser = await launch()
         page = await browser.newPage()
         db = client.trophyseeds
+
+
+        await scrape_categories(url, page, db)
+
+
+        max_pages = await get_max_pages(page, url)
         await scrape_page(url, page, db)
 
         await browser.close()
