@@ -1,2 +1,10 @@
 
 \.idea/
+
+scrapers/woocommerce/marajuana_sa/__pycache__/
+
+scrapers/woocommerce/sacredseeds/__pycache__/
+
+scrapers/woocommerce/thehighco/__pycache__/
+
+scrapers/woocommerce/trophy_seeds/__pycache__/

@@ -6,12 +6,13 @@ from motor import motor_asyncio
 import datetime
 from bs4 import BeautifulSoup
 
-# SELECTED_URL = 'https://www.trophyseeds.com/product/ethos-genetics-zsweet-inzanity/'
-URL = 'https://www.trophyseeds.com/shop/'
-# SELECTED_URL3 = 'https://www.trophyseeds.com/shop/page/1'
+class TrophySeeds(object):
 
-async def get_product_data(url, db):
-    async with aiohttp.ClientSession() as session:
+    def __init__(self, client):
+        self.url = 'https://www.trophyseeds.com/shop/'
+        self.db = client.trophyseeds
+
+    async def get_product_data(self, session, url):
         async with session.get(url) as resp:
             text = await resp.read()
 
@@ -30,7 +31,7 @@ async def get_product_data(url, db):
         product_category_link = product_category_['href']
         product_category = product_category_.getText()
 
-        result = await db.data.insert_one({
+        result = await self.db.data.insert_one({
             "name": product_name,
             "price": product_price,
             "stock": product_stock,
@@ -43,8 +44,7 @@ async def get_product_data(url, db):
         # print(f'result {result.inserted_id}')
 
 
-async def get_max_pages(url):
-    async with aiohttp.ClientSession() as session:
+    async def get_max_pages(self, session, url):
         async with session.get(url) as resp:
             text = await resp.read()
 
@@ -54,8 +54,7 @@ async def get_max_pages(url):
         return max_pages
 
 
-async def get_products_on_page(url):
-    async with aiohttp.ClientSession() as session:
+    async def get_products_on_page(self, session, url):
         async with session.get(url) as resp:
             text = await resp.read()
 
@@ -69,37 +68,38 @@ async def get_products_on_page(url):
         return product_links
 
 
-async def get_all_products(url):
-    max_pages = await get_max_pages(url)
-    tasks = [get_products_on_page("".join([url, "page/", str(i)])) for i in range(1, int(max_pages))]
-    responses = [await f for f in tqdm.tqdm(asyncio.as_completed(tasks), total=len(tasks))]
-    return [i for resp in responses for i in resp]
+    async def get_all_products(self, session, url):
+        max_pages = await self.get_max_pages(session, url)
+        tasks = [self.get_products_on_page(session, "".join([url, "page/", str(i)])) for i in range(1, int(max_pages))]
+        responses = [await f for f in tqdm.tqdm(asyncio.as_completed(tasks), total=len(tasks), desc="{Trophy Seeds (Product List)}")]
+        return [i for resp in responses for i in resp]
 
 
-async def get_all_product_data(products, db):
-    tasks = [get_product_data(prod, db) for prod in products]
-    responses = [await f for f in tqdm.tqdm(asyncio.as_completed(tasks), total=len(tasks))]
-    return [resp for resp in responses]
+    async def get_all_product_data(self, session, products):
+        tasks = [self.get_product_data(session, prod) for prod in products]
+        responses = [await f for f in tqdm.tqdm(asyncio.as_completed(tasks), total=len(tasks), desc="{Trophy Seeds (Product Data)}")]
+        return [resp for resp in responses]
 
 
-async def main(url, addr="localhost", port=27017):
-    while True:
-        client = motor_asyncio.AsyncIOMotorClient(addr, port)
-        db = client.trophyseeds
-
-        products = await get_all_products(url)
-        result = await db.product_list.insert_one({
-            "products": products,
-            "date": datetime.datetime.utcnow()
-        })
-        # print(f'result {result.inserted_id}')
-        await get_all_product_data(products, db)
+    async def main(self):
+        async with aiohttp.ClientSession() as session:
+            products = await self.get_all_products(session, self.url)
+            result = await self.db.product_list.insert_one({
+                "products": products,
+                "date": datetime.datetime.utcnow()
+            })
+            # print(f'result {result.inserted_id}')
+            await self.get_all_product_data(session, products)
 
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
+    addr = "localhost"
+    port = 27017
+    client = motor_asyncio.AsyncIOMotorClient(addr, port)
+    prog = TrophySeeds(client)
 
+    loop = asyncio.get_event_loop()
     try:
-        loop.create_task(main(URL))
+        loop.create_task(prog.main())
         loop.run_forever()
     except KeyboardInterrupt:
         pass
