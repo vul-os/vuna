@@ -4,8 +4,11 @@ import requests
 from pprint import pprint
 
 url = "https://marijuanasa.co.za/"
-
-r = requests.get(url)
+headers = {
+    "User-Agent": "my web scraping program. contact me at admin@domain.com"
+}
+r = requests.get(url, headers=headers)
+# r = requests.get(url)
 raw_html = r.content
 soup = BeautifulSoup(raw_html, 'html.parser')
 print(soup)

@@ -6,12 +6,10 @@ from motor import motor_asyncio
 import datetime
 from bs4 import BeautifulSoup
 
-SELECTED_URL = 'https://www.trophyseeds.com/product/ethos-genetics-zsweet-inzanity/'
+# SELECTED_URL = 'https://www.trophyseeds.com/product/ethos-genetics-zsweet-inzanity/'
 URL = 'https://www.trophyseeds.com/shop/'
-SELECTED_URL3 = 'https://www.trophyseeds.com/shop/page/1'
+# SELECTED_URL3 = 'https://www.trophyseeds.com/shop/page/1'
 
-
-# class TrophySeeds(object):
 async def get_product_data(url, db):
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as resp:
