@@ -141,19 +141,22 @@ class TheHighCo(object):
     async def main(self):
         conn = aiohttp.TCPConnector(limit=3)
         async with aiohttp.ClientSession(connector=conn) as session:
-            categories = await self.get_items_on_page(session, self.url)
-            products = await self.get_all_products(session, categories)
-            result = await self.db.product_list.insert_one({
-                "products": products,
-                "date": datetime.datetime.utcnow()
-            })
-            flat_list = []
-            for sublist in products:
-                for item in sublist:
-                    flat_list.append(item)
+            try:
+                categories = await self.get_items_on_page(session, self.url)
+                products = await self.get_all_products(session, categories)
+                result = await self.db.product_list.insert_one({
+                    "products": products,
+                    "date": datetime.datetime.utcnow()
+                })
+                flat_list = []
+                for sublist in products:
+                    for item in sublist:
+                        flat_list.append(item)
 
-            # # print(f'result {result.inserted_id}')
-            await self.get_all_product_data(session, flat_list)
+                # # print(f'result {result.inserted_id}')
+                await self.get_all_product_data(session, flat_list)
+            except:
+                print("Caught ANY Exception")
 
 if __name__ == "__main__":
     addr = "localhost"

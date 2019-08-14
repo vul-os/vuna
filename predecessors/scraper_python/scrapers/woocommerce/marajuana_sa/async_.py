@@ -140,13 +140,16 @@ class MarajuanaSA(object):
     async def main(self):
         conn = aiohttp.TCPConnector(limit=5)
         async with aiohttp.ClientSession(connector=conn) as session:
-            products = await self.get_all_products(session, self.url)
-            result = await self.db.product_list.insert_one({
-                "products": products,
-                "date": datetime.datetime.utcnow()
-            })
-            # print(f'result {result.inserted_id}')
-            await self.get_all_product_data(session, products)
+            try:
+                products = await self.get_all_products(session, self.url)
+                result = await self.db.product_list.insert_one({
+                    "products": products,
+                    "date": datetime.datetime.utcnow()
+                })
+                # print(f'result {result.inserted_id}')
+                await self.get_all_product_data(session, products)
+            except:
+                print("Caught ANY Exception")
 
 if __name__ == "__main__":
     addr = "localhost"
