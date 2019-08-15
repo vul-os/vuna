@@ -6,8 +6,9 @@ from motor import motor_asyncio
 import datetime
 from bs4 import BeautifulSoup
 
-class TrophySeeds(object):
+from python.scrapers.aiohttp_exception import ignore_aiohttp_ssl_eror
 
+class TrophySeeds(object):
     def __init__(self, client):
         self.url = 'https://www.trophyseeds.com/shop/'
         self.db = client.trophyseeds
@@ -82,15 +83,17 @@ class TrophySeeds(object):
 
 
     async def main(self):
+        ignore_aiohttp_ssl_eror(asyncio.get_running_loop())
         async with aiohttp.ClientSession() as session:
             try:
-                products = await self.get_all_products(session, self.url)
-                result = await self.db.product_list.insert_one({
-                    "products": products,
-                    "date": datetime.datetime.utcnow()
-                })
-                # print(f'result {result.inserted_id}')
-                await self.get_all_product_data(session, products)
+                while True:
+                    products = await self.get_all_products(session, self.url)
+                    result = await self.db.product_list.insert_one({
+                        "products": products,
+                        "date": datetime.datetime.utcnow()
+                    })
+                    # print(f'result {result.inserted_id}')
+                    await self.get_all_product_data(session, products)
             except:
                 print("Caught ANY Exception")
 
