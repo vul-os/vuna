@@ -4,10 +4,11 @@ from python.scrapers.woocommerce.trophy_seeds.async_ import TrophySeeds
 # from python.scrapers.woocommerce.thehighco.async_ import TheHighCo
 from motor import motor_asyncio
 import asyncio
+from tqdm import tqdm
 
 async def main(progs):
     while True:
-        for prog in progs:
+        for prog in tqdm(progs, total=len(progs), desc="{Total Scrape Progress)}", position=0):
             await prog.main()
 
 if __name__ == "__main__":

@@ -1,23 +1,31 @@
-#![deny(warnings)]
-
-//! `cargo run --example simple`
 
 extern crate reqwest;
-extern crate env_logger;
+extern crate scraper;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    env_logger::init();
+// importation syntax
+use scraper::{Html, Selector};
 
-    println!("GET https://www.rust-lang.org");
+fn main() {
+    hn_headlines("https://kadekillary.work/post/webscraping-rust/");
+}
 
-    let mut res = reqwest::get("https://www.rust-lang.org/")?;
+fn hn_headlines(url: &str) {
 
-    println!("Status: {}", res.status());
-    println!("Headers:\n{:?}", res.headers());
+   let mut resp = reqwest::get(url).unwrap();
+   assert!(resp.status().is_success());
 
-    // // copy the response body directly to stdout
-    // std::io::copy(&mut res, &mut std::io::stdout())?;
+   let body = resp.text().unwrap();
+   // parses string of HTML as a document
+   let fragment = Html::parse_document(&body);
+   // parses based on a CSS selector
+   let category_ = Selector::parse("div[class='product-categories']").unwrap();
+   let category = fragment.select(&category_);
 
-    println!("\n\nDone.");
-    Ok(())
+   let categories_ = Selector::parse("li").unwrap();
+   
+   for story in category.select(&categories) {
+        // grab the headline text and place into a vector
+        let story_txt = story.text().collect::<Vec<_>>();
+        println!("{:?}", story_txt);
+    }
 }

@@ -6,6 +6,7 @@ from motor import motor_asyncio
 import datetime
 from bs4 import BeautifulSoup
 from random import choice
+from python.scrapers.aiohttp_exception import ignore_aiohttp_ssl_eror
 
 desktop_agents = ['Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
                  'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
@@ -66,11 +67,11 @@ class MarajuanaSA(object):
                 # print(f'result {result.inserted_id}')
         except aiohttp.ClientConnectionError:
             # something went wrong with the exception, decide on what to do next
-            print("Oops, the connection was dropped before we finished")
+            tqdm.tqdm.write("Oops, the connection was dropped before we finished")
         except aiohttp.ClientError:
             # something went wrong in general. Not a connection error, that was handled
             # above.
-            print("Oops, something else went wrong with the request")
+            tqdm.tqdm.write("Oops, something else went wrong with the request")
 
     async def get_max_pages(self, session, url):
         try:
@@ -84,11 +85,11 @@ class MarajuanaSA(object):
 
         except aiohttp.ClientConnectionError:
             # something went wrong with the exception, decide on what to do next
-            print("Oops, the connection was dropped before we finished")
+            tqdm.tqdm.write("Oops, the connection was dropped before we finished")
         except aiohttp.ClientError:
             # something went wrong in general. Not a connection error, that was handled
             # above.
-            print("Oops, something else went wrong with the request")
+            tqdm.tqdm.write("Oops, something else went wrong with the request")
 
 
     async def get_products_on_page(self, session, url):
@@ -110,23 +111,23 @@ class MarajuanaSA(object):
         # released.
         except aiohttp.ClientConnectionError:
             # something went wrong with the exception, decide on what to do next
-            print("Oops, the connection was dropped before we finished")
+            tqdm.tqdm.write("Oops, the connection was dropped before we finished")
         except aiohttp.ClientError:
             # something went wrong in general. Not a connection error, that was handled
             # above.
-            print("Oops, something else went wrong with the request")
+            tqdm.tqdm.write("Oops, something else went wrong with the request")
 
 
     async def get_all_products(self, session, url):
         max_pages = await self.get_max_pages(session, url)
         tasks = [self.get_products_on_page(session, "".join([url, "page/", str(i)])) for i in range(1, int(max_pages))]
-        responses = [await f for f in tqdm.tqdm(asyncio.as_completed(tasks), total=len(tasks), desc="{Marajuana SA (Product List)}")]
+        responses = [await f for f in tqdm.tqdm(asyncio.as_completed(tasks), total=len(tasks), desc="{Marajuana SA (Product List)}", position=1)]
         return [i for resp in responses for i in resp]
 
     async def get_all_product_data(self, session, products):
         tasks = [self.get_product_data(session, prod) for prod in products]
 
-        responses = [await f for f in tqdm.tqdm(asyncio.as_completed(tasks), total=len(tasks), desc="{Marajuana SA (Product Data)}")]
+        responses = [await f for f in tqdm.tqdm(asyncio.as_completed(tasks), total=len(tasks), desc="{Marajuana SA (Product Data)}", position=1)]
         resp = []
         for r in responses:
             resp.append(r)
@@ -134,19 +135,19 @@ class MarajuanaSA(object):
 
 
     async def main(self):
+        ignore_aiohttp_ssl_eror(asyncio.get_running_loop())
         conn = aiohttp.TCPConnector(limit=5)
         async with aiohttp.ClientSession(connector=conn) as session:
             try:
-                while True:
-                    products = await self.get_all_products(session, self.url)
-                    result = await self.db.product_list.insert_one({
-                        "products": products,
-                        "date": datetime.datetime.utcnow()
-                    })
-                    # print(f'result {result.inserted_id}')
-                    await self.get_all_product_data(session, products)
+                products = await self.get_all_products(session, self.url)
+                result = await self.db.product_list.insert_one({
+                    "products": products,
+                    "date": datetime.datetime.utcnow()
+                })
+                # print(f'result {result.inserted_id}')
+                await self.get_all_product_data(session, products)
             except:
-                print("Caught ANY Exception")
+                tqdm.tqdm.write("Caught ANY Exception")
 
 if __name__ == "__main__":
     addr = "localhost"
@@ -162,5 +163,5 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         pass
     finally:
-        print('step: loop.close()')
+        tqdm.tqdm.write('step: loop.close()')
         loop.close()

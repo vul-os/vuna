@@ -42,7 +42,7 @@ class TrophySeeds(object):
             "url": url,
             "date": datetime.datetime.utcnow()
         })
-        # print(f'result {result.inserted_id}')
+        # tqdm.tqdm.write(f'result {result.inserted_id}')
 
 
     async def get_max_pages(self, session, url):
@@ -72,13 +72,13 @@ class TrophySeeds(object):
     async def get_all_products(self, session, url):
         max_pages = await self.get_max_pages(session, url)
         tasks = [self.get_products_on_page(session, "".join([url, "page/", str(i)])) for i in range(1, int(max_pages))]
-        responses = [await f for f in tqdm.tqdm(asyncio.as_completed(tasks), total=len(tasks), desc="{Trophy Seeds (Product List)}")]
+        responses = [await f for f in tqdm.tqdm(asyncio.as_completed(tasks), total=len(tasks), desc="{Trophy Seeds (Product List)}", position=1)]
         return [i for resp in responses for i in resp]
 
 
     async def get_all_product_data(self, session, products):
         tasks = [self.get_product_data(session, prod) for prod in products]
-        responses = [await f for f in tqdm.tqdm(asyncio.as_completed(tasks), total=len(tasks), desc="{Trophy Seeds (Product Data)}")]
+        responses = [await f for f in tqdm.tqdm(asyncio.as_completed(tasks), total=len(tasks), desc="{Trophy Seeds (Product Data)}", position=1)]
         return [resp for resp in responses]
 
 
@@ -86,16 +86,15 @@ class TrophySeeds(object):
         ignore_aiohttp_ssl_eror(asyncio.get_running_loop())
         async with aiohttp.ClientSession() as session:
             try:
-                while True:
-                    products = await self.get_all_products(session, self.url)
-                    result = await self.db.product_list.insert_one({
-                        "products": products,
-                        "date": datetime.datetime.utcnow()
-                    })
-                    # print(f'result {result.inserted_id}')
-                    await self.get_all_product_data(session, products)
+                products = await self.get_all_products(session, self.url)
+                result = await self.db.product_list.insert_one({
+                    "products": products,
+                    "date": datetime.datetime.utcnow()
+                })
+                # tqdm.tqdm.write(f'result {result.inserted_id}')
+                await self.get_all_product_data(session, products)
             except:
-                print("Caught ANY Exception")
+                tqdm.tqdm.write("Caught ANY Exception")
 
 if __name__ == "__main__":
     addr = "localhost"
@@ -110,5 +109,5 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         pass
     finally:
-        print('step: loop.close()')
+        tqdm.tqdm.write('step: loop.close()')
         loop.close()
