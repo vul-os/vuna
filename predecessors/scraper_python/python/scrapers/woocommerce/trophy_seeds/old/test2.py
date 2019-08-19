@@ -2,7 +2,6 @@
 from bs4 import BeautifulSoup
 import requests
 from pprint import pprint
-
 url = "https://www.trophyseeds.com/product/ethos-genetics-zsweet-inzanity/"
 
 r = requests.get(url)

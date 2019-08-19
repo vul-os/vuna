@@ -111,7 +111,7 @@ const main = async (url, mongoURL, dbName) => {
   const categories = await getCategories(url);
   console.log(categories);
   const productLinks = await Promise.all(categories.map(getAllItems));
-  console.log('done');
+  console.log(productLinks);
   // const productLinks = await getAllItems(url);
   // const murgedProducts = [].concat.apply([], [].concat.apply([], productLinks));
   // await saveAllItems(mongoURL, dbName, murgedProducts);
