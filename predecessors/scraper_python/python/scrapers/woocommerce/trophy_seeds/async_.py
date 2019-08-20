@@ -71,7 +71,7 @@ class TrophySeeds(object):
 
     async def get_all_products(self, session, url):
         max_pages = await self.get_max_pages(session, url)
-        tasks = [self.get_products_on_page(session, "".join([url, "page/", str(i)])) for i in range(1, int(max_pages))]
+        tasks = [self.get_products_on_page(session, "".join([url, "page/", str(i)])) for i in range(1, int(max_pages + 1))]
         responses = [await f for f in tqdm.tqdm(asyncio.as_completed(tasks), total=len(tasks), desc="{Trophy Seeds (Product List)}", position=1)]
         return [i for resp in responses for i in resp]
 
