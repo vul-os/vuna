@@ -45,16 +45,6 @@ class TrophySeeds(object):
         # tqdm.tqdm.write(f'result {result.inserted_id}')
 
 
-    async def get_max_pages(self, session, url):
-        async with session.get(url) as resp:
-            text = await resp.read()
-
-        soup = BeautifulSoup(text.decode('utf-8'), 'html5lib')
-        soup = soup.find("nav", {"class": "woocommerce-pagination"})
-        max_pages = soup.findAll("li")[-2].find('a').getText()
-        return max_pages
-
-
     async def get_products_on_page(self, session, url):
         async with session.get(url) as resp:
             text = await resp.read()
@@ -68,31 +58,38 @@ class TrophySeeds(object):
         product_links = (str(links.find('a')['href']) for links in soup)
         return product_links
 
-
     async def get_all_products(self, session, url):
         max_pages = await self.get_max_pages(session, url)
-        tasks = [self.get_products_on_page(session, "".join([url, "page/", str(i)])) for i in range(1, int(max_pages) + 1)]
+        tasks = [self.get_products_on_page(session, "".join([url, "page/", str(i)])) for i in range(1, int(max_pages + 1))]
         responses = [await f for f in tqdm.tqdm(asyncio.as_completed(tasks), total=len(tasks), desc="{Trophy Seeds (Product List)}", position=1)]
         return [i for resp in responses for i in resp]
-
 
     async def get_all_product_data(self, session, products):
         tasks = [self.get_product_data(session, prod) for prod in products]
         responses = [await f for f in tqdm.tqdm(asyncio.as_completed(tasks), total=len(tasks), desc="{Trophy Seeds (Product Data)}", position=1)]
         return [resp for resp in responses]
 
+    async def get_all_categories(self, session, url):
+        async with session.get(url) as resp:
+            text = await resp.read()
+
+        soup = BeautifulSoup(text.decode('utf-8'), 'html5lib')
+        soup = soup.find("body").findAll("div", {"class": "container-fluid header_bottom"})[1].find('div', {
+            'role': 'navigation'
+        }).findAll("li")
+        cats = []
+        for s in soup:
+            if "Search" in str(s):
+                continue
+            cats.append("".join([url, s.find("a")["href"]]))
+        return cats
 
     async def main(self):
         ignore_aiohttp_ssl_eror(asyncio.get_running_loop())
         async with aiohttp.ClientSession() as session:
-            products = await self.get_all_products(session, self.url)
-            # result = await self.db.product_list.insert_one({
-            #     "products": products,
-            #     "date": datetime.datetime.utcnow()
-            # })
-            # tqdm.tqdm.write(f'result {result.inserted_id}')
-            await self.get_all_product_data(session, products)
-            tqdm.tqdm.write("Caught ANY Exception")
+            categories = await self.get_all_categories(session, self.url)
+
+
 
 if __name__ == "__main__":
     addr = "localhost"

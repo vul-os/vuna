@@ -1,0 +1,88 @@
+{'brand_name': 'Copper Fox', 'vintage': '', 'box_price': 'Regular Price:', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/copper-fox-botanical-craft-gin-tonic'} 
+{'brand_name': 'Six Dogs Distillery', 'vintage': '', 'box_price': 'R509.00', 'case_price': '', 'stock': '9 available', 'link': 'https://www.cybercellar.com/spirits/gin/six-dogs-distillery-blue-gin'} 
+{'brand_name': 'Bloedlemoen', 'vintage': '', 'box_price': 'R390.00', 'case_price': '', 'stock': '1 available', 'link': 'https://www.cybercellar.com/spirits/gin/bloedlemoen-gin'} 
+{'brand_name': 'Six Dogs Distillery', 'vintage': '', 'box_price': 'R499.00', 'case_price': '', 'stock': '1 available', 'link': 'https://www.cybercellar.com/spirits/gin/six-dogs-distillery-karoo-gin'} 
+{'brand_name': 'Distillery 031', 'vintage': '', 'box_price': 'R399.00', 'case_price': '', 'stock': '1 available', 'link': 'https://www.cybercellar.com/spirits/gin/distillery-031-durban-dry-gin'} 
+{'brand_name': 'Inverroche', 'vintage': '', 'box_price': 'R399.00', 'case_price': '', 'stock': '2 available', 'link': 'https://www.cybercellar.com/spirits/gin/inverroche-gin-amber'} 
+{'brand_name': 'Triple Three Gin', 'vintage': '', 'box_price': 'R345.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/triple-three-gin-african-botanicals'} 
+{'brand_name': 'Bulldog', 'vintage': '', 'box_price': 'R410.00', 'case_price': '', 'stock': '4 available', 'link': 'https://www.cybercellar.com/spirits/gin/bulldog-london-dry-gin'} 
+{'brand_name': 'Inverroche', 'vintage': '', 'box_price': 'R399.00', 'case_price': '', 'stock': '3 available', 'link': 'https://www.cybercellar.com/spirits/gin/inverroche-gin-classic'} 
+{'brand_name': 'Pienaar and Son Distilling Co', 'vintage': '', 'box_price': 'R395.00', 'case_price': '', 'stock': '5 available', 'link': 'https://www.cybercellar.com/spirits/gin/pienaar-and-son-distilling-co-empire-gin'} 
+{'brand_name': 'Sugarbird', 'vintage': '', 'box_price': 'R275.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/sugarbird-19390'} 
+{'brand_name': 'A Mari', 'vintage': '', 'box_price': 'Regular Price:', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/a-mari-indian-ocean-gin'} 
+{'brand_name': 'The Duchess', 'vintage': '', 'box_price': 'R21.00', 'case_price': '2', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/the-duchess-floral-virgin-gin-and-tonic'} 
+{'brand_name': '', 'vintage': '', 'box_price': 'R1,305.00', 'case_price': None, 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/flowstone-gin-trio'} 
+{'brand_name': 'The Duchess', 'vintage': '', 'box_price': 'R21.00', 'case_price': '2', 'stock': '18 available', 'link': 'https://www.cybercellar.com/spirits/gin/the-duchess-greeery-gin-and-tonic'} 
+{'brand_name': 'Quince Gin', 'vintage': '', 'box_price': 'R480.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/quince-gin-classic-gin'} 
+{'brand_name': 'Hope On Hopkins Distillery', 'vintage': '', 'box_price': 'R450.00', 'case_price': '', 'stock': '1 available', 'link': 'https://www.cybercellar.com/spirits/gin/hope-on-hopkins-distillery-london-dry-gin'} 
+{'brand_name': '', 'vintage': '', 'box_price': 'R1,350.00', 'case_price': None, 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/hope-on-hopkins-gin-trio'} 
+{'brand_name': '', 'vintage': '', 'box_price': 'R1,129.00', 'case_price': None, 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/inverroche-gin-trio'} 
+{'brand_name': 'Musgrave', 'vintage': '', 'box_price': 'R430.00', 'case_price': '', 'stock': '6 available', 'link': 'https://www.cybercellar.com/spirits/gin/musgrave-crafted-gin'} 
+{'brand_name': '031 Durban', 'vintage': '', 'box_price': 'R554.00', 'case_price': '', 'stock': '1 available', 'link': 'https://www.cybercellar.com/spirits/gin/031-durban-barrel-aged-dry-gin-limited'} 
+{'brand_name': '', 'vintage': '', 'box_price': 'R350.00', 'case_price': '', 'stock': '2 available', 'link': 'https://www.cybercellar.com/spirits/gin/cape-fynbos-gin'} 
+{'brand_name': 'Westcliff', 'vintage': '', 'box_price': 'R400.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/westcliff-gin'} 
+{'brand_name': '', 'vintage': '', 'box_price': 'R75.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/jonni-gin-tonic-jonni-gin-tonic'} 
+{'brand_name': 'Hope On Hopkins Distillery', 'vintage': '', 'box_price': 'R450.00', 'case_price': '', 'stock': '3 available', 'link': 'https://www.cybercellar.com/spirits/gin/hope-on-hopkins-distillery-salt-river-gin'} 
+{'brand_name': 'Quince Gin', 'vintage': '', 'box_price': 'R480.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/barrel-aged-gin'} 
+{'brand_name': 'Ginifer', 'vintage': '', 'box_price': 'R390.00', 'case_price': '', 'stock': '6 available', 'link': 'https://www.cybercellar.com/spirits/gin/ginifer-original-handcrafted-gin'} 
+{'brand_name': 'Inverroche', 'vintage': '', 'box_price': 'R399.00', 'case_price': '', 'stock': '3 available', 'link': 'https://www.cybercellar.com/spirits/gin/inverroche-gin-verdant'} 
+{'brand_name': 'Cape Town Gin', 'vintage': '', 'box_price': 'R379.00', 'case_price': '', 'stock': '4 available', 'link': 'https://www.cybercellar.com/spirits/gin/cape-town-gin-rooibos-red'} 
+{'brand_name': 'Hope On Hopkins Distillery', 'vintage': '', 'box_price': 'R450.00', 'case_price': '', 'stock': '3 available', 'link': 'https://www.cybercellar.com/spirits/gin/hope-on-hopkins-distillery-mediterranean-gin'} 
+{'brand_name': 'Flowstone', 'vintage': '', 'box_price': 'R435.00', 'case_price': '', 'stock': '6 available', 'link': 'https://www.cybercellar.com/spirits/gin/flowstone-marula'} 
+{'brand_name': 'Ginifer', 'vintage': '', 'box_price': 'R390.00', 'case_price': '', 'stock': '2 available', 'link': 'https://www.cybercellar.com/spirits/gin/ginifer-barrel-aged-chilli-infusion'} 
+{'brand_name': 'Flowstone', 'vintage': '', 'box_price': 'R435.00', 'case_price': '', 'stock': '12 available', 'link': 'https://www.cybercellar.com/spirits/gin/flowstone-bushwillow'} 
+{'brand_name': 'The London No.1', 'vintage': '', 'box_price': 'R677.00', 'case_price': '', 'stock': '5 available', 'link': 'https://www.cybercellar.com/spirits/gin/the-london-no-1-original-blue-gin'} 
+{'brand_name': 'Flowstone', 'vintage': '', 'box_price': 'R435.00', 'case_price': '', 'stock': '2 available', 'link': 'https://www.cybercellar.com/spirits/gin/flowstone-wild-cucumber'} 
+{'brand_name': 'Hendricks', 'vintage': '', 'box_price': 'R496.00', 'case_price': '', 'stock': '3 available', 'link': 'https://www.cybercellar.com/spirits/gin/hendricks-original-gin'} 
+{'brand_name': 'Gabriel Boudier', 'vintage': '', 'box_price': 'R569.00', 'case_price': '', 'stock': '2 available', 'link': 'https://www.cybercellar.com/spirits/gin/gabriel-boudier-saffron-infused-gin'} 
+{'brand_name': 'The General', 'vintage': '', 'box_price': 'R385.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/the-general-gin-with-advent-gift'} 
+{'brand_name': 'Bloedlemoen', 'vintage': '', 'box_price': 'Regular Price:', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/bloedlemoen-easter-gin'} 
+{'brand_name': 'Musgrave', 'vintage': '', 'box_price': 'R42.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/musgrave-11-mini-box'} 
+{'brand_name': 'Gin Mare', 'vintage': '', 'box_price': 'R550.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/gin-mare-mediterranean-gin'} 
+{'brand_name': 'Cape Town Gin', 'vintage': '', 'box_price': 'R379.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/cape-town-gin-pink-lady-gin'} 
+{'brand_name': 'KWV', 'vintage': '', 'box_price': 'R322.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/kwv-cruxland-gin'} 
+{'brand_name': 'Kaapse Liqueurs', 'vintage': '', 'box_price': 'R188.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/kaapse-liqueurs-buchu-gin'} 
+{'brand_name': 'Ginologist', 'vintage': '', 'box_price': 'R345.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/ginologist-floral-gin'} 
+{'brand_name': 'The Botanist', 'vintage': '', 'box_price': 'R511.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/the-botanist-islay-dry-gin'} 
+{'brand_name': "Gilbey's", 'vintage': '', 'box_price': 'R128.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/gilbey-s-london-dry-gin'} 
+{'brand_name': 'The General', 'vintage': '', 'box_price': 'R385.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/the-general-gin'} 
+{'brand_name': "Jorgensen's Distillery", 'vintage': '', 'box_price': 'R396.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/jorgensen-s-distillery-hibiscus-gin'} 
+{'brand_name': 'Triple Three Gin', 'vintage': '', 'box_price': 'R345.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/triple-three-gin-juniper'} 
+{'brand_name': 'Woodstock Gin company', 'vintage': '', 'box_price': 'R300.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/woodstock-gin-company-inception-beer-based-gin'} 
+{'brand_name': 'Pienaar and Son Distilling Co', 'vintage': '', 'box_price': 'R350.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/pienaar-and-son-distilling-co-orient-gin'} 
+{'brand_name': 'Tanqueray', 'vintage': '', 'box_price': 'R517.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/tanqueray-no-10-dry-gin'} 
+{'brand_name': 'Sipsmith', 'vintage': '', 'box_price': 'R699.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/sipsmith-london-dry-gin'} 
+{'brand_name': 'Tanqueray', 'vintage': '', 'box_price': 'R517.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/tanqueray-no-10-dry-gin'} 
+{'brand_name': '', 'vintage': '', 'box_price': 'R1,035.00', 'case_price': None, 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/triple-3-gin-trio'} 
+{'brand_name': 'The Duchess', 'vintage': '', 'box_price': 'R105.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/the-duchess-bubbly'} 
+{'brand_name': '', 'vintage': '', 'box_price': 'R1,340.00', 'case_price': None, 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/bloedlemoen-festive-case'} 
+{'brand_name': 'Diplome', 'vintage': '', 'box_price': 'R425.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/diplome-small-batch-dry-gin'} 
+{'brand_name': 'New Harbour Distillery', 'vintage': '', 'box_price': 'R385.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/new-harbour-distillery-rooibos-infused-gin'} 
+{'brand_name': 'The Duchess', 'vintage': '', 'box_price': 'R21.00', 'case_price': '2', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/the-duchess-virgin-gin-and-tonic'} 
+{'brand_name': 'Ginologist', 'vintage': '', 'box_price': 'R345.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/ginologist-spice-gin'} 
+{'brand_name': 'Bombay Gin', 'vintage': '', 'box_price': 'R300.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/bombay-gin-sapphire'} 
+{'brand_name': "Jorgensen's Distillery", 'vintage': '', 'box_price': 'R396.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/jorgensen-s-distillery-original-gin'} 
+{'brand_name': '', 'vintage': '', 'box_price': 'R27.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/drifter-brewing-company-buchu-gin-tonic'} 
+{'brand_name': 'A Mari', 'vintage': '', 'box_price': 'Regular Price:', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/a-mari-atlantic-ocean-gin'} 
+{'brand_name': 'Wilderer Distillery', 'vintage': '', 'box_price': 'R360.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/wilderer-distillery-fynbos-gin'} 
+{'brand_name': 'Clemengold', 'vintage': '', 'box_price': 'R330.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/clemengold-citrus-gin'} 
+{'brand_name': 'Triple Three Gin', 'vintage': '', 'box_price': 'R345.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/triple-three-gin-citrus-infusion'} 
+{'brand_name': 'Elephant Gin', 'vintage': '', 'box_price': 'R374.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/elephant-gin-hand-crafted-london-dry'} 
+{'brand_name': 'Gordons', 'vintage': '', 'box_price': 'R167.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/gordons-london-dry-gin'} 
+{'brand_name': 'Malfy', 'vintage': '', 'box_price': 'R394.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/malfy-italian-gin'} 
+{'brand_name': 'Woodstock Gin company', 'vintage': '', 'box_price': 'R300.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/woodstock-gin-company-high-tea-gin'} 
+{'brand_name': 'Woodstock Gin company', 'vintage': '', 'box_price': 'R325.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/woodstock-gin-company-inception-wine-based-gin'} 
+{'brand_name': 'Bombay Gin', 'vintage': '', 'box_price': 'R176.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/bombay-gin-london-dry-gin'} 
+{'brand_name': 'Tanqueray', 'vintage': '', 'box_price': 'R250.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/tanqueray-london-dry-gin'} 
+{'brand_name': 'Juniper Moon', 'vintage': '', 'box_price': 'R485.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/gin'} 
+{'brand_name': 'Die Mas van Kakamas', 'vintage': '', 'box_price': 'R230.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/die-mas-van-kakamas-kalahari-dry-gin-17946'} 
+{'brand_name': 'Blind Tiger', 'vintage': '', 'box_price': 'R399.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/blind-tiger-gin'} 
+{'brand_name': 'Bloedlemoen', 'vintage': '', 'box_price': 'R350.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/bloedlemoen-christmas-gin'} 
+{'brand_name': 'Bloedlemoen', 'vintage': '', 'box_price': 'R599.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/bloedlemoen-christmas-spirit-pack'} 
+{'brand_name': 'Bloedlemoen', 'vintage': '', 'box_price': 'Regular Price:', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/bloedlemoen-oak-matured-gin'} 
+{'brand_name': 'Bloedlemoen', 'vintage': '', 'box_price': 'R390.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/bloedlemoen-gin-craft-gift-box'} 
+{'brand_name': 'Musgrave', 'vintage': '', 'box_price': 'R475.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/musgrave-pink-gin'} 
+{'brand_name': 'New Harbour Distillery', 'vintage': '', 'box_price': 'R385.00', 'case_price': '', 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/new-harbour-distillery-spekboom-igwanitsha-gin'} 
+{'brand_name': '', 'vintage': '', 'box_price': 'R235.00', 'case_price': None, 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/case-for-her'} 
+{'brand_name': '', 'vintage': '', 'box_price': 'R126.00', 'case_price': None, 'stock': None, 'link': 'https://www.cybercellar.com/spirits/gin/the-duchess-case'} 
+{'brand_name': 'Cape Town Gin', 'vintage': '', 'box_price': 'R379.00', 'case_price': '', 'stock': '6 available', 'link': 'https://www.cybercellar.com/spirits/gin/cape-town-gin-classic-dry'} 

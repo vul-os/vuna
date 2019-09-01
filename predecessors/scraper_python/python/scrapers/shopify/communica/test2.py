@@ -49,11 +49,13 @@ def scrape_page(page):
 
 
 time_now = int(time.time())
-url = f"https://services.mybcapps.com/bc-sf-filter/filter?t={str(time_now)}&q=Internet+of+things&shop=communica-south-africa.myshopify.com&page=1&limit={pages}&sort=best-selling&display=grid&collection_scope=&product_available=false&variant_available=false&build_filter_tree=false&check_cache=false&sort_first=available&callback=BCSfFilterCallback&event_type=page"
+url = f"https://services.mybcapps.com/bc-sf-filter/filter?t={str(1534885434)}&q=Internet+of+things&shop=communica-south-africa.myshopify.com&page=1&limit={pages}&sort=best-selling&display=grid&collection_scope=&product_available=false&variant_available=false&build_filter_tree=false&check_cache=false&sort_first=available&callback=BCSfFilterCallback&event_type=page"
+print(url)
+exit()
 
 max_pg = get_max_pages(url)
 for pg in range(1, max_pg+1):
-    url1 = f"https://services.mybcapps.com/bc-sf-filter/filter?t={str(time_now)}&q=Internet+of+things&shop=communica-south-africa.myshopify.com&page={pg}&limit={pages}&sort=best-selling&display=grid&collection_scope=&product_available=false&variant_available=false&build_filter_tree=false&check_cache=false&sort_first=available&callback=BCSfFilterCallback&event_type=page"
+    url1 = f"https://services.mybcapps.com/bc-sf-filter/filter?t={str(1534885434)}&q=Internet+of+things&shop=communica-south-africa.myshopify.com&page={pg}&limit={pages}&sort=best-selling&display=grid&collection_scope=&product_available=false&variant_available=false&build_filter_tree=false&check_cache=false&sort_first=available&callback=BCSfFilterCallback&event_type=page"
     data = load_page(url1)
     scrape_page(data['products'])
     # print(len(data['products']))
