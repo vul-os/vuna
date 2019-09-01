@@ -5,3 +5,5 @@ __pycache__/
 node_modules/
 
 rust/target/
+
+venv/

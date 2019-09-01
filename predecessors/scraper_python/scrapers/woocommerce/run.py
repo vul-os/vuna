@@ -1,5 +1,5 @@
-from python.scrapers.woocommerce.marajuana_sa.async_ import MarajuanaSA
-from python.scrapers.woocommerce.trophy_seeds.async_ import TrophySeeds
+from scrapers.woocommerce.marajuana_sa.async_ import MarajuanaSA
+from scrapers.woocommerce.trophy_seeds.async_ import TrophySeeds
 # from python.scrapers.woocommerce.sacredseeds.async_ import SacredSeeds
 # from python.scrapers.woocommerce.thehighco.async_ import TheHighCo
 from motor import motor_asyncio

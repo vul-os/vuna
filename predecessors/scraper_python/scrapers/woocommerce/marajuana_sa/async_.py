@@ -1,12 +1,11 @@
 import asyncio
 import aiohttp
-import html5lib
 import tqdm
 from motor import motor_asyncio
 import datetime
 from bs4 import BeautifulSoup
 from random import choice
-from python.scrapers.aiohttp_exception import ignore_aiohttp_ssl_eror
+from scrapers.aiohttp_exception import ignore_aiohttp_ssl_eror
 
 desktop_agents = ['Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
                  'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
@@ -120,7 +119,7 @@ class MarajuanaSA(object):
 
     async def get_all_products(self, session, url):
         max_pages = await self.get_max_pages(session, url)
-        tasks = [self.get_products_on_page(session, "".join([url, "page/", str(i)])) for i in range(1, int(max_pages + 1))]
+        tasks = [self.get_products_on_page(session, "".join([url, "page/", str(i)])) for i in range(1, int(max_pages) + 1)]
         responses = [await f for f in tqdm.tqdm(asyncio.as_completed(tasks), total=len(tasks), desc="{Marajuana SA (Product List)}", position=1)]
         return [i for resp in responses for i in resp]
 
@@ -138,16 +137,14 @@ class MarajuanaSA(object):
         ignore_aiohttp_ssl_eror(asyncio.get_running_loop())
         conn = aiohttp.TCPConnector(limit=5)
         async with aiohttp.ClientSession(connector=conn) as session:
-            try:
-                products = await self.get_all_products(session, self.url)
-                result = await self.db.product_list.insert_one({
-                    "products": products,
-                    "date": datetime.datetime.utcnow()
-                })
-                # print(f'result {result.inserted_id}')
-                await self.get_all_product_data(session, products)
-            except:
-                tqdm.tqdm.write("Caught ANY Exception")
+
+            products = await self.get_all_products(session, self.url)
+            result = await self.db.product_list.insert_one({
+                "products": products,
+                "date": datetime.datetime.utcnow()
+            })
+            # print(f'result {result.inserted_id}')
+            await self.get_all_product_data(session, products)
 
 if __name__ == "__main__":
     addr = "localhost"

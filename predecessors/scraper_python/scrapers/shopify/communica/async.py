@@ -1,15 +1,13 @@
 import asyncio
 import aiohttp
-import html5lib
 import tqdm
 from motor import motor_asyncio
 import datetime
-from bs4 import BeautifulSoup
 import json
 import math
 import time
 
-from python.scrapers.aiohttp_exception import ignore_aiohttp_ssl_eror
+from scrapers.aiohttp_exception import ignore_aiohttp_ssl_eror
 
 props = {
     "sort": "best-selling",
