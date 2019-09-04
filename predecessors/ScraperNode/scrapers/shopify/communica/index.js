@@ -99,7 +99,12 @@ function flatten(arr) {
 
 
 const main = async (url, mongoURL, dbName) => {
-    await getAllItems(url, 1567545942552, 70, mongoURL, dbName);
+
+  const start = new Date();
+  await getAllItems(url, 1567545942552, 70, mongoURL, dbName);
+
+  const end = new Date() - start;
+  console.log(`end = ${end.toFixed(2)}`);
     // const out = constructUrl(url, 1, 1, 70);
     // const val = await loadPage(out);
     // val['products'].forEach(function (item, index) {

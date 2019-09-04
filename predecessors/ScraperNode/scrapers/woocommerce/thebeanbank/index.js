@@ -101,8 +101,9 @@ function flatten(arr) {
   }, []);
 }
 
-const main = async (url, mongoURL, dbName) => {
+const theBeanBank = async (url, mongoURL, dbName) => {
   const start = new Date();
+  
   const categories = await getItemsOnPage(url);
   const filteredCat = categories.filter(function (str) { return str.includes("product-category"); });
   const productLinks = await getAllItems(filteredCat);
@@ -121,7 +122,7 @@ try {
   const mongoURL = 'mongodb://localhost:27017';  
   const dbName = 'thebeanbank';
   
-  main(URL, mongoURL, dbName);
+  theBeanBank(URL, mongoURL, dbName);
 } catch (e) {
   console.log(e)
 }

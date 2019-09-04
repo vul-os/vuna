@@ -86,7 +86,7 @@ const getProductData = (url, mongoURL, dbName) => {
   }));
 }
 
-const main = async (url, mongoURL, dbName) => {
+const trophySeeds = async (url, mongoURL, dbName) => {
   const start = new Date();
   const productLinks = await getAllItems(url);
   const murgedProducts = [].concat.apply([], [].concat.apply([], productLinks));
@@ -105,7 +105,7 @@ try {
   const mongoURL = 'mongodb://localhost:27017';  
   const dbName = 'trophyseeds';
   
-  main(URL, mongoURL, dbName);
+  trophySeeds(URL, mongoURL, dbName);
 } catch (e) {
   console.log(e)
 }
