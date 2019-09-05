@@ -86,7 +86,10 @@ const getProductData = (url, mongoURL, dbName) => {
   }));
 }
 
-const trophySeeds = async (url, mongoURL, dbName) => {
+const main = async () => {
+  const url = 'https://www.trophyseeds.com/shop/';
+  const mongoURL = 'mongodb://localhost:27017';  
+  const dbName = 'trophyseeds';
   const start = new Date();
   const productLinks = await getAllItems(url);
   const murgedProducts = [].concat.apply([], [].concat.apply([], productLinks));
@@ -100,12 +103,14 @@ const trophySeeds = async (url, mongoURL, dbName) => {
   console.log(`end = ${end.toFixed(2)}`);
 }
 
-try {
-  var URL = 'https://www.trophyseeds.com/shop/';
-  const mongoURL = 'mongodb://localhost:27017';  
-  const dbName = 'trophyseeds';
+module.exports.main = main;
+
+// try {
+//   var URL = 'https://www.trophyseeds.com/shop/';
+//   const mongoURL = 'mongodb://localhost:27017';  
+//   const dbName = 'trophyseeds';
   
-  trophySeeds(URL, mongoURL, dbName);
-} catch (e) {
-  console.log(e)
-}
+//   trophySeeds(URL, mongoURL, dbName);
+// } catch (e) {
+//   console.log(e)
+// }

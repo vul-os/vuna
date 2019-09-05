@@ -4,7 +4,9 @@
   "description": "scraper",
   "main": "index.js",
   "dependencies": {
+    "batch-promises": "0.0.3",
     "cheerio": "^1.0.0-rc.3",
+    "lodash": "^4.17.15",
     "mongodb": "^3.3.0",
     "ntqdm": "^1.0.0",
     "puppeteer": "^1.19.0",

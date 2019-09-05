@@ -114,8 +114,11 @@ function flatten(arr) {
 }
   
 
-const threeDPrintingStore = async (url, mongoURL, dbName) => {
-  
+const main = async () => {
+    var url = 'http://www.3dprintingstore.co.za/sitemap/categories/';
+    const mongoURL = 'mongodb://localhost:27017';  
+    const dbName = '3dprintingstore';
+
     const categories = await getCategories(url);
     const produclLinks = await getAll(categories);
     const murgedLinks = flatten(produclLinks);
@@ -128,7 +131,7 @@ const threeDPrintingStore = async (url, mongoURL, dbName) => {
     
 }
 
-module.exports = threeDPrintingStore;
+module.exports.main = main;
 
 
   
