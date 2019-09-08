@@ -1,6 +1,16 @@
 const MongoClient = require('mongodb').MongoClient;
-const request = require('request');
 const cheerio = require('cheerio');
+var RateLimiter = require('limiter').RateLimiter;
+var tr = require('tor-request');
+var random_useragent = require('random-useragent');
+
+var limiter = new RateLimiter(1, 330); // at most 1 request every 100 ms
+var throttledRequest = function() {
+    var requestArgs = arguments;
+    limiter.removeTokens(1, function() {
+        tr.request.apply(this, requestArgs);
+    });
+};
 
 function allProgress(proms, progress_cb) {
   let d = 0;
@@ -15,7 +25,7 @@ function allProgress(proms, progress_cb) {
 }
 
 const getItemsOnPage = (url) => {
-  return new Promise(resp => request(url, (err, res, body) => {
+  return new Promise(resp => tr.request(url, (err, res, body) => {
     const list = [];
     if (!err && res.statusCode == 200) {
       const $ = cheerio.load(body);
@@ -28,19 +38,19 @@ const getItemsOnPage = (url) => {
 }
 
 const getMaxPages = (url) => {
-  return new Promise(resp => request(url, (err, res, body) => {
-    let page = 1;
-    if (!err && res.statusCode == 200) {
-      const $ = cheerio.load(body);
-      const tempPage = $('nav[class="woocommerce-pagination"]').find('ul[class="page-numbers"]').find('li');
-      const tempPageInt = parseInt($(tempPage[tempPage.length - 2]).find('a').text());
-      if (!isNaN(tempPageInt)) {
-          page = tempPageInt
+    return new Promise(resp => tr.request(url, (err, res, body) => {
+      let page = 1;
+      if (!err && res.statusCode == 200) {
+        const $ = cheerio.load(body);
+        const tempPage = $('nav[class="woocommerce-pagination"]').find('li');
+        const tempPageInt = parseInt($(tempPage[tempPage.length - 2]).find('a').text());
+        if (!isNaN(tempPageInt)) {
+            page = tempPageInt
+        }
       }
-    }
-    resp(page)
-  }));
-}
+      resp(page)
+    }));
+  }
 
 const getAllItems = async (url) => {
   const maxPages = await getMaxPages(url);
@@ -62,7 +72,7 @@ const saveAllItems = (mongoURL, dbName, items) => {
 
 const getProductData = (url, mongoURL, dbName) => {
   const client = new MongoClient(mongoURL, {useNewUrlParser: true});
-  return new Promise(resp => request(url, (err, res, body) => {
+  return new Promise(resp => throttledRequest({ url: url, 'User-Agent': random_useragent.getRandom()}, (err, res, body) => {
     if (!err && res.statusCode == 200) {
       const $ = cheerio.load(body);
       const _main = $('div[class="summary entry-summary"]');
@@ -77,6 +87,8 @@ const getProductData = (url, mongoURL, dbName) => {
         "stock": stock,
         "date": new Date(Date.now()).toISOString()
       }
+      console.log(item)
+
       client.connect(function(err) { 
         const db = client.db(dbName);
         const collection = db.collection('data');
@@ -89,45 +101,33 @@ const getProductData = (url, mongoURL, dbName) => {
   }));
 }
 
-const getCategories = (url) => {
-  return new Promise(resp => request(url, (err, res, body) => {
-    const list = []
-    if (!err) {
-      const $ = cheerio.load(body);
-      $('div[class="widget woocommerce widget_product_categories"]').find('li').each((index, element) => {
-        const ele = $(element);
-        if (!(ele.find('li').length > 0)) {
-          list.push(ele.find('a').attr('href'));
-        }
-      });
-    }
-    resp(list)
-  }));
-}
-
-
-const main = async (url, mongoURL, dbName) => {
-  
-  const categories = await getCategories(url);
-  console.log(categories);
-  const productLinks = await Promise.all(categories.map(getAllItems));
-  console.log(productLinks);
-  // const productLinks = await getAllItems(url);
-  // const murgedProducts = [].concat.apply([], [].concat.apply([], productLinks));
-  // await saveAllItems(mongoURL, dbName, murgedProducts);
-  // // await Promise.all(murgedProducts.map(getProductData));
-  // await allProgress(murgedProducts.map(function(x) { return getProductData(x, mongoURL, dbName); }),
-  // (p) => {
-  //    console.log(`Products Trophy Seeds = ${p.toFixed(2)} %`);
-  // });
-}
-
-try {
-  var URL = 'https://marijuanasa.co.za/store/';
+const main = async () => {
+  const url = 'https://marijuanasa.co.za/shop/';
   const mongoURL = 'mongodb://localhost:27017';  
-  const dbName = 'trophyseeds';
-  
-  main(URL, mongoURL, dbName);
-} catch (e) {
-  console.log(e)
+  const dbName = 'marajuanasa';
+  while (true) {
+    const start = new Date();
+    const productLinks = await getAllItems(url);
+    const murgedProducts = [].concat.apply([], [].concat.apply([], productLinks));
+    await saveAllItems(mongoURL, dbName, murgedProducts);
+    // await Promise.all(murgedProducts.map(getProductData));
+    await allProgress(murgedProducts.map(function(x) { return getProductData(x, mongoURL, dbName); }),
+    (p) => {
+      console.log(`Products Cannabis SA = ${p.toFixed(2)} %`);
+    });
+    const end = new Date() - start;
+    console.log(`end marajuanasa= ${end.toFixed(2)}`);
+  }
 }
+
+module.exports.main = main;
+
+// try {
+//   var URL = 'https://marijuanasa.co.za/shop/';
+//   const mongoURL = 'mongodb://localhost:27017';  
+//   const dbName = 'marajuanasa';
+  
+//   main(URL, mongoURL, dbName);
+// } catch (e) {
+//   console.log(e)
+// }

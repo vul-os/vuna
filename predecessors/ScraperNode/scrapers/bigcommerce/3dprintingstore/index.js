@@ -1,6 +1,20 @@
 const MongoClient = require('mongodb').MongoClient;
-const request = require('request');
 const cheerio = require('cheerio');
+const Promise = require("bluebird");
+const request = require("request");
+const _ = require('lodash');
+var tr = require('tor-request');
+var RateLimiter = require('limiter').RateLimiter;
+var random_useragent = require('random-useragent');
+
+// var limiter = new RateLimiter(1, 50); // at most 1 request every 100 ms
+// var throttledRequest = function() {
+//     var requestArgs = arguments;
+//     limiter.removeTokens(1, function() {
+//         tr.request.apply(this, requestArgs);
+//     });
+// };
+
 
 function allProgress(proms, progress_cb) {
   let d = 0;
@@ -14,8 +28,10 @@ function allProgress(proms, progress_cb) {
   return Promise.all(proms);
 }
 
+
+
 const getItemsOnPage = (url) => {
-  return new Promise(resp => request(url, (err, res, body) => {
+  return new Promise(resp => tr.request(url, (err, res, body) => {
     const list = [];
     if (!err && res.statusCode == 200) {
       const $ = cheerio.load(body);
@@ -28,7 +44,7 @@ const getItemsOnPage = (url) => {
 }
 
 const getMaxPages = (url) => {
-    return new Promise(resp => request(url, (err, res, body) => {
+    return new Promise(resp => tr.request(url, (err, res, body) => {
       let page = 1;
       if (!err && res.statusCode == 200) {
         const $ = cheerio.load(body);
@@ -66,7 +82,7 @@ const saveAllItems = (mongoURL, dbName, items) => {
 
 const getProductData = (url, mongoURL, dbName) => {
   const client = new MongoClient(mongoURL, {useNewUrlParser: true});
-  return new Promise(resp => request(url, (err, res, body) => {
+  return new Promise(resp => tr.request({url: `${url}?setCurrencyId=1`, 'User-Agent': random_useragent.getRandom()}, (err, res, body) => {
     if (!err && res.statusCode == 200) {
       const $ = cheerio.load(body);
       const _main = $('div[class="ContentArea"]');
@@ -74,14 +90,13 @@ const getProductData = (url, mongoURL, dbName) => {
       const name = _main.find('h1[class="title"]').text().trim();
       const price = _main.find('span[class="ProductDetailsPriceIncTax"]').text().trim();
       const stock = _main.find('div[class="DetailRow InventoryLevel"]').find('div[class="Value"]').text().trim();
-
       item = {
         "name": name,
         "price": price,
         "stock": stock,
+        "url": url,
         "date": new Date(Date.now()).toISOString()
       }
-      console.log(item);
       client.connect(function(err) { 
         const db = client.db(dbName);
         const collection = db.collection('data');
@@ -89,13 +104,16 @@ const getProductData = (url, mongoURL, dbName) => {
           client.close();
         });
       });
+    } else {
+      console.log("error getting product data");
+      resp({url: url, success: false});
     }
-    resp("yes")
+    resp({url: url, success: true});
   }));
 }
 
 const getCategories = (url) => {
-  return new Promise(resp => request(url, (err, res, body) => {
+  return new Promise(resp => tr.request(url, (err, res, body) => {
     const list = []
     if (!err) {
       const $ = cheerio.load(body);
@@ -112,28 +130,41 @@ function flatten(arr) {
       return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
     }, []);
 }
-  
+
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 
 const main = async () => {
-    var url = 'http://www.3dprintingstore.co.za/sitemap/categories/';
+    const url = 'http://www.3dprintingstore.co.za/sitemap/categories/';
     const mongoURL = 'mongodb://localhost:27017';  
     const dbName = '3dprintingstore';
+    while (true) {
+      const start = new Date();
+      const categories = await getCategories(url);
+      const productLinks = await getAll(categories);
+      let murgedLinks = shuffle([...new Set(flatten(productLinks))]);
+      
+      saveAllItems(mongoURL, dbName, murgedLinks);
 
-    const categories = await getCategories(url);
-    const produclLinks = await getAll(categories);
-    const murgedLinks = flatten(produclLinks);
-    await saveAllItems(mongoURL, dbName, murgedLinks);
+      const resp = await allProgress(murgedLinks.map(function(x) { return getProductData(x, mongoURL, dbName); }),
+      (p) => {
+        console.log(`Products 3DPrintingStore = ${p.toFixed(2)} %`);
+      });
 
-    await allProgress(murgedLinks.map(function(x) { return getProductData(x, mongoURL, dbName); }),
-    (p) => {
-        console.log(`Products 3D Printing Store = ${p.toFixed(2)} %`);
-    });
-    
+      const end = (new Date() - start) / 1000;
+      console.log(`end = ${end.toFixed(2)}`);
+    }
+
+   
 }
 
 module.exports.main = main;
-
-
   
 
 // try {
@@ -141,7 +172,7 @@ module.exports.main = main;
 //   const mongoURL = 'mongodb://localhost:27017';  
 //   const dbName = '3dprintingstore';
   
-//   threeDPrintingStore(URL, mongoURL, dbName);
+//   main(URL, mongoURL, dbName);
 // } catch (e) {
 //   console.log(e)
 // }

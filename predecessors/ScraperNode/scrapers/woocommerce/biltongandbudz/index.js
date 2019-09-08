@@ -1,18 +1,17 @@
 const MongoClient = require('mongodb').MongoClient;
-const request = require('request').defaults({ jar: true });
+const request = require('request')
 const cheerio = require('cheerio');
-const batchPromises = require('batch-promises');
+var RateLimiter = require('limiter').RateLimiter;
+var tr = require('tor-request');
+var random_useragent = require('random-useragent');
 
-async function runAllQueries(queries) {
-  const batches = _.chunk(queries, 2);
-  const results = [];
-  while (batches.length) {
-    const batch = batches.shift();
-    const result = await Promises.all(batch.map(runQuery));
-    results.push(result)
-  }
-  return _.flatten(results);
-}
+var limiter = new RateLimiter(1, 1000); // at most 1 request every 100 ms
+var throttledRequest = function() {
+    var requestArgs = arguments;
+    limiter.removeTokens(1, function() {
+        tr.request.apply(this, requestArgs);
+    });
+};
 
 function allProgress(proms, progress_cb) {
     let d = 0;
@@ -27,7 +26,7 @@ function allProgress(proms, progress_cb) {
 }
 
 const getItemsOnPage = (url, cookieJar) => {
-    return new Promise(resp => request({ url: url, jar: cookieJar }, (err, res, body) => {
+    return new Promise(resp => throttledRequest({ url: url, jar: cookieJar, 'User-Agent': random_useragent.getRandom()}, (err, res, body) => {
         const list = [];
         if (!err && res.statusCode == 200) {
             const $ = cheerio.load(body);
@@ -35,14 +34,14 @@ const getItemsOnPage = (url, cookieJar) => {
                 list.push($(element).find('a').first().attr('href'));
             });
         } else {
-            console.log("error \n");
+            console.log("error");
         }
         resp(list)
     }));
 }
 
 const getMaxPages = (url, cookieJar) => {
-    return new Promise(resp => request({ url: url, jar: cookieJar }, (err, res, body) => {
+    return new Promise(resp => throttledRequest({ url: url, jar: cookieJar, 'User-Agent': random_useragent.getRandom()}, (err, res, body) => {
         let page = 1;
         if (!err && res.statusCode == 200) {
             const $ = cheerio.load(body);
@@ -53,13 +52,6 @@ const getMaxPages = (url, cookieJar) => {
         }
         resp(parseInt(page))
     }));
-}
-function chunkArray(myArray, chunk_size){
-    var results = [];
-    while (myArray.length) {
-        results.push(myArray.splice(0, chunk_size));
-    }
-    return results;
 }
 
 const getAllItems = async (url, cookieJar) => {
@@ -73,7 +65,7 @@ const getAllItems = async (url, cookieJar) => {
 }
 
 const saveAllItems = (mongoURL, dbName, items) => {
-    const client = new MongoClient(mongoURL, { useNewUrlParser: true });
+    const client = new MongoClient(mongoURL, { native_parser: true });
     client.connect(function (err) {
         const db = client.db(dbName);
         const collection = db.collection('productList');
@@ -83,12 +75,12 @@ const saveAllItems = (mongoURL, dbName, items) => {
     });
 }
 const getProductData = (url, mongoURL, dbName) => {
-      const client = new MongoClient(mongoURL, {useNewUrlParser: true});
+    const client = new MongoClient(mongoURL, {native_parser: true});
     const headers_ = {
         'User-Agent': 'python-requests/2.22.0',
         'Accept': '*/*',
     }
-    return new Promise(resp => request({url: url, headers: headers_, forever: true}, (err, res, body) => {
+    return new Promise(resp => throttledRequest({url: url, headers: headers_, forever: true, 'User-Agent': random_useragent.getRandom()}, (err, res, body) => {
         if (!err && res.statusCode == 200) {
             const $ = cheerio.load(body);
 
@@ -103,14 +95,14 @@ const getProductData = (url, mongoURL, dbName) => {
                 "date": new Date(Date.now()).toISOString()
             }
             client.connect(function(err) { 
-            const db = client.db(dbName);
-            const collection = db.collection('data');
+                const db = client.db(dbName);
+                const collection = db.collection('data');
                 collection.insertOne(item, function(err, result) {
                     client.close();
                 });
             });
         } else {
-            console.log("error \n");
+            console.log("error");
         }
         resp("yes")
     }));
@@ -140,16 +132,18 @@ const main = async (url, mongoURL, dbName) => {
        console.log(`Products Biltongandbudz = ${p.toFixed(2)} %`);
     });
     const end = new Date() - start;
-    console.log(`end = ${end.toFixed(2)}`);
+    console.log(`end biltong and budz= ${end.toFixed(2)}`);
 
 }
 
-try {
-    var URL = 'https://www.biltongandbudz.co.za/shop/';
-    const mongoURL = 'mongodb://localhost:27017';
-    const dbName = 'biltongandbudz';
+module.exports.main = main;
 
-    main(URL, mongoURL, dbName);
-} catch (e) {
-    console.log(e)
-}
+// try {
+//     var URL = 'https://www.biltongandbudz.co.za/shop/';
+//     const mongoURL = 'mongodb://localhost:27017';
+//     const dbName = 'biltongandbudz';
+
+//     main(URL, mongoURL, dbName);
+// } catch (e) {
+//     console.log(e)
+// }

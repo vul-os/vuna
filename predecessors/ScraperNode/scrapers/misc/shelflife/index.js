@@ -156,22 +156,28 @@ function flatten(arr) {
     }, []);
 }
 
-const main = async (url, mongoURL, dbName) => {
+const main = async () => {
+    const url = 'https://www.shelflife.co.za/';
+    const mongoURL = 'mongodb://localhost:27017';  
+    const dbName = 'shelflife';
 
-    const links = await getAllItems(url);
-    const murgedLinks = flatten(links);
-
-    await getAllData(murgedLinks, mongoURL, dbName);
-    console.log(murgedLinks.length);
-    // await getAllItems(url);
-}
-
-try {
-  var URL = 'https://www.shelflife.co.za/';
-  const mongoURL = 'mongodb://localhost:27017';  
-  const dbName = 'shelflife';
+    while(true) {
+      const links = await getAllItems(url);
+      const murgedLinks = flatten(links);
   
-  main(URL, mongoURL, dbName);
-} catch (e) {
-  console.log(e)
+      await getAllData(murgedLinks, mongoURL, dbName);
+      console.log(murgedLinks.length);
+      // await getAllItems(url);
+    }
+
 }
+
+module.exports.main = main;
+
+// try {
+
+  
+//   main(URL, mongoURL, dbName);
+// } catch (e) {
+//   console.log(e)
+// }

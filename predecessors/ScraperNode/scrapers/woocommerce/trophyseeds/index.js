@@ -47,7 +47,7 @@ const getAllItems = async (url) => {
 }
 
 const saveAllItems = (mongoURL, dbName, items) => {
-  const client = new MongoClient(mongoURL, {useNewUrlParser: true});
+  const client = new MongoClient(mongoURL, {native_parser: true});
   client.connect(function(err) { 
     const db = client.db(dbName);
     const collection = db.collection('productList');
@@ -58,8 +58,8 @@ const saveAllItems = (mongoURL, dbName, items) => {
 }
 
 const getProductData = (url, mongoURL, dbName) => {
-  const client = new MongoClient(mongoURL, {useNewUrlParser: true});
   return new Promise(resp => request(url, (err, res, body) => {
+    const client = new MongoClient(mongoURL, {native_parser:true});
     if (!err && res.statusCode == 200) {
       const $ = cheerio.load(body);
       const _main = $('div[class="summary entry-summary"]');
@@ -90,17 +90,19 @@ const main = async () => {
   const url = 'https://www.trophyseeds.com/shop/';
   const mongoURL = 'mongodb://localhost:27017';  
   const dbName = 'trophyseeds';
-  const start = new Date();
-  const productLinks = await getAllItems(url);
-  const murgedProducts = [].concat.apply([], [].concat.apply([], productLinks));
-  await saveAllItems(mongoURL, dbName, murgedProducts);
-  // await Promise.all(murgedProducts.map(getProductData));
-  await allProgress(murgedProducts.map(function(x) { return getProductData(x, mongoURL, dbName); }),
-  (p) => {
-     console.log(`Products Trophy Seeds = ${p.toFixed(2)} %`);
-  });
-  const end = new Date() - start;
-  console.log(`end = ${end.toFixed(2)}`);
+  while (true) {
+    const start = new Date();
+    const productLinks = await getAllItems(url);
+    const murgedProducts = [].concat.apply([], [].concat.apply([], productLinks));
+    await saveAllItems(mongoURL, dbName, murgedProducts);
+    // await Promise.all(murgedProducts.map(getProductData));
+    await allProgress(murgedProducts.map(function(x) { return getProductData(x, mongoURL, dbName); }),
+    (p) => {
+      console.log(`Products Trophy Seeds = ${p.toFixed(2)} %`);
+    });
+    const end = new Date() - start;
+    console.log(`end trophyseeds = ${end.toFixed(2)}`);
+  }
 }
 
 module.exports.main = main;
@@ -110,7 +112,7 @@ module.exports.main = main;
 //   const mongoURL = 'mongodb://localhost:27017';  
 //   const dbName = 'trophyseeds';
   
-//   trophySeeds(URL, mongoURL, dbName);
+//   main(URL, mongoURL, dbName);
 // } catch (e) {
 //   console.log(e)
 // }

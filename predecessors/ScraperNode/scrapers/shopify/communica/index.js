@@ -1,6 +1,7 @@
 const MongoClient = require('mongodb').MongoClient;
 const request = require('request');
 const cheerio = require('cheerio');
+var random_useragent = require('random-useragent');
 
 const getMaxPages = async (url, pages) => {
     url = constructUrl(url, 1, 1, 70);
@@ -51,7 +52,7 @@ const getPageJson = (body) => {
 }
 
 const loadPage = (url) => {
-  return new Promise(resp => request(url, (err, res, body) => {
+  return new Promise(resp => request({url: url, 'User-Agent': random_useragent.getRandom()}, (err, res, body) => {
     resp(getPageJson(body));
   }));
 }
@@ -86,7 +87,6 @@ const getAllItems = async (url, t, limit, mongoURL, dbName) => {
   const pages = [...Array(maxPages).keys()].map(i => constructUrl(url, t, i+1, limit));
   const pagesData = await Promise.all(pages.map(pageUrl => loadPage(pageUrl)));
   const data = await Promise.all(pagesData.map(data => handlePage(data, client, dbName)));
-  console.log(flatten(data).length);
   client.close();
 }
 
@@ -98,26 +98,27 @@ function flatten(arr) {
 
 
 
-const main = async (url, mongoURL, dbName) => {
-
-  const start = new Date();
-  await getAllItems(url, 1567545942552, 70, mongoURL, dbName);
-
-  const end = new Date() - start;
-  console.log(`end = ${end.toFixed(2)}`);
-    // const out = constructUrl(url, 1, 1, 70);
-    // const val = await loadPage(out);
-    // val['products'].forEach(function (item, index) {
-    //   console.log(item["varients"]);
-    // });
-}
-
-try {
-  var URL = "https://services.mybcapps.com/bc-sf-filter/filter";
+const main = async () => {
+  const url = "https://services.mybcapps.com/bc-sf-filter/filter";
   const mongoURL = 'mongodb://localhost:27017';  
   const dbName = 'communica';
-  
-  main(URL, mongoURL, dbName);
-} catch (e) {
-  console.log(e)
+  while (true) {
+
+    const start = new Date();
+    await getAllItems(url, 1567545942552, 70, mongoURL, dbName);
+
+    const end = new Date() - start;
+    console.log(`end communica = ${end.toFixed(2)}`);
+  }
+
 }
+
+module.exports.main = main;
+
+// try {
+
+  
+//   main(URL, mongoURL, dbName);
+// } catch (e) {
+//   console.log(e)
+// }

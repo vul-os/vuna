@@ -101,28 +101,32 @@ function flatten(arr) {
   }, []);
 }
 
-const theBeanBank = async (url, mongoURL, dbName) => {
-  const start = new Date();
-  
-  const categories = await getItemsOnPage(url);
-  const filteredCat = categories.filter(function (str) { return str.includes("product-category"); });
-  const productLinks = await getAllItems(filteredCat);
-  const murgedProducts = flatten(productLinks);
-  await saveAllItems(mongoURL, dbName, murgedProducts);
-  await allProgress(murgedProducts.map(function(x) { return getProductData(x, mongoURL, dbName); }),
-  (p) => {
-     console.log(`Products The Bean Bank = ${p.toFixed(2)} %`);
-  });
-  const end = new Date() - start;
-  console.log(`end = ${end.toFixed(2)}`);
-}
-
-try {
-  var URL = 'http://thebeanbank.co.za/shop/';
+const main = async (url, mongoURL, dbName) => {
+  var url = 'http://thebeanbank.co.za/shop/';
   const mongoURL = 'mongodb://localhost:27017';  
   const dbName = 'thebeanbank';
-  
-  theBeanBank(URL, mongoURL, dbName);
-} catch (e) {
-  console.log(e)
+  const start = new Date();
+  while (true) {
+    const categories = await getItemsOnPage(url);
+    const filteredCat = categories.filter(function (str) { return str.includes("product-category"); });
+    const productLinks = await getAllItems(filteredCat);
+    const murgedProducts = flatten(productLinks);
+    await saveAllItems(mongoURL, dbName, murgedProducts);
+    await allProgress(murgedProducts.map(function(x) { return getProductData(x, mongoURL, dbName); }),
+    (p) => {
+      console.log(`Products The Bean Bank = ${p.toFixed(2)} %`);
+    });
+    const end = new Date() - start;
+    console.log(`end = ${end.toFixed(2)}`);
+  }
 }
+
+module.exports.main = main;
+
+// try {
+
+  
+//   main(URL, mongoURL, dbName);
+// } catch (e) {
+//   console.log(e)
+// }

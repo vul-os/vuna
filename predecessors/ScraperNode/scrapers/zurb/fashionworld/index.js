@@ -1,6 +1,15 @@
 const MongoClient = require('mongodb').MongoClient;
-const request = require('request');
 const cheerio = require('cheerio');
+var RateLimiter = require('limiter').RateLimiter;
+var tr = require('tor-request');
+
+var limiter = new RateLimiter(1, 500); // at most 1 request every 100 ms
+var throttledRequest = function() {
+    var requestArgs = arguments;
+    limiter.removeTokens(1, function() {
+        tr.request.apply(this, requestArgs);
+    });
+};
 
 function allProgress(proms, progress_cb) {
     let d = 0;
@@ -18,7 +27,7 @@ function allProgress(proms, progress_cb) {
 const getMaxPages = (url) => {
     let page = 1;
     let newUrl = `${url}?page=${9999}`
-    return new Promise(resp => request(newUrl, (err, res, body) => {
+    return new Promise(resp => tr.request(newUrl, (err, res, body) => {
       if (!err && res.statusCode == 200) {
         const $ = cheerio.load(body);
         const tempPage = $('ul[class="pagination float-right"]').find('li[class="current"]').text().trim().replace("You're on page", "");
@@ -32,7 +41,7 @@ const getMaxPages = (url) => {
 }
 
 const getItemsOnPage = (url) => {
-    return new Promise(resp => request(url, (err, res, body) => {
+    return new Promise(resp => tr.request(url, (err, res, body) => {
       const list = [];
       if (!err) {
         const $ = cheerio.load(body);
@@ -46,7 +55,7 @@ const getItemsOnPage = (url) => {
 
 const getProductData = (url, mongoURL, dbName) => {
     const client = new MongoClient(mongoURL, {useNewUrlParser: true});
-    return new Promise(resp => request(url, (err, res, body) => {
+    return new Promise(resp => throttledRequest(url, (err, res, body) => {
       if (!err) {
         const $ = cheerio.load(body);
         const data = $('div[data-component="productDetails"]').attr('data-product-variations');
@@ -68,9 +77,9 @@ const getProductData = (url, mongoURL, dbName) => {
           });
         });
       } else {
-          console.log("error");
+        resp({url: url, success: false});
       }
-      resp("yes")
+      resp({url: url, success: true});
     }));
 }
 
@@ -83,7 +92,7 @@ const saveAllItems = (mongoURL, dbName, items) => {
         client.close();
       });
     });
-  }
+}
 
 const getAllItems = async (url) => {
     const maxPages = await getMaxPages(url);
@@ -101,28 +110,42 @@ function flatten(arr) {
     }, []);
 }
 
-
-
-const main = async (url, mongoURL, dbName) => {
-    const start = new Date();
-    const items = await getAllItems(url);
-    const murgedItems = flatten(items);
-    await saveAllItems(mongoURL, dbName, murgedItems);
-
-    await allProgress(murgedItems.map(function(x) { return getProductData(x, mongoURL, dbName); }),
-    (p) => {
-       console.log(`Product Data Fashionworld = ${p.toFixed(2)} %`);
-    });
-    const end = new Date() - start;
-    console.log(`end = ${end.toFixed(2)}`);
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
-try {
-    var URL = 'https://www.fashionworld.co.za/products';
+const main = async () => {
+    const url = 'https://www.fashionworld.co.za/products';
     const mongoURL = 'mongodb://localhost:27017';
     const dbName = 'fashionworld';
+    while (true) {
+      const start = new Date();
+      const items = await getAllItems(url);
+      let murgedItems = shuffle([...new Set(flatten(items))]);
+      await saveAllItems(mongoURL, dbName, murgedItems);
+  
+      await allProgress(murgedItems.map(function(x) { return getProductData(x, mongoURL, dbName); }),
+      (p) => {
+         console.log(`Product Data Fashionworld = ${p.toFixed(2)} %`);
+      });
+      const end = new Date() - start;
+      console.log(`end fashionworld = ${end.toFixed(2)}`);
+    }
 
-    main(URL, mongoURL, dbName);
-} catch (e) {
-    console.log(e)
 }
+
+module.exports.main = main;
+
+// try {
+//     var URL = 'https://www.fashionworld.co.za/products';
+//     const mongoURL = 'mongodb://localhost:27017';
+//     const dbName = 'fashionworld';
+
+//     main(URL, mongoURL, dbName);
+// } catch (e) {
+//     console.log(e)
+// }
