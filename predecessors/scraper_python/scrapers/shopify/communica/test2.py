@@ -38,26 +38,31 @@ def get_max_pages(url):
     return num_pages
 
 def scrape_page(page):
+    retty = []
     for product in page:
         var = product["variants"][0]
         name = var['sku']
         price = var['price']
         avail = var['available']
         stock = var['inventory_quantity']
-
+        retty.append([name, price, avail, stock])
         print(name, price, avail, stock)
+    return retty
 
 
 time_now = int(time.time())
 url = f"https://services.mybcapps.com/bc-sf-filter/filter?t={str(1534885434)}&q=Internet+of+things&shop=communica-south-africa.myshopify.com&page=1&limit={pages}&sort=best-selling&display=grid&collection_scope=&product_available=false&variant_available=false&build_filter_tree=false&check_cache=false&sort_first=available&callback=BCSfFilterCallback&event_type=page"
-print(url)
-exit()
+
 
 max_pg = get_max_pages(url)
+data_ = []
 for pg in range(1, max_pg+1):
     url1 = f"https://services.mybcapps.com/bc-sf-filter/filter?t={str(1534885434)}&q=Internet+of+things&shop=communica-south-africa.myshopify.com&page={pg}&limit={pages}&sort=best-selling&display=grid&collection_scope=&product_available=false&variant_available=false&build_filter_tree=false&check_cache=false&sort_first=available&callback=BCSfFilterCallback&event_type=page"
     data = load_page(url1)
-    scrape_page(data['products'])
+    data_.extend(scrape_page(data['products']))
+
+print(data_)
+print(len(data_))
     # print(len(data['products']))
 
 

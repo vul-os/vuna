@@ -29,9 +29,11 @@ def parse_ul(elem):
         result[sub.a.get_text(strip=True)] = data
     return result
 
-pprint(parse_ul(b))
-# print(c)
+# pprint()
 
-cat_tree = {}
+cat_tree = parse_ul(b)
+print(cat_tree)
+
+print(cat_tree.keys())
 
 
