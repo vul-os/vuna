@@ -2,8 +2,9 @@
 from datetime import datetime
 from bson.code import Code
 import pymongo
+import pprint
 conn = pymongo.MongoClient(host="localhost:27017")
-db = conn.diyelectronics
+db = conn.threedprintingstore
 
 # data = db.data.find(
 # # {
@@ -31,43 +32,19 @@ data = db.data.aggregate(
     },
     {"$sort": {"date": -1}}
 ])
-#
-# for d in data:
-#     print(d)
-
-sales = 0
-
-def get_sales(d):
-    sales = 0
-    last_val = d['entries'][0]['stock']
-    for data in d['entries']:
-        if data['stock'] < last_val:
-            sales += 1
-        last_val = data['stock']
-
-    return sales
-
 out = {}
-
+total = 0
 for g in data:
-    _id = g['_id']
-    sales = get_sales(g)
-    rev = sales * float(g['entries'][0]['price'])#.replace(",", ""))
-    out[rev] = [_id, sales]
-
+    _id = g['_id']['name']
+    price = g['entries'][0]['price']#.replace(",", "").replace("R", "")
+    stock = g['entries'][-1]['stock']
+    if _id is not None:
+        a = float(price)*int(stock)
+        out[_id] = [a, price, stock]
+        total += a
 
 import collections
-od = collections.OrderedDict(sorted(out.items(), reverse=True))
-
-print(len(od.keys()))
-
-
-total = float(0)
-for k, p in od.items():
-    print(k, p)
-    total += k
-
+# od = collections.OrderedDict(sorted(out.items(), reverse=False))
+out = sorted(out.items(), key=lambda x: x[1], reverse=True)
+pprint.pprint(out)
 print(total)
-    # print(f"group: {_id} sales: {sales} revenue: {rev}")
-
-

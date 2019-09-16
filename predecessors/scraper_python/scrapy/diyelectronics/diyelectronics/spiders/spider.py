@@ -49,13 +49,13 @@ class DiyelectronicsSpider(scrapy.Spider):
     def get_all_data(self, response):
         soup = BeautifulSoup(response.body.decode('utf-8'), 'html5lib')
         product_name = soup.find("div", {"class": "product-title"}).find("h1").getText().strip()
-        product_price = soup.find("span", {"id": "our_price_display"})['content']
+        product_price = soup.find("span", {"id": "our_price_display"}).getText().strip().replace("R", "").replace(",", "").strip()
         product_stock = soup.find("span", {"id": "quantityAvailable"}).getText()
 
         item = DiyelectronicsItem()
         item['name'] = product_name
-        item['price'] = product_price
-        item['stock'] = product_stock
+        item['price'] = float(product_price)
+        item['stock'] = int(product_stock)
         item['url'] = response.request.url
         item['date'] = datetime.datetime.utcnow()
 
