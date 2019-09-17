@@ -3,7 +3,7 @@ from datetime import datetime
 from bson.code import Code
 import pymongo
 conn = pymongo.MongoClient(host="localhost:27017")
-db = conn.diyelectronics
+db = conn.trophyseeds
 
 # data = db.data.find(
 # # {
@@ -52,7 +52,7 @@ out = {}
 for g in data:
     _id = g['_id']
     sales = get_sales(g)
-    rev = sales * float(g['entries'][0]['price'])#.replace(",", ""))
+    rev = sales * float(g['entries'][0]['price'].replace(",", ""))
     out[rev] = [_id, sales]
 
 

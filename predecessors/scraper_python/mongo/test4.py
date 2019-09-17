@@ -4,7 +4,7 @@ from bson.code import Code
 import pymongo
 import pprint
 conn = pymongo.MongoClient(host="localhost:27017")
-db = conn.fashionworld
+db = conn.trophyseeds
 
 # data = db.data.find(
 # # {
