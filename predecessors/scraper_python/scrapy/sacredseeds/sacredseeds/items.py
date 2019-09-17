@@ -8,12 +8,9 @@
 from scrapy.item import Item, Field
 
 
-class FashionworldItem(Item):
+class SacredseedsItem(Item):
     name = Field()
     price = Field()
-    salePrice = Field()
-    sizeId = Field()
-    sku = Field()
     stock = Field()
     url = Field()
     date = Field()

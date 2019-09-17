@@ -18,18 +18,22 @@ class FashionworldSpider(scrapy.Spider):
         soup = BeautifulSoup(response.body.decode('utf-8'), 'html5lib')
 
         product_data = soup.find("div", {"data-component": "productDetails"})['data-product-variations']
-        product_name_ = soup.find("div", {"class": "small-12 columns title-price no-padding"})
-        if not product_name_:
+        product_name_ = soup.find("div", {"class": "small-12 columns title-price no-padding"}).find('h1')
+        product_name = product_name_.getText().strip() if product_name_ is not None else None
+        if product_name_ is None or product_data is None:
             return None
-        product_name = product_name_.getText().strip()
 
-        item = FashionworldItem()
-        item['name'] = product_name
-        item['stock'] = json.loads(product_data)
-        item['url'] = response.request.url
-        item['date'] = datetime.datetime.utcnow()
-
-        return item
+        for data in json.loads(product_data):
+            item = FashionworldItem()
+            item['name'] = product_name
+            item['price'] = data['price']
+            item['salePrice'] = data['salePrice']
+            item['sizeId'] = data['sizeId']
+            item['sku'] = data['sku']
+            item['stock'] = data['stock']
+            item['url'] = response.request.url
+            item['date'] = datetime.datetime.utcnow()
+            yield item
 
     def get_products_on_page(self, response):
         soup = BeautifulSoup(response.body.decode('utf-8'), 'html5lib')
@@ -59,11 +63,12 @@ class FashionworldSpider(scrapy.Spider):
 
     def second_parse(self, response):
         products = self.get_products_on_page(response)
-        for product in products:
-            yield scrapy.Request(url=product, callback=self.third_parse)
+        if products is not None:
+            for product in products:
+                yield scrapy.Request(url=product, callback=self.third_parse)
 
     def third_parse(self, response):
-        yield self.get_product_data(response)
+        return self.get_product_data(response)
 
 
 

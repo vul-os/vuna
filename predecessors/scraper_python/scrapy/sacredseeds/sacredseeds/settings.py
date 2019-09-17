@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Scrapy settings for fashionworld project
+# Scrapy settings for sacredseeds project
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
@@ -9,28 +9,28 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'fashionworld'
+BOT_NAME = 'sacredseeds'
 
-SPIDER_MODULES = ['fashionworld.spiders']
-NEWSPIDER_MODULE = 'fashionworld.spiders'
+SPIDER_MODULES = ['sacredseeds.spiders']
+NEWSPIDER_MODULE = 'sacredseeds.spiders'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'fashionworld (+http://www.yourdomain.com)'
+#USER_AGENT = 'sacredseeds (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-CONCURRENT_REQUESTS = 16
+CONCURRENT_REQUESTS = 2
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY = 0.05
+DOWNLOAD_DELAY = .01
 # The download delay setting will honor only one of:
-CONCURRENT_REQUESTS_PER_DOMAIN = 1
-CONCURRENT_REQUESTS_PER_IP = 1
+#CONCURRENT_REQUESTS_PER_DOMAIN = 16
+#CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
 #COOKIES_ENABLED = False
@@ -47,20 +47,18 @@ CONCURRENT_REQUESTS_PER_IP = 1
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 #SPIDER_MIDDLEWARES = {
-#    'fashionworld.middlewares.FashionworldSpiderMiddleware': 543,
+#    'sacredseeds.middlewares.SacredseedsSpiderMiddleware': 543,
 #}
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #DOWNLOADER_MIDDLEWARES = {
-#    'fashionworld.middlewares.FashionworldDownloaderMiddleware': 543,
+#    'sacredseeds.middlewares.SacredseedsDownloaderMiddleware': 543,
 #}
-
 DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
     'scrapy_fake_useragent.middleware.RandomUserAgentMiddleware': 400,
 }
-
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
 #EXTENSIONS = {
@@ -70,10 +68,10 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   'fashionworld.pipelines.FashionworldPipeline': 300,
+   'sacredseeds.pipelines.SacredseedsPipeline': 300,
 }
 MONGO_URI = 'mongodb://localhost:27017'
-MONGO_DATABASE = 'fashionworld'
+MONGO_DATABASE = 'sacredseeds'
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
 #AUTOTHROTTLE_ENABLED = True
