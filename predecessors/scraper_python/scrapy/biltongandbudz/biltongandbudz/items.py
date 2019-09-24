@@ -12,5 +12,6 @@ class BiltongandbudzItem(Item):
     name = Field()
     price = Field()
     stock = Field()
+    varId = Field()
     url = Field()
     date = Field()
