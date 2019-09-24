@@ -9,3 +9,7 @@ rust/target/
 venv/
 
 scrapy/projects/
+
+projects/
+
+twistd\.pid
