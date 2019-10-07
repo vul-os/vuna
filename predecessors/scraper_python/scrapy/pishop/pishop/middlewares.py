@@ -7,10 +7,8 @@
 
 from scrapy import signals
 
-from stem import Signal
-from stem.control import Controller
 
-class FlyingrobotSpiderMiddleware(object):
+class PishopSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the spider middleware does not modify the
     # passed objects.
@@ -58,7 +56,7 @@ class FlyingrobotSpiderMiddleware(object):
         spider.logger.info('Spider opened: %s' % spider.name)
 
 
-class FlyingrobotDownloaderMiddleware(object):
+class PishopDownloaderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the downloader middleware does not modify the
     # passed objects.

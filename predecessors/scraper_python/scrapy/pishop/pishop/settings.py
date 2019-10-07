@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Scrapy settings for biltongandbudz project
+# Scrapy settings for pishop project
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
@@ -9,20 +9,20 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'biltongandbudz'
+BOT_NAME = 'pishop'
 
-SPIDER_MODULES = ['biltongandbudz.spiders']
-NEWSPIDER_MODULE = 'biltongandbudz.spiders'
+SPIDER_MODULES = ['pishop.spiders']
+NEWSPIDER_MODULE = 'pishop.spiders'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'biltongandbudz (+http://www.yourdomain.com)'
+#USER_AGENT = 'pishop (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-CONCURRENT_REQUESTS = 32
+CONCURRENT_REQUESTS = 16
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -47,18 +47,19 @@ CONCURRENT_REQUESTS = 32
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 #SPIDER_MIDDLEWARES = {
-#    'biltongandbudz.middlewares.BiltongandbudzSpiderMiddleware': 543,
+#    'pishop.middlewares.PishopSpiderMiddleware': 543,
 #}
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #DOWNLOADER_MIDDLEWARES = {
-#    'biltongandbudz.middlewares.BiltongandbudzDownloaderMiddleware': 543,
+#    'pishop.middlewares.PishopDownloaderMiddleware': 543,
 #}
 DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
     'scrapy_fake_useragent.middleware.RandomUserAgentMiddleware': 400,
 }
+
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
 #EXTENSIONS = {
@@ -68,10 +69,10 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   'biltongandbudz.pipelines.BiltongandbudzPipeline': 300,
+   'pishop.pipelines.PishopPipeline': 300,
 }
 MONGO_URI = 'mongodb://localhost:27017'
-MONGO_DATABASE = 'biltongandbudz'
+MONGO_DATABASE = 'pishop'
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
 #AUTOTHROTTLE_ENABLED = True
