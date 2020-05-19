@@ -46,7 +46,7 @@ class FashionworldSpider(scrapy.Spider):
 
     def get_max_pages(self, response):
         soup = BeautifulSoup(response.body.decode('utf-8'), 'html5lib')
-        soup = soup.find("ul", {"class": "pagination float-right"})
+        soup = soup.find("ul", {"class": "pagination"})
         soup = soup.find("li", {"class": "current"}).getText().replace("You're on page", "").strip()
         max_page = int(soup)
         return max_page
