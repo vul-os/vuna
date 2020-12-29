@@ -4,6 +4,7 @@ import html5lib
 from bs4 import BeautifulSoup
 from bson.objectid import ObjectId
 import pymongo
+import psycopg2
 
 
 class ThreeDPrintingStore(scrapy.Spider):
@@ -13,10 +14,16 @@ class ThreeDPrintingStore(scrapy.Spider):
         super(ThreeDPrintingStore, self).__init__(*a, **kw)
         self.url = "http://www.3dprintingstore.co.za/sitemap/categories"
         self.pagenation_str = "?page="
-        self.store_id = '5fe676a0039b3ee228e3b324'
-        self.client = pymongo.MongoClient(
-            "mongodb+srv://scraperama:scraperama@cluster0.i0xw4.mongodb.net/scrapers?retryWrites=true&w=majority")
         self.scrape_date = datetime.datetime.now()
+        self.store_id = 1
+        self.connection = psycopg2.connect(
+            database="scrapers", user="scrapers", password="scrapers", host="38.17.53.117", port=17435)
+        self.cursor = self.connection.cursor()
+
+    def spider_closed(self, spider):
+        self.cursor.close()
+        self.connection.close()
+        spider.logger.info('Spider closed: %s', spider.name)
 
     def get_product_data(self, response):
         soup = BeautifulSoup(response.body.decode('utf-8'), 'html5lib')
@@ -35,31 +42,39 @@ class ThreeDPrintingStore(scrapy.Spider):
 
         url = response.request.url
 
-        result_upsert = self.client.scrapers.products.update_one({
-          'name': product_name,
-          'store': ObjectId(self.store_id),
-          'url': url
-        },{
-          '$set': {
-            'price': product_price,
-            'store': ObjectId(self.store_id),
-            'url': url,
-            'date': datetime.datetime.now()
-          }
-        }, upsert=True)
+        query = f"""
+          INSERT INTO products (name, store, url, price, date_added)
+          VALUES('{product_name}', {self.store_id}, '{url}', {product_price}, '{datetime.datetime.now()}')
+          ON CONFLICT (url) DO UPDATE SET
+                name = '{product_name}',
+                store = {self.store_id},
+                url = '{url}',
+                price = {product_price},
+                date_added = '{datetime.datetime.now()}'
+            RETURNING id;
+          """
 
-        product_id = self.client.scrapers.products.find_one({
-            'name': product_name,
-            'store': ObjectId(self.store_id),
-            'url': url
-        })
+        self.cursor.execute(query)
+        self.connection.commit()
 
-        result_insert = self.client.scrapers.datapoint.insert_one({
-          'product': ObjectId(product_id['_id']),
-          'stock': product_stock,
-          'date': datetime.datetime.now(),
-          'scrape_date': self.scrape_date
-        })
+        product_id = self.cursor.fetchone()
+        product_id = product_id if not len(product_id) > 0 else product_id[0]
+        if product_id:
+            print(product_id, product_stock, self.scrape_date, datetime.datetime.now())
+            query = f"""
+              INSERT INTO datapoints (product, stock, date_scraped, date_added)
+              VALUES({product_id}, {product_stock}, '{self.scrape_date}', '{datetime.datetime.now()}')
+              RETURNING id;
+              """
+            self.cursor.execute(query)
+            self.connection.commit()
+
+        # result_insert = self.client.scrapers.datapoint.insert_one({
+        #   'product': ObjectId(product_id['_id']),
+        #   'stock': product_stock,
+        #   'date': datetime.datetime.now(),
+        #   'scrape_date': self.scrape_date
+        # })
 
         return None
 
