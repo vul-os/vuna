@@ -3,8 +3,9 @@ FROM gcr.io/spiderbyte-scrapers/scrapers-base:latest
 # Copy local code to the container image.
 ENV APP_HOME /app
 WORKDIR $APP_HOME
-COPY ./scrapers/. ./
-
+COPY ./scrapers ./scrapers
+COPY ./utils ./utils
+COPY ./main.py ./main.py
 
 # Run the web service on container startup. Here we use the gunicorn
 # webserver, with one worker process and 8 threads.
