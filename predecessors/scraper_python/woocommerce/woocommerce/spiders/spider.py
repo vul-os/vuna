@@ -1,18 +1,23 @@
-import scrapy
 import datetime
 import html5lib
-import json
 from bs4 import BeautifulSoup
+import json
+from scrapy.linkextractors import LinkExtractor
+from scrapy.spiders import SitemapSpider, CrawlSpider, Rule
+from scrapy import Request
 
-class SacredSeedsSpider(scrapy.Spider):
-    name = "themaneafrica"
 
-    def __init__(self, *a, **kw):
-        super(SacredSeedsSpider, self).__init__(*a, **kw)
-        self.url = "https://thehighco.co.za/"
-        # self.pagenation_str = "page/"
+class WoocommerceSpider(SitemapSpider, CrawlSpider):
+    name = "woocommerce"
+    rules = ( Rule(LinkExtractor(allow=('', )), callback='parse_item', follow=True), )
+    sitemap_rules = [ ('/', 'parse_products'), ]
+    sitemap_rules = [('/product/', 'parse_product_data')]
+    base_url = 'https://www.smokinggunseeds.co.za'
+    sitemap_urls = [f'{base_url}/sitemap_index.xml']
+    start_urls = [base_url]
+    pagenation_str = 'page'
 
-    def get_variation_data(self, json_data, product_name, url):
+    def parse_variation_data(self, json_data, product_name, url):
         for i, data in enumerate(json_data):
             variation_id = data['variation_id']
             product_price = data['display_price']
@@ -26,9 +31,11 @@ class SacredSeedsSpider(scrapy.Spider):
 
             print(f"Variations {i}: ", product_price, product_stock, variation_id, datetime.datetime.utcnow())
 
-    def get_product_data(self, response):
+    def parse_product_data(self, response):
         soup = BeautifulSoup(response.body.decode('utf-8'), 'html5lib')
         soup = soup.select_one('.summary,.entry-summary,.product-summary,.product-info')
+        if soup is None:
+            return
         product_name = soup.select_one('.product_title,.entry-title').getText().strip()
         variations = soup.find('table', {'class': 'variations'})
         if variations is not None:
@@ -39,7 +46,7 @@ class SacredSeedsSpider(scrapy.Spider):
             except Exception as e:
                 print(raw_json_string)
             if json_data:
-                self.get_variation_data(json_data, product_name, response.request.url)
+                self.parse_variation_data(json_data, product_name, response.request.url)
             # return self.get_variation_data(json_data, response.request.url, product_name)
         else:
             product_stock = soup.find("p", {"class": "stock in-stock"})
@@ -54,31 +61,42 @@ class SacredSeedsSpider(scrapy.Spider):
             print("No Variations: ", product_name, product_price, product_stock, variation_id,
                   datetime.datetime.utcnow())
 
-    def get_products_on_page(self, response):
+    @staticmethod
+    def get_max_pages(response):
+        soup = BeautifulSoup(response.body.decode('utf-8'), 'html5lib')
+        soup = soup.select_one('nav.woocommerce-pagination, nav.pagination')
+        if soup:
+            meta_text = soup.find('a', {'class': 'pagination-meta'})
+            if meta_text:
+                return int(meta_text.replace('Page 1 of ', ''))
+            else:
+                return max([int(s.getText().strip()) if s.getText().strip().isdigit() else 0
+                            for s in soup.findAll('a', {'class': 'page-numbers'})])
+        return None
+
+    @staticmethod
+    def get_products_on_page(response):
         soup = BeautifulSoup(response.body.decode('utf-8'), 'html5lib')
         soup = soup.select_one('.products')
+        if soup is None:
+            return None
         soup = soup.select('.product')
         product_links = [str(links.find('a')['href']) for links in soup]
         return product_links
 
-    def get_categories(self, response):
-        soup = BeautifulSoup(response.body.decode('utf-8'), 'html5lib')
-        category_links = [s['href'] for s in
-                soup.find('ul', {'class': 'sub-menu'}).findAll('a', {'class': 'fusion-bar-highlight'})]
-        return category_links
-
-    def start_requests(self):
-        yield scrapy.Request(url=self.url, callback=self.first_parse)
-
-    def first_parse(self, response):
-        categories = self.get_categories(response)
-        for cat in categories:
-            yield scrapy.Request(url=cat, callback=self.second_parse)
-
-    def second_parse(self, response):
+    def parse_products_in_cat(self, response):
+        max_pages = self.get_max_pages(response)
+        if max_pages:
+            urls = ["/".join([response.request.url, self.pagenation_str, str(i)]) for i in range(1, int(max_pages))]
+            for url in urls:
+                yield Request(url=response.request.url, callback=self.parse_products_per_page)
         products = self.get_products_on_page(response)
-        for prods in products:
-            yield scrapy.Request(url=prods, callback=self.third_parse)
+        if products:
+            for product in products:
+                yield Request(url=product, callback=self.parse_products_per_page)
 
-    def third_parse(self, response):
-        self.get_product_data(response)
+    def parse_products_per_page(self, response):
+        products = self.get_products_on_page(response)
+        if products:
+            for product in products:
+                yield Request(url=product, callback=self.parse_product_data)
