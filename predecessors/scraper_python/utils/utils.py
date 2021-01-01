@@ -4,7 +4,7 @@ import datetime
 
 def connect():
     return psycopg2.connect(
-        database="scrapers", user="scrapers", password="scrapers", host="38.17.53.117", port=17435)
+        database="scrapers_2", user="scrapers", password="scrapers", host="38.17.53.117", port=17435)
 
 
 def upsert_product(connection,
@@ -16,6 +16,10 @@ def upsert_product(connection,
                    product_price: float,
                    product_stock: int,
                    scrape_date: datetime):
+
+
+
+
 
     # Insert Products
     query = f"""
