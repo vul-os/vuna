@@ -5,10 +5,10 @@ import json
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import SitemapSpider, CrawlSpider, Rule
 from scrapy import Request
+from pprint import pprint
 
 
-def upsert_product(store_id,
-                   sku: str,
+def upsert_product(sku: str,
                    variation_id: str,
                    url: str,
                    product_name: str,
@@ -20,21 +20,23 @@ def upsert_product(store_id,
                    scrape_date: datetime):
     print(
         "Variation --> \n" if variation_id is not None else "No Variation --> \n",
-        f"\t name: {product_name}, stock: {product_stock}, price: {product_price} sku: {sku}, var_id: {variation_id}\n"
-        f"\t cats: {categories}\n",
-        f"\t tag: {tags}\n",
-        f"\t attributes: {attributes}\n",
-        "\t", url, scrape_date, store_id
+        f"name: {product_name}, stock: {product_stock}, price: {product_price} sku: {sku}, var_id: {variation_id}"
     )
+    print(f"cats: {categories}")
+    print(f"tag: {tags}")
+    print(f"attributes: {attributes}")
+    print(f"url: {url}, date: {scrape_date}")
 
 
 class WoocommerceSpider(SitemapSpider, CrawlSpider):
     name = "woocommerce"
-    rules = ( Rule(LinkExtractor(allow=('', )), callback='parse_item', follow=True), )
-    sitemap_rules = [('/product/', 'parse_product_data'), ('/products/', 'parse_product_data')] #, ('/product-category/*', 'parse_categories')]
-    base_url = 'https://marijuanasa.co.za/'
-    sitemap_urls = [f'{base_url}/sitemap_index.xml', f'{base_url}/sitemap.xml']
-    start_urls = [base_url]
+    rules = (Rule(LinkExtractor(allow=('',)), callback='parse_item', follow=True),)
+    sitemap_rules = [('/product/', 'parse_product_data'), ('/products/', 'parse_product_data')]
+
+    def __init__(self, base_url, *args, **kwargs):
+        super(WoocommerceSpider, self).__init__(*args, **kwargs)
+        self.sitemap_urls = [f'{base_url}/sitemap_index.xml', f'{base_url}/sitemap.xml']
+        self.start_urls = [base_url]
 
     def parse_product_data(self, response):
         soup = BeautifulSoup(response.body.decode('utf-8'), 'html5lib')
@@ -63,6 +65,8 @@ class WoocommerceSpider(SitemapSpider, CrawlSpider):
                     sku = data['sku']
                     variation_id = data['variation_id']
                     attributes = data['attributes']
+                    # attributes = {k.replace('attribute_', ''): v for k, v in attributes.items()} \
+                    #     if len(attributes) > 0 else None
                     product_price = data['display_price']
                     product_stock_max_qty = data['max_qty']
                     product_stock_max_qty = int(product_stock_max_qty) if str(product_stock_max_qty).isdigit() else 0
@@ -70,7 +74,7 @@ class WoocommerceSpider(SitemapSpider, CrawlSpider):
                         .replace('</p>', '').strip().replace('in', '').replace('stock', '').strip()
                     product_stock_avail = int(product_stock_avail) if product_stock_avail.isdigit() else 0
                     product_stock = max(product_stock_avail, product_stock_max_qty)
-                    upsert_product(store_id=self.name, sku=sku, variation_id=variation_id, categories=categories,
+                    upsert_product(sku=sku, variation_id=variation_id, categories=categories,
                                    tags=tags, attributes=attributes,
                                    product_name=product_name, product_price=product_price, product_stock=product_stock,
                                    url=response.request.url, scrape_date=datetime.datetime.now())
@@ -86,20 +90,7 @@ class WoocommerceSpider(SitemapSpider, CrawlSpider):
             variation_id = variation_id['value'] if variation_id is not None else None
             sku = product_meta.select_one('.sku').text if product_meta.select_one('.sku') else None
 
-            # if not variation_id or not sku:
-            #     return
-            upsert_product(store_id=self.name, sku=sku, variation_id=variation_id, categories=categories,
+            upsert_product(sku=sku, variation_id=variation_id, categories=categories,
                            tags=tags, attributes={},
                            product_name=product_name, product_price=product_price, product_stock=product_stock,
                            url=response.request.url, scrape_date=datetime.datetime.now())
-
-    @staticmethod
-    def get_products_on_page(response):
-        soup = BeautifulSoup(response.body.decode('utf-8'), 'html5lib')
-        soup = soup.select_one('.products')
-        if soup is None:
-            return None
-        soup = soup.select('.product')
-        product_links = [str(links.find('a')['href']) for links in soup]
-        return product_links
-
