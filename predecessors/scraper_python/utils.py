@@ -7,19 +7,32 @@ def connect():
         database="scrapers_2", user="scrapers", password="scrapers", host="38.17.53.117", port=17435)
 
 
-def upsert_product(connection,
-                   cursor,
-                   store_id,
-                   categories: dict,
-                   product_name: str,
+def upsert_product(sku: str,
+                   store_url: str | None,
                    url: str,
+                   variation_id: str,
+                   product_name: str,
+                   categories: list,
+                   tags: list,
+                   attributes: dict,
                    product_price: float,
                    product_stock: int,
                    scrape_date: datetime):
+    # find store id from store url
 
+    # find variation from url or (variation id + store id)
+    #   if not found add variation
 
+    # find categories from store id
+    #   if not found add categories
 
+    # find tags from store url
+    #   if not found add tags
 
+    # find attributes from store url
+    #   if not found add attributes
+
+    # insert DataPoints
 
     # Insert Products
     query = f"""
@@ -59,5 +72,3 @@ def upsert_product(connection,
               """
             cursor.execute(query)
             connection.commit()
-
-

@@ -9,6 +9,7 @@ from pprint import pprint
 
 
 def upsert_product(sku: str,
+                   store_url: str,
                    variation_id: str,
                    url: str,
                    product_name: str,
@@ -20,12 +21,13 @@ def upsert_product(sku: str,
                    scrape_date: datetime):
     print(
         "Variation --> \n" if variation_id is not None else "No Variation --> \n",
-        f"name: {product_name}, stock: {product_stock}, price: {product_price} sku: {sku}, var_id: {variation_id}"
+        f"name: {product_name}, store_url: {store_url}, sku: {sku}, var_id: {variation_id} \n",
+        f"stock: {product_stock}, price: {product_price}",
+        f"cats: {categories} \n",
+        f"tag: {tags} \n",
+        f"attributes: {attributes} \n",
+        f"url: {url}, date: {scrape_date}"
     )
-    print(f"cats: {categories}")
-    print(f"tag: {tags}")
-    print(f"attributes: {attributes}")
-    print(f"url: {url}, date: {scrape_date}")
 
 
 class WoocommerceSpider(SitemapSpider, CrawlSpider):
@@ -35,6 +37,7 @@ class WoocommerceSpider(SitemapSpider, CrawlSpider):
 
     def __init__(self, base_url, *args, **kwargs):
         super(WoocommerceSpider, self).__init__(*args, **kwargs)
+        self.base_url = base_url
         self.sitemap_urls = [f'{base_url}/sitemap_index.xml', f'{base_url}/sitemap.xml']
         self.start_urls = [base_url]
 
@@ -74,7 +77,7 @@ class WoocommerceSpider(SitemapSpider, CrawlSpider):
                         .replace('</p>', '').strip().replace('in', '').replace('stock', '').strip()
                     product_stock_avail = int(product_stock_avail) if product_stock_avail.isdigit() else 0
                     product_stock = max(product_stock_avail, product_stock_max_qty)
-                    upsert_product(sku=sku, variation_id=variation_id, categories=categories,
+                    upsert_product(sku=sku, store_url=self.base_url, variation_id=variation_id, categories=categories,
                                    tags=tags, attributes=attributes,
                                    product_name=product_name, product_price=product_price, product_stock=product_stock,
                                    url=response.request.url, scrape_date=datetime.datetime.now())
@@ -90,7 +93,7 @@ class WoocommerceSpider(SitemapSpider, CrawlSpider):
             variation_id = variation_id['value'] if variation_id is not None else None
             sku = product_meta.select_one('.sku').text if product_meta.select_one('.sku') else None
 
-            upsert_product(sku=sku, variation_id=variation_id, categories=categories,
+            upsert_product(sku=sku, store_url=self.base_url, variation_id=variation_id, categories=categories,
                            tags=tags, attributes={},
                            product_name=product_name, product_price=product_price, product_stock=product_stock,
                            url=response.request.url, scrape_date=datetime.datetime.now())
