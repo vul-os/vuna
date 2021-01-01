@@ -10,10 +10,9 @@ from scrapy import Request
 class WoocommerceSpider(SitemapSpider, CrawlSpider):
     name = "woocommerce"
     rules = ( Rule(LinkExtractor(allow=('', )), callback='parse_item', follow=True), )
-    sitemap_rules = [ ('/', 'parse_products'), ]
-    sitemap_rules = [('/product/', 'parse_product_data')]
-    base_url = 'https://www.smokinggunseeds.co.za'
-    sitemap_urls = [f'{base_url}/sitemap_index.xml']
+    sitemap_rules = [('/product/', 'parse_product_data'), ('/products/', 'parse_product_data')] #, ('/product-category/*', 'parse_categories')]
+    base_url = 'https://feedaseed.co.za/'
+    sitemap_urls = [f'{base_url}/sitemap_index.xml', f'{base_url}/sitemap.xml']
     start_urls = [base_url]
     pagenation_str = 'page'
 
@@ -34,12 +33,15 @@ class WoocommerceSpider(SitemapSpider, CrawlSpider):
     def parse_product_data(self, response):
         soup = BeautifulSoup(response.body.decode('utf-8'), 'html5lib')
         soup = soup.select_one('.summary,.entry-summary,.product-summary,.product-info')
-        if soup is None:
-            return
-        product_name = soup.select_one('.product_title,.entry-title').getText().strip()
+        product_name_selector = '.product_title,.entry-title'
+        if soup is None or not soup.select_one(product_name_selector):
+            print("No Product Name")
+            return None
+        product_name = soup.select_one(product_name_selector).getText().strip()
         variations = soup.find('table', {'class': 'variations'})
+        variations_soup = soup.find('form', {'class': 'variations_form cart'})
         if variations is not None:
-            raw_json_string = str(soup.find('form', {'class': 'variations_form cart'})['data-product_variations'])
+            raw_json_string = str(variations_soup['data-product_variations'])
             json_data = None
             try:
                 json_data = json.loads(raw_json_string)
@@ -53,26 +55,19 @@ class WoocommerceSpider(SitemapSpider, CrawlSpider):
             product_stock = product_stock.getText().strip() if product_stock else 0
             product_price = soup.find("span", {"class": "woocommerce-Price-amount amount"})
             product_price = product_price.getText().replace("R", "") if product_price else 0
-            variation_id = soup.find('button', {'class': 'single_add_to_cart_button button alt'})
-            if variation_id is None:
-                variation_id = soup.find('input', {'class': 'cwg-product-id'})
+            variation_id_add_cart_button = soup.find('button', {'name': 'add-to-cart'})
+            variation_id_input = soup.select_one('cwg-product-id')
+            variation_id = variation_id_add_cart_button if variation_id_add_cart_button else variation_id_input
             variation_id = variation_id['value'] if variation_id is not None else None
+
+            if not variation_id:
+                return
+            # if variation_id is None:
+            #     # biltong & buddz
+            #     variation_id = variations_soup['data-product_id']
 
             print("No Variations: ", product_name, product_price, product_stock, variation_id,
                   datetime.datetime.utcnow())
-
-    @staticmethod
-    def get_max_pages(response):
-        soup = BeautifulSoup(response.body.decode('utf-8'), 'html5lib')
-        soup = soup.select_one('nav.woocommerce-pagination, nav.pagination')
-        if soup:
-            meta_text = soup.find('a', {'class': 'pagination-meta'})
-            if meta_text:
-                return int(meta_text.replace('Page 1 of ', ''))
-            else:
-                return max([int(s.getText().strip()) if s.getText().strip().isdigit() else 0
-                            for s in soup.findAll('a', {'class': 'page-numbers'})])
-        return None
 
     @staticmethod
     def get_products_on_page(response):
@@ -84,19 +79,33 @@ class WoocommerceSpider(SitemapSpider, CrawlSpider):
         product_links = [str(links.find('a')['href']) for links in soup]
         return product_links
 
-    def parse_products_in_cat(self, response):
-        max_pages = self.get_max_pages(response)
-        if max_pages:
-            urls = ["/".join([response.request.url, self.pagenation_str, str(i)]) for i in range(1, int(max_pages))]
-            for url in urls:
-                yield Request(url=response.request.url, callback=self.parse_products_per_page)
-        products = self.get_products_on_page(response)
-        if products:
-            for product in products:
-                yield Request(url=product, callback=self.parse_products_per_page)
+    # def parse_products_in_cat(self, response):
+    #     max_pages = self.get_max_pages(response)
+    #     if max_pages:
+    #         urls = ["/".join([response.request.url, self.pagenation_str, str(i)]) for i in range(1, int(max_pages))]
+    #         for url in urls:
+    #             yield Request(url=url, callback=self.parse_products)
+    #     else:
+    #         products = self.get_products_on_page(response)
+    #         if products:
+    #             for product in products:
+    #                 yield Request(url=product, callback=self.parse_product_data)
+    # @staticmethod
+    # def get_max_pages(response):
+    #     soup = BeautifulSoup(response.body.decode('utf-8'), 'html5lib')
+    #     soup = soup.select_one('nav.woocommerce-pagination, nav.pagination')
+    #     if soup:
+    #         meta_text = soup.find('a', {'class': 'pagination-meta'})
+    #         if meta_text:
+    #             return int(meta_text.replace('Page 1 of ', ''))
+    #         else:
+    #             return max([int(s.getText().strip()) if s.getText().strip().isdigit() else 0
+    #                         for s in soup.findAll('a', {'class': 'page-numbers'})])
+    #     return None
 
-    def parse_products_per_page(self, response):
-        products = self.get_products_on_page(response)
-        if products:
-            for product in products:
-                yield Request(url=product, callback=self.parse_product_data)
+    # def parse_categories(self, response):
+    #     print("parsing categories")
+    #     products = self.get_products_on_page(response)
+    #     if products:
+    #         for product in products:
+    #             yield Request(url=product, callback=self.parse_product_data)
