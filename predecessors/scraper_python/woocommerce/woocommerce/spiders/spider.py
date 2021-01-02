@@ -8,10 +8,12 @@ from scrapy import Request
 from pprint import pprint
 
 
-def upsert_product(sku: str,
+def upsert_product(cursor,
+                   connection,
+                   sku: str,
                    store_url: str,
-                   variation_id: str,
                    url: str,
+                   variation_id: str,
                    product_name: str,
                    categories: list,
                    tags: list,
@@ -77,7 +79,7 @@ class WoocommerceSpider(SitemapSpider, CrawlSpider):
                         .replace('</p>', '').strip().replace('in', '').replace('stock', '').strip()
                     product_stock_avail = int(product_stock_avail) if product_stock_avail.isdigit() else 0
                     product_stock = max(product_stock_avail, product_stock_max_qty)
-                    upsert_product(sku=sku, store_url=self.base_url, variation_id=variation_id, categories=categories,
+                    upsert_product(None, None, sku=sku, store_url=self.base_url, variation_id=variation_id, categories=categories,
                                    tags=tags, attributes=attributes,
                                    product_name=product_name, product_price=product_price, product_stock=product_stock,
                                    url=response.request.url, scrape_date=datetime.datetime.now())
@@ -93,7 +95,7 @@ class WoocommerceSpider(SitemapSpider, CrawlSpider):
             variation_id = variation_id['value'] if variation_id is not None else None
             sku = product_meta.select_one('.sku').text if product_meta.select_one('.sku') else None
 
-            upsert_product(sku=sku, store_url=self.base_url, variation_id=variation_id, categories=categories,
-                           tags=tags, attributes={},
+            upsert_product(None, None, sku=sku, store_url=self.base_url, variation_id=variation_id,
+                           categories=categories, tags=tags, attributes={},
                            product_name=product_name, product_price=product_price, product_stock=product_stock,
                            url=response.request.url, scrape_date=datetime.datetime.now())
