@@ -1,21 +1,20 @@
 package scrapers
 
 import (
-	"awesomeProject/lines"
-	"awesomeProject/utils"
 	"encoding/json"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly"
 	"github.com/rs/zerolog/log"
 	"net/url"
+	"scraper-go/utils"
+	"strconv"
 	"strings"
 )
 
-var baseUrl = "https://www.brandssa.co.za"
-
 type varStruct struct {
 	VarID      int         `json:"variation_id"`
+	Sku		   string	   `json:"sku"`
 	MaxQty     interface{} `json:"max_qty"`
 	Price      float32     `json:"display_price"`
 	Attributes struct {
@@ -23,7 +22,8 @@ type varStruct struct {
 	} `json:"attributes"`
 }
 
-func main() {
+func Scrape(baseUrl string) {
+	storeId := 69
 	baseUrl = strings.TrimSuffix(baseUrl, "/")
 	robotsTxtUrl := fmt.Sprintf("%s/robots.txt", baseUrl)
 	log.Info().Msg(
@@ -65,6 +65,7 @@ func main() {
 					s.Text(),
 					itemUrl,
 				})
+				utils.UpsertItem("tags", "tag", s.Text(), itemUrl, storeId)
 			})
 			categories.Each(func(_ int, s *goquery.Selection) {
 				itemUrl, exists := s.Attr("href")
@@ -75,7 +76,11 @@ func main() {
 					s.Text(),
 					itemUrl,
 				})
+				utils.UpsertItem("categories", "category", s.Text(), itemUrl, storeId)
 			})
+			utils.UpsertItem("products", "product",
+				productName, e.Request.URL.String(), storeId)
+
 			// check for product variations
 			variationsString, vsResult := querySelection.
 				Find("form[class='variations_form cart']").
@@ -93,48 +98,65 @@ func main() {
 				for i, result := range results {
 					maxQty := utils.MaxQtyIntConverter(result.MaxQty, maxQtyReplacer)
 					price := utils.PriceFloatConverter(result.Price, priceReplacer)
-
+					if maxQty > 0 {
+						log.Info().Msg(
+							fmt.Sprintf(
+								`Product Var Data (%d):Name: %s, URL: %s, Price: %f, Qty: %d, VarId: %d, Sku: %s, Attributes: %s, Tags: %s, Categories: %s`,
+								i,
+								productName,
+								e.Request.URL,
+								price,
+								maxQty,
+								result.VarID,
+								result.Sku,
+								result.Attributes,
+								tagList,
+								catList,
+							),
+						)
+					}
+				}
+			} else {
+				// otherwise there are no variations
+				price := querySelection.Find("span[class*='amount']").Text()
+				maxQty := querySelection.Find("p[class*='stock']").Text()
+				if strings.TrimSpace(maxQty) == "" {
+					maxQtyNew, exists := querySelection.Find("input[class*='qty']").Attr("max")
+					if !exists {
+						maxQtyNew = "0"
+					} else {
+						maxQty = maxQtyNew
+					}
+				}
+				priceFloat := utils.PriceFloatConverter(price, priceReplacer)
+				maxQtyInt := utils.MaxQtyIntConverter(maxQty, maxQtyReplacer)
+				sku := querySelection.Find("span[class*='sku']").Text()
+				varIdAddCardButton := querySelection.Find("button[name*='add-to-cart']")
+				varIdAddCardButtonValue, exists := varIdAddCardButton.Attr("value")
+				if !exists {
+					return
+				}
+				varIdAddCardButtonValueInt, err := strconv.Atoi(varIdAddCardButtonValue)
+				if err != nil {
+					log.Error().Err(err).Msg("Error Converting VarId String to Int!")
+				}
+				if maxQtyInt > 0 {
 					log.Info().Msg(
 						fmt.Sprintf(
-							"Product Var Data (%d): Name: %s, URL: %s, Price: %f, Qty: %d Tags: %s " +
-								"Categories: %s",
-							i,
+							`Product No Var Data :Name: %s, URL: %s, Price: %f, Qty: %d, VarId: %d, Sku: %s, Tags: %s, Categories: %s`,
 							productName,
 							e.Request.URL,
-							price,
-							maxQty,
+							priceFloat,
+							maxQtyInt,
+							varIdAddCardButtonValueInt,
+							sku,
 							tagList,
 							catList,
 						),
 					)
 				}
-			} else {
-				// otherwise there are no variations
-				price := querySelection.Find("span[class='amount']").Text()
-				maxQty := querySelection.Find("p[class='stock']").Text()
-				priceFloat := utils.PriceFloatConverter(price, priceReplacer)
-				maxQtyInt := utils.MaxQtyIntConverter(maxQty, maxQtyReplacer)
-				log.Info().Msg(
-					fmt.Sprintf(
-						"Product No Var Data: Name: %s, URL: %s, Price: %f, Qty: %d Tags: %s Categories: %s",
-						productName,
-						e.Request.URL,
-						priceFloat,
-						maxQtyInt,
-						tagList,
-						catList,
-					),
-				)
-			}
-			//product_meta = soup.find('div', {'class': 'product_meta'})
-			//tags = product_meta.select('.tagged_as > a')
-			//	tags = [{'url': t['href'], 'name': t.text} for t in tags]
-			//	categories = product_meta.select('.posted_in > a')
-			//	categories = [{'url': c['href'], 'name': c.text} for c in categories]
-			//	variations = soup.find('table', {'class': 'variations'})
-			//	variations_soup = soup.find('form', {'class': 'variations_form cart'})
-			//knownUrls = append(knownUrls, e.Text)
 
+			}
 		},
 	)
 
@@ -162,7 +184,7 @@ func main() {
 		panic(err)
 	}
 	hostName := u.Host
-	robotsLines, err := lines.UrlToLines(robotsTxtUrl)
+	robotsLines, err := utils.UrlToLines(robotsTxtUrl)
 	if err != nil {
 		log.Error().Err(err).Msg(
 			fmt.Sprintf(

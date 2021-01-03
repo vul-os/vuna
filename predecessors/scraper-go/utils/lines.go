@@ -1,9 +1,9 @@
-package lines
+package utils
 
 import (
-"bufio"
-"io"
-"net/http"
+	"bufio"
+	"io"
+	"net/http"
 	"os"
 )
 

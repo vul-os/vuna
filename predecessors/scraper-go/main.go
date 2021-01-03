@@ -1,65 +1,37 @@
 package main
-////
-////import (
-////	"fmt"
-////	"net/http"
-////
-////	"github.com/go-chi/chi"
-////	"github.com/go-chi/jwtauth"
-////)
-////
-////var tokenAuth *jwtauth.JWTAuth
-////
-////func init() {
-////	tokenAuth = jwtauth.New("HS256", []byte("nTcTNah2GR8afx0MbLsymJggmDK33BQK"), nil)
-////
-////	// For debugging/example purposes, we generate and print
-////	// a sample jwt token with claims `user_id:123` here:
-////	_, tokenString, _ := tokenAuth.Encode(
-////			map[string]interface{}{
-////				"scraper_name": "python_scraper",
-////			},
-////		)
-////	fmt.Printf("DEBUG: a sample jwt is %s\n\n", tokenString)
-////}
-////
-////func main() {
-////	addr := ":3333"
-////	fmt.Printf("Starting server on %v\n", addr)
-////	err := http.ListenAndServe(addr, router())
-////	if err != nil {
-////		fmt.Println("Error: ", err)
-////	}
-////}
-////
-////func router() http.Handler {
-////	r := chi.NewRouter()
-////
-////	// Protected routes
-////	r.Group(func(r chi.Router) {
-////		// Seek, verify and validate JWT tokens
-////		r.Use(jwtauth.Verifier(tokenAuth))
-////
-////		// Handle valid / invalid tokens. In this example, we use
-////		// the provided authenticator middleware, but you can write your
-////		// own very easily, look at the Authenticator method in jwtauth.go
-////		// and tweak it, its not scary.
-////		r.Use(jwtauth.Authenticator)
-////
-////		r.Get("/admin", func(w http.ResponseWriter, r *http.Request) {
-////			_, claims, _ := jwtauth.FromContext(r.Context())
-////			w.Write([]byte(fmt.Sprintf("protected area. hi %v", claims["scraper_name"])))
-////		})
-////	})
-////
-////	// Public routes
-////	r.Group(func(r chi.Router) {
-////		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-////			w.Write([]byte("welcome anonymous"))
-////		})
-////	})
-////
-////	return r
-////}
-//
 
+import (
+	"scraper-go/scrapers"
+	"scraper-go/utils"
+)
+
+var baseUrl = "https://www.botshop.co.za"
+
+func main() {
+	utils.GenerateConnPool()
+
+	//dbpool, err := pgxpool.Connect(context.Background(), dbUrl)
+	//if err != nil {
+	//	fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+	//	os.Exit(1)
+	//}
+	//defer dbpool.Close()
+
+	//c, err := utils.Pool.Acquire(context.Background())
+	//if err != nil {
+	//	log.Error().Err(err).Msg("Cannot acquire connection")
+	//}
+	//
+	//var greeting string
+	//err = c.QueryRow(context.Background(), "select 'Hello, world!'").Scan(&greeting)
+	//if err != nil {
+	//	fmt.Fprintf(os.Stderr, "QueryRow failed: %v\n", err)
+	//	os.Exit(1)
+	//}
+	//
+	//fmt.Println(greeting)
+
+
+	scrapers.Scrape(baseUrl)
+	//utils.UpsertItem("tags", "tag", "wp-attr-testy", "https://store.com/testy", 1)
+}
