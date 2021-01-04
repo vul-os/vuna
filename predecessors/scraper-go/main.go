@@ -10,6 +10,16 @@ var baseUrl = "https://www.botshop.co.za"
 func main() {
 	utils.GenerateConnPool()
 
+	utils.UpsertStore("Bot Shop", "botshop.co.za")
+	utils.UpsertStore("Biltong & Budz", "biltongandbudz.co.za")
+	utils.UpsertStore("Sacred Seeds", "sacredseeds.co.za")
+	utils.UpsertStore("Smoking Gun Seeds", "smokinggunseeds.co.za")
+	utils.UpsertStore("Bud Buddies", "budbuddies.co.za")
+	utils.UpsertStore("Feed A Seed", "feedaseed.co.za")
+	utils.UpsertStore("Solomons Tackle", "solomonstackle.co.za")
+	utils.UpsertStore("Brands Unlimited", "brandssa.co.za")
+	utils.UpsertStore("Trophy Seeds", "trophyseeds.com")
+
 	//dbpool, err := pgxpool.Connect(context.Background(), dbUrl)
 	//if err != nil {
 	//	fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)

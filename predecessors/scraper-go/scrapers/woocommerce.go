@@ -12,18 +12,34 @@ import (
 	"strings"
 )
 
+type items struct {
+	name string
+	itemUrl  string
+}
+
 type varStruct struct {
 	VarID      int         `json:"variation_id"`
 	Sku		   string	   `json:"sku"`
 	MaxQty     interface{} `json:"max_qty"`
 	Price      float32     `json:"display_price"`
-	Attributes struct {
-		Size string `json:"attribute_pa_pack-size"`
-	} `json:"attributes"`
+	Attributes map[string]string `json:"attributes"`
 }
 
+type prodStruct struct {
+	ProductName string
+
+	ProductUrl string
+	Categories []items
+	Tags []items
+	VarStruct varStruct
+}
+
+
 func Scrape(baseUrl string) {
-	storeId := 69
+	storeId, err := utils.GetStoreIdByUrl(baseUrl)
+	if err != nil {
+		return
+	}
 	baseUrl = strings.TrimSuffix(baseUrl, "/")
 	robotsTxtUrl := fmt.Sprintf("%s/robots.txt", baseUrl)
 	log.Info().Msg(
@@ -48,10 +64,6 @@ func Scrape(baseUrl string) {
 			priceReplacer := strings.NewReplacer("R", "", ",", "")
 			productName := strings.TrimSpace(querySelection.Find(".product_title,.entry-title").Text())
 			productMeta := querySelection.Find("div[class='product_meta']")
-			type items struct {
-				name string
-				itemUrl  string
-			}
 			var tagList []items
 			var catList []items
 			tags := productMeta.Find(".tagged_as").Children()
@@ -78,13 +90,16 @@ func Scrape(baseUrl string) {
 				})
 				utils.UpsertItem("categories", "category", s.Text(), itemUrl, storeId)
 			})
-			utils.UpsertItem("products", "product",
+			_, err := utils.UpsertItem("products", "product",
 				productName, e.Request.URL.String(), storeId)
-
+			if err != nil {
+				return
+			}
 			// check for product variations
 			variationsString, vsResult := querySelection.
 				Find("form[class='variations_form cart']").
 				Attr("data-product_variations")
+
 
 			if vsResult {
 				// if there are
@@ -114,6 +129,9 @@ func Scrape(baseUrl string) {
 								catList,
 							),
 						)
+						for key := range result.Attributes {
+							utils.UpsertAttributes(key, storeId)
+						}
 					}
 				}
 			} else {
