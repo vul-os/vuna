@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"github.com/rs/zerolog/log"
 	"strconv"
 	"strings"
@@ -33,14 +32,14 @@ func MaxQtyIntConverter(qty interface{}, replacer *strings.Replacer) int {
 		replacedStr := strings.TrimSpace(replacer.Replace(typedResult))
 		i, err := strconv.Atoi(replacedStr)
 		if err != nil {
-			log.Info().Msg(
-				fmt.Sprintf(
-					"invalid maxqty int string -> Original: %s, Replaced: %s, Int: %d",
-					strings.TrimSpace(typedResult),
-					replacedStr,
-					0,
-				),
-			)
+			//log.Info().Msg(
+			//	fmt.Sprintf(
+			//		"invalid maxqty int string -> Original: %s, Replaced: %s, Int: %d",
+			//		strings.TrimSpace(typedResult),
+			//		replacedStr,
+			//		0,
+			//	),
+			//)
 			return 0
 		}
 		maxQty = i
@@ -65,14 +64,14 @@ func PriceFloatConverter(price interface{}, replacer *strings.Replacer) float32 
 			replacedStr := strings.TrimSpace(replacer.Replace(priceStr))
 			pricef, err := strconv.ParseFloat(replacedStr, 32)
 			if err != nil {
-				log.Info().Msg(
-					fmt.Sprintf(
-						"invalid price float string -> Original: %s, Replaced: %s, Float: %d",
-						strings.TrimSpace(typedResult),
-						replacedStr,
-						0,
-					),
-				)
+				//log.Info().Msg(
+				//	fmt.Sprintf(
+				//		"invalid price float string -> Original: %s, Replaced: %s, Float: %d",
+				//		strings.TrimSpace(typedResult),
+				//		replacedStr,
+				//		0,
+				//	),
+				//)
 				return 0
 			}
 			priceFloat = float32(pricef)

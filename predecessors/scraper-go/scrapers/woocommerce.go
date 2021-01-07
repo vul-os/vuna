@@ -12,10 +12,7 @@ import (
 	"strings"
 )
 
-type items struct {
-	name string
-	itemUrl  string
-}
+
 
 type varStruct struct {
 	VarID      int         `json:"variation_id"`
@@ -23,24 +20,16 @@ type varStruct struct {
 	MaxQty     interface{} `json:"max_qty"`
 	Price      float32     `json:"display_price"`
 	Attributes map[string]string `json:"attributes"`
-}
-
-type prodStruct struct {
-	ProductName string
-
-	ProductUrl string
-	Categories []items
-	Tags []items
-	VarStruct varStruct
+	AvailabilityHtml string `json:"availability_html"`
 }
 
 
-func Scrape(baseUrl string) {
+func Scrape(baseUrl string, numConcurrency int) {
+	baseUrl = strings.TrimSuffix(baseUrl, "/")
 	storeId, err := utils.GetStoreIdByUrl(baseUrl)
 	if err != nil {
 		return
 	}
-	baseUrl = strings.TrimSuffix(baseUrl, "/")
 	robotsTxtUrl := fmt.Sprintf("%s/robots.txt", baseUrl)
 	log.Info().Msg(
 		fmt.Sprintf(
@@ -55,7 +44,7 @@ func Scrape(baseUrl string) {
 	productsCollector := colly.NewCollector(
 		colly.Async(true),
 	)
-	productsCollector.Limit(&colly.LimitRule{DomainGlob: "*", Parallelism: 4})
+	productsCollector.Limit(&colly.LimitRule{DomainGlob: "*", Parallelism: numConcurrency})
 
 	productsCollector.OnHTML(".summary,.entry-summary,.product-summary,.product-info",
 		func(e *colly.HTMLElement) {
@@ -64,42 +53,36 @@ func Scrape(baseUrl string) {
 			priceReplacer := strings.NewReplacer("R", "", ",", "")
 			productName := strings.TrimSpace(querySelection.Find(".product_title,.entry-title").Text())
 			productMeta := querySelection.Find("div[class='product_meta']")
-			var tagList []items
-			var catList []items
 			tags := productMeta.Find(".tagged_as").Children()
 			categories := productMeta.Find(".posted_in").Children()
+			// check for product variations
+			variationsString, vsResult := querySelection.
+				Find("form[class='variations_form cart']").
+				Attr("data-product_variations")
+
+			var products []utils.ProdStruct
+			var tagList []utils.Items
+			var catList []utils.Items
 			tags.Each(func(_ int, s *goquery.Selection) {
 				itemUrl, exists := s.Attr("href")
 				if !(exists) {
 					itemUrl = ""
 				}
-				tagList = append(tagList, items{
+				tagList = append(tagList, utils.Items{
 					s.Text(),
 					itemUrl,
 				})
-				utils.UpsertItem("tags", "tag", s.Text(), itemUrl, storeId)
 			})
 			categories.Each(func(_ int, s *goquery.Selection) {
 				itemUrl, exists := s.Attr("href")
 				if !(exists) {
 					itemUrl = ""
 				}
-				catList = append(catList, items{
+				catList = append(catList, utils.Items{
 					s.Text(),
 					itemUrl,
 				})
-				utils.UpsertItem("categories", "category", s.Text(), itemUrl, storeId)
 			})
-			_, err := utils.UpsertItem("products", "product",
-				productName, e.Request.URL.String(), storeId)
-			if err != nil {
-				return
-			}
-			// check for product variations
-			variationsString, vsResult := querySelection.
-				Find("form[class='variations_form cart']").
-				Attr("data-product_variations")
-
 
 			if vsResult {
 				// if there are
@@ -110,34 +93,61 @@ func Scrape(baseUrl string) {
 				}
 
 				// for each variation...
-				for i, result := range results {
+				for _, result := range results {
 					maxQty := utils.MaxQtyIntConverter(result.MaxQty, maxQtyReplacer)
+					if maxQty == 0 {
+						maxQtyStr := result.AvailabilityHtml
+						r := strings.NewReplacer(
+							`<p class="stock in-stock">`, "",
+							"</p>", "",
+							"in", "",
+							"out", "",
+							"of", "",
+							"stock", "",
+						)
+						maxQtyStr = r.Replace(maxQtyStr)
+						maxQtyStr = strings.TrimSpace(maxQtyStr)
+						maxQty, _ = strconv.Atoi(maxQtyStr)
+					}
 					price := utils.PriceFloatConverter(result.Price, priceReplacer)
 					if maxQty > 0 {
-						log.Info().Msg(
-							fmt.Sprintf(
-								`Product Var Data (%d):Name: %s, URL: %s, Price: %f, Qty: %d, VarId: %d, Sku: %s, Attributes: %s, Tags: %s, Categories: %s`,
-								i,
-								productName,
-								e.Request.URL,
-								price,
-								maxQty,
-								result.VarID,
-								result.Sku,
-								result.Attributes,
-								tagList,
-								catList,
-							),
-						)
-						for key := range result.Attributes {
-							utils.UpsertAttributes(key, storeId)
-						}
+						products = append(products, utils.ProdStruct{
+							ProductName: productName,
+							ProductUrl: e.Request.URL.String(),
+							StoreId: storeId,
+							Categories: catList,
+							Tags: tagList,
+							VarID: result.VarID,
+							Sku: result.Sku,
+							MaxQty: maxQty,
+							Price: price,
+							Attributes: result.Attributes,
+						})
 					}
 				}
 			} else {
+				selector := "p[class*='price'] > span[class*='amount']"
+				maxQtySelector := "p[class*='stock in-stock']"
+				if strings.Contains(baseUrl, "biltongandbudz") {
+					selector = "div[class*='product-info'] > div[class*='price'] > " +
+						"p[class*='price'] > span[class*='amount']"
+				} else if strings.Contains(baseUrl, "smokinggunseeds") {
+					maxQtySelector = "div[class*='avada-availability'] > p[class*='stock in-stock']"
+				} else if strings.Contains(baseUrl, "livestainable") {
+					maxQtySelector = "span[class*='electro-stock-availability'] > p[class*='stock in-stock']"
+					selector = "span[class='electro-price'] * span[class*='woocommerce-Price-amount amount']"
+				}
 				// otherwise there are no variations
-				price := querySelection.Find("span[class*='amount']").Text()
-				maxQty := querySelection.Find("p[class*='stock']").Text()
+				priceStr := querySelection.Find(selector).Text()
+				priceStr = strings.ReplaceAll(strings.ReplaceAll(priceStr, "R", ""), ",", "")
+				maxQty := querySelection.Find(maxQtySelector).Text()
+				r := strings.NewReplacer(
+					"in", "",
+					"out", "",
+					"of", "",
+					"stock", "",
+				)
+				maxQty = r.Replace(maxQty)
 				if strings.TrimSpace(maxQty) == "" {
 					maxQtyNew, exists := querySelection.Find("input[class*='qty']").Attr("max")
 					if !exists {
@@ -146,42 +156,69 @@ func Scrape(baseUrl string) {
 						maxQty = maxQtyNew
 					}
 				}
-				priceFloat := utils.PriceFloatConverter(price, priceReplacer)
+				priceFloat := utils.PriceFloatConverter(priceStr, priceReplacer)
 				maxQtyInt := utils.MaxQtyIntConverter(maxQty, maxQtyReplacer)
 				sku := querySelection.Find("span[class*='sku']").Text()
+				sku = strings.ReplaceAll(sku,"SKU:", "")
+				sku = strings.ReplaceAll(sku, "sku:", "")
+				sku = strings.TrimSpace(sku)
 				varIdAddCardButton := querySelection.Find("button[name*='add-to-cart']")
-				varIdAddCardButtonValue, exists := varIdAddCardButton.Attr("value")
+				varIdStr, exists := varIdAddCardButton.Attr("value")
 				if !exists {
 					return
 				}
-				varIdAddCardButtonValueInt, err := strconv.Atoi(varIdAddCardButtonValue)
+				varId, err := strconv.Atoi(varIdStr)
 				if err != nil {
 					log.Error().Err(err).Msg("Error Converting VarId String to Int!")
 				}
 				if maxQtyInt > 0 {
-					log.Info().Msg(
-						fmt.Sprintf(
-							`Product No Var Data :Name: %s, URL: %s, Price: %f, Qty: %d, VarId: %d, Sku: %s, Tags: %s, Categories: %s`,
-							productName,
-							e.Request.URL,
-							priceFloat,
-							maxQtyInt,
-							varIdAddCardButtonValueInt,
-							sku,
-							tagList,
-							catList,
-						),
-					)
+					products = append(products, utils.ProdStruct{
+						ProductName: productName,
+						ProductUrl: e.Request.URL.String(),
+						StoreId: storeId,
+						Categories: catList,
+						Tags: tagList,
+						VarID: varId,
+						Sku: sku,
+						MaxQty: maxQtyInt,
+						Price: priceFloat,
+						Attributes: nil,
+					})
 				}
 
 			}
+			productId, err := utils.UpsertItem("products", "product",
+				productName, e.Request.URL.String(), storeId)
+			if err != nil {
+				return
+			}
+			for _, tag := range tagList {
+				go utils.UpsertItemAndProductItem("tags", "tag",
+					tag.Name, tag.ItemUrl, productId, storeId)
+			}
+			for _, cat := range catList {
+				go utils.UpsertItemAndProductItem("categories", "category",
+					cat.Name, cat.ItemUrl, productId, storeId)
+			}
+			go utils.DoAllDb(
+				products,
+				productName,
+				productId,
+				storeId,
+				e.Request.URL.String(),
+				tagList,
+				catList,
+			)
 		},
 	)
 
 	// Create a callback on the XPath query searching for the URLs
 	getUrlsCollector.OnXML("//urlset/url/loc", func(e *colly.XMLElement) {
 		//knownUrls = append(knownUrls, e.Text)
-		if strings.Contains(e.Text, "/product/") {
+		if strings.Contains(e.Text, "/product/") ||
+			strings.Contains(e.Text, "/products/") ||
+			strings.Contains(e.Text, "bikemarket.co.za/shop/") ||
+			strings.Contains(e.Text, "bottic.co.za/buy/")	{
 			knownUrls = append(knownUrls, e.Text)
 		}
 	})
@@ -273,4 +310,5 @@ func Scrape(baseUrl string) {
 		),
 	)
 	productsCollector.Wait()
+	fmt.Println("Finished" )
 }

@@ -1,47 +1,76 @@
 package main
 
 import (
+	"fmt"
+	"github.com/rs/zerolog/log"
+	"io/ioutil"
+	"net/http"
+	"os"
 	"scraper-go/scrapers"
 	"scraper-go/utils"
+	"strconv"
+	"strings"
 )
 
-var baseUrl = "https://www.botshop.co.za"
-
 func main() {
+	log.Info().Msg("starting server...")
+	http.HandleFunc("/", handler)
 	utils.GenerateConnPool()
 
-	utils.UpsertStore("Bot Shop", "botshop.co.za")
-	utils.UpsertStore("Biltong & Budz", "biltongandbudz.co.za")
-	utils.UpsertStore("Sacred Seeds", "sacredseeds.co.za")
-	utils.UpsertStore("Smoking Gun Seeds", "smokinggunseeds.co.za")
-	utils.UpsertStore("Bud Buddies", "budbuddies.co.za")
-	utils.UpsertStore("Feed A Seed", "feedaseed.co.za")
-	utils.UpsertStore("Solomons Tackle", "solomonstackle.co.za")
-	utils.UpsertStore("Brands Unlimited", "brandssa.co.za")
-	utils.UpsertStore("Trophy Seeds", "trophyseeds.com")
+	// Determine port for HTTP service.
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+		log.Printf("defaulting to port %s", port)
+	}
 
-	//dbpool, err := pgxpool.Connect(context.Background(), dbUrl)
-	//if err != nil {
-	//	fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
-	//	os.Exit(1)
-	//}
-	//defer dbpool.Close()
-
-	//c, err := utils.Pool.Acquire(context.Background())
-	//if err != nil {
-	//	log.Error().Err(err).Msg("Cannot acquire connection")
-	//}
-	//
-	//var greeting string
-	//err = c.QueryRow(context.Background(), "select 'Hello, world!'").Scan(&greeting)
-	//if err != nil {
-	//	fmt.Fprintf(os.Stderr, "QueryRow failed: %v\n", err)
-	//	os.Exit(1)
-	//}
-	//
-	//fmt.Println(greeting)
-
-
-	scrapers.Scrape(baseUrl)
-	//utils.UpsertItem("tags", "tag", "wp-attr-testy", "https://store.com/testy", 1)
+	// Start HTTP server.
+	log.Printf("listening on port %s", port)
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
+		log.Error().Err(err)
+	}
 }
+
+func handler(w http.ResponseWriter, r *http.Request) {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Printf("Error reading body: %v", err)
+		http.Error(w, "can't read body", http.StatusBadRequest)
+		return
+	}
+	bodyStr := strings.TrimSpace(string(body))
+	bodyStrSplit := strings.Split(bodyStr, ",")
+	numConcurrency := 4
+	if len(bodyStrSplit) > 1 {
+		numConc, err := strconv.Atoi(bodyStrSplit[1])
+		if err != nil {
+			log.Error().Err(err).Msg("numConcurrency is Default {4}")
+		} else {
+			numConcurrency = numConc
+			bodyStr = bodyStrSplit[0]
+		}
+
+	}
+	baseUrl := strings.TrimSpace(string(bodyStr))
+	storeNameRep := strings.NewReplacer(
+		".co", "",
+		".za", "",
+		".com", "",
+		"https://", "",
+		"http://", "",
+		"/", "",
+	)
+	urlRep := strings.NewReplacer(
+		"https://", "",
+		"http://", "",
+		"/", "",
+	)
+	urlReplaced := urlRep.Replace(baseUrl)
+	storeNameReplaced := storeNameRep.Replace(urlReplaced)
+	log.Info().Msg(fmt.Sprintf("Recieved Request for store: %s, with url: %s, numConcurrency: %d",
+		storeNameReplaced, urlReplaced, numConcurrency))
+	utils.UpsertStore(storeNameReplaced, urlReplaced)
+	scrapers.Scrape(fmt.Sprintf("https://%s", urlReplaced), numConcurrency)
+}
+
+// gcloud builds submit --tag gcr.io/spiderbyte-scapers/scraper-go
