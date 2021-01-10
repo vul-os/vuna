@@ -3,6 +3,7 @@ package scrapers
 import (
 	"encoding/json"
 	"fmt"
+	"errors"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly"
 	"github.com/rs/zerolog/log"
@@ -21,6 +22,20 @@ type varStruct struct {
 	Price      float32     `json:"display_price"`
 	Attributes map[string]string `json:"attributes"`
 	AvailabilityHtml string `json:"availability_html"`
+}
+
+func Min(values []float32) (min float32, e error) {
+	if len(values) == 0 {
+		return 0, errors.New("Cannot detect a minimum value in an empty slice")
+	}
+	min = values[0]
+	for _, v := range values {
+		if v < min {
+			min = v
+		}
+	}
+
+	return min, nil
 }
 
 
@@ -126,6 +141,7 @@ func Scrape(baseUrl string, numConcurrency int) {
 					}
 				}
 			} else {
+				var priceFloat float32 = 0.00
 				selector := "p[class*='price'] > span[class*='amount']"
 				maxQtySelector := "p[class*='stock in-stock']"
 				if strings.Contains(baseUrl, "biltongandbudz") {
@@ -135,17 +151,35 @@ func Scrape(baseUrl string, numConcurrency int) {
 					maxQtySelector = "div[class*='avada-availability'] > p[class*='stock in-stock']"
 				} else if strings.Contains(baseUrl, "livestainable") {
 					maxQtySelector = "span[class*='electro-stock-availability'] > p[class*='stock in-stock']"
-					selector = "span[class='electro-price'] * span[class*='woocommerce-Price-amount amount']"
+					selector = ".single-product-wrapper > span[class='electro-price'] * span[class*='woocommerce-Price-amount amount']"
 				}
-				// otherwise there are no variations
-				priceStr := querySelection.Find(selector).Text()
-				priceStr = strings.ReplaceAll(strings.ReplaceAll(priceStr, "R", ""), ",", "")
+				if strings.Contains(baseUrl, "livestainable") {
+					var prices []float32
+					// otherwise there are no variations
+					querySelection.Find(selector).Children().Each(func(i int, s *goquery.Selection) {
+						prstr := strings.ReplaceAll(strings.ReplaceAll(s.Text(), "R", ""),
+							",", "")
+						price, err := strconv.ParseFloat(prstr, 64)
+						if err != nil {
+							log.Error().Err(err).Msg("Conv prices error")
+						}
+						prices = append(prices, float32(price))
+					})
+					priceFloat, err = Min(prices)
+
+				} else {
+					priceStr := querySelection.Find(selector).Text()
+					priceStr = strings.ReplaceAll(strings.ReplaceAll(priceStr, "R", ""), ",", "")
+					priceFloat = utils.PriceFloatConverter(priceStr, priceReplacer)
+				}
+
 				maxQty := querySelection.Find(maxQtySelector).Text()
 				r := strings.NewReplacer(
 					"in", "",
 					"out", "",
 					"of", "",
 					"stock", "",
+					"(can be backordered)", "",
 				)
 				maxQty = r.Replace(maxQty)
 				if strings.TrimSpace(maxQty) == "" {
@@ -156,7 +190,6 @@ func Scrape(baseUrl string, numConcurrency int) {
 						maxQty = maxQtyNew
 					}
 				}
-				priceFloat := utils.PriceFloatConverter(priceStr, priceReplacer)
 				maxQtyInt := utils.MaxQtyIntConverter(maxQty, maxQtyReplacer)
 				sku := querySelection.Find("span[class*='sku']").Text()
 				sku = strings.ReplaceAll(sku,"SKU:", "")
@@ -171,7 +204,7 @@ func Scrape(baseUrl string, numConcurrency int) {
 				if err != nil {
 					log.Error().Err(err).Msg("Error Converting VarId String to Int!")
 				}
-				if maxQtyInt > 0 {
+				if maxQtyInt > 0 && priceFloat > 0 {
 					products = append(products, utils.ProdStruct{
 						ProductName: productName,
 						ProductUrl: e.Request.URL.String(),
@@ -310,5 +343,5 @@ func Scrape(baseUrl string, numConcurrency int) {
 		),
 	)
 	productsCollector.Wait()
-	fmt.Println("Finished" )
+	log.Info().Msg("Finished")
 }

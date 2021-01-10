@@ -51,10 +51,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		}
 
 	}
-	baseUrl := strings.TrimSpace(string(bodyStr))
+	baseUrl := strings.TrimSpace(bodyStr)
 	storeNameRep := strings.NewReplacer(
-		".co", "",
-		".za", "",
+		".co.za", "",
 		".com", "",
 		"https://", "",
 		"http://", "",
