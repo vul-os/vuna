@@ -8,6 +8,6 @@ const Logo = (props) => {
       {...props}
     />
   );
-};
+}
 
 export default Logo;

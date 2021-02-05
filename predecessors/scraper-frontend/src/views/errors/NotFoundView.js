@@ -1,8 +1,12 @@
 import React from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import {
   Box,
+  Button,
   Container,
   Typography,
+  useTheme,
+  useMediaQuery,
   makeStyles
 } from '@material-ui/core';
 import Page from 'src/components/Page';
@@ -10,57 +14,73 @@ import Page from 'src/components/Page';
 const useStyles = makeStyles((theme) => ({
   root: {
     backgroundColor: theme.palette.background.dark,
-    height: '100%',
-    paddingBottom: theme.spacing(3),
-    paddingTop: theme.spacing(3)
+    minHeight: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    padding: theme.spacing(3),
+    paddingTop: 80,
+    paddingBottom: 80
   },
   image: {
-    marginTop: 50,
-    display: 'inline-block',
     maxWidth: '100%',
-    width: 560
+    width: 560,
+    maxHeight: 300,
+    height: 'auto'
   }
 }));
 
 const NotFoundView = () => {
   const classes = useStyles();
+  const theme = useTheme();
+  const mobileDevice = useMediaQuery(theme.breakpoints.down('sm'));
 
   return (
     <Page
       className={classes.root}
-      title="404"
+      title="404: Not found"
     >
-      <Box
-        display="flex"
-        flexDirection="column"
-        height="100%"
-        justifyContent="center"
-      >
-        <Container maxWidth="md">
-          <Typography
-            align="center"
-            color="textPrimary"
-            variant="h1"
+      <Container maxWidth="lg">
+        <Typography
+          align="center"
+          variant={mobileDevice ? 'h4' : 'h1'}
+          color="textPrimary"
+        >
+          404: The page you are looking for isn’t here
+        </Typography>
+        <Typography
+          align="center"
+          variant="subtitle2"
+          color="textSecondary"
+        >
+          You either tried some shady route or you
+          came here by mistake. Whichever it is, try using the navigation.
+        </Typography>
+        <Box
+          mt={6}
+          display="flex"
+          justifyContent="center"
+        >
+          <img
+            alt="Under development"
+            className={classes.image}
+            src="/static/images/undraw_page_not_found_su7k.svg"
+          />
+        </Box>
+        <Box
+          mt={6}
+          display="flex"
+          justifyContent="center"
+        >
+          <Button
+            color="secondary"
+            component={RouterLink}
+            to="/"
+            variant="outlined"
           >
-            404: The page you are looking for isn’t here
-          </Typography>
-          <Typography
-            align="center"
-            color="textPrimary"
-            variant="subtitle2"
-          >
-            You either tried some shady route or you came here by mistake.
-            Whichever it is, try using the navigation
-          </Typography>
-          <Box textAlign="center">
-            <img
-              alt="Under development"
-              className={classes.image}
-              src="/static/images/undraw_page_not_found_su7k.svg"
-            />
-          </Box>
-        </Container>
-      </Box>
+            Back to home
+          </Button>
+        </Box>
+      </Container>
     </Page>
   );
 };
