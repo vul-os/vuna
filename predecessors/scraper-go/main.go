@@ -2,33 +2,57 @@ package main
 
 import (
 	"fmt"
-	"github.com/rs/zerolog/log"
 	"io/ioutil"
 	"net/http"
-	"os"
+
+	// crawl "scraper-go/crawler"
 	"scraper-go/scrapers"
 	"scraper-go/utils"
 	"strconv"
 	"strings"
+
+	"github.com/rs/zerolog/log"
 )
 
 func main() {
 	log.Info().Msg("starting server...")
 	http.HandleFunc("/", handler)
-	utils.GenerateConnPool()
+	// utils.GenerateConnPool()
 
-	// Determine port for HTTP service.
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-		log.Printf("defaulting to port %s", port)
-	}
+	// baseUrl := strings.TrimSpace("")
+	// storeNameRep := strings.NewReplacer(
+	// 	".co.za", "",
+	// 	".com", "",
+	// 	"https://", "",
+	// 	"http://", "",
+	// 	"/", "",
+	// )
+	// urlRep := strings.NewReplacer(
+	// 	"https://", "",
+	// 	"http://", "",
+	// 	"/", "",
+	// )
+	// urlReplaced := urlRep.Replace(baseUrl)
+	// storeNameReplaced := storeNameRep.Replace(urlReplaced)
+	// log.Info().Msg(fmt.Sprintf("Recieved Request for store: %s, with url: %s, numConcurrency: %d",
+	// 	storeNameReplaced, urlReplaced, numConcurrency))
+	// utils.UpsertStore(storeNameReplaced, urlReplaced)
 
-	// Start HTTP server.
-	log.Printf("listening on port %s", port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		log.Error().Err(err)
-	}
+	scrapers.Scrape("https://cosmeticboutique.co.za", 4)
+	// crawl.Wapa()
+
+	// // Determine port for HTTP service.
+	// port := os.Getenv("PORT")
+	// if port == "" {
+	// 	port = "8080"
+	// 	log.Printf("defaulting to port %s", port)
+	// }
+
+	// // Start HTTP server.
+	// log.Printf("listening on port %s", port)
+	// if err := http.ListenAndServe(":"+port, nil); err != nil {
+	// 	log.Error().Err(err)
+	// }
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
