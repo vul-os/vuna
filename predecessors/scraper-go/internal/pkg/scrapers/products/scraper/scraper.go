@@ -2,20 +2,42 @@ package products
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
 	"scraper-go/utils"
 	"strings"
 
+	productsStore "scraper-go/internal/pkg/scrapers/products/store"
+
 	"github.com/gocolly/colly"
 	"github.com/rs/zerolog/log"
+
+	"github.com/go-chi/chi/v5"
 )
 
-func Scrape(baseUrl string, numConcurrency int) {
+type api struct {
+	store productsStore.Store
+}
+
+// Routes creates a REST router for the products resource
+func (a api) Routes() chi.Router {
+	r := chi.NewRouter()
+
+	r.Route("/{id}", func(r chi.Router) {
+		r.Get("/", s.FindOne) // GET /products/{id} - read a single products by :id
+		// r.Delete("/", a.Delete) // DELETE /products/{id} - delete a single products by :id
+	})
+
+	return r
+}
+
+
+// Robots.txt scraper
+func (a api) FindOne(w http.ResponseWriter, r *http.Request) {
+
 	baseUrl = strings.TrimSuffix(baseUrl, "/")
-	// storeId, err := utils.GetStoreIdByUrl(baseUrl)
-	// if err != nil {
-	// 	return
-	// }
+
+	
 	robotsTxtUrl := fmt.Sprintf("%s/robots.txt", baseUrl)
 	log.Info().Msg(
 		fmt.Sprintf(

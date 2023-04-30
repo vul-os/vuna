@@ -1,99 +1,56 @@
 package main
 
 import (
-	"fmt"
-	"io/ioutil"
-	"net/http"
-
-	// crawl "scraper-go/crawler"
-	"scraper-go/scrapers"
-	"scraper-go/utils"
-	"strconv"
-	"strings"
-
 	"github.com/rs/zerolog/log"
+
+	"context"
+	"fmt"
+	
+	productsStore "scraper-go/internal/pkg/scrapers/products/store"
+
+	"cloud.google.com/go/bigquery"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/render"
 )
 
 func main() {
 	log.Info().Msg("starting server...")
-	http.HandleFunc("/", handler)
-	// utils.GenerateConnPool()
 
-	// baseUrl := strings.TrimSpace("")
-	// storeNameRep := strings.NewReplacer(
-	// 	".co.za", "",
-	// 	".com", "",
-	// 	"https://", "",
-	// 	"http://", "",
-	// 	"/", "",
-	// )
-	// urlRep := strings.NewReplacer(
-	// 	"https://", "",
-	// 	"http://", "",
-	// 	"/", "",
-	// )
-	// urlReplaced := urlRep.Replace(baseUrl)
-	// storeNameReplaced := storeNameRep.Replace(urlReplaced)
-	// log.Info().Msg(fmt.Sprintf("Recieved Request for store: %s, with url: %s, numConcurrency: %d",
-	// 	storeNameReplaced, urlReplaced, numConcurrency))
-	// utils.UpsertStore(storeNameReplaced, urlReplaced)
+	r := chi.NewRouter()
 
-	scrapers.Scrape("https://cosmeticboutique.co.za", 4)
-	// crawl.Wapa()
+	r.Use(middleware.RequestID)
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+	r.Use(middleware.URLFormat)
+	r.Use(render.SetContentType(render.ContentTypeJSON))
 
-	// // Determine port for HTTP service.
-	// port := os.Getenv("PORT")
-	// if port == "" {
-	// 	port = "8080"
-	// 	log.Printf("defaulting to port %s", port)
-	// }
+	// // RESTy routes
+	// r.Route("/store", func(r chi.Router) {
+	// 	// r.Get("/delete", SearchArticles)
+	// 	// r.Get("/scrape", SearchArticles)
 
-	// // Start HTTP server.
-	// log.Printf("listening on port %s", port)
-	// if err := http.ListenAndServe(":"+port, nil); err != nil {
-	// 	log.Error().Err(err)
-	// }
-}
+	// 	r.Route("/{storeID}", func(r chi.Router) {
+	// 		r.Get("/scrape", GetArticle)       // GET /articles/123
+	// 	})
+	// })
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
+	// r.Route("/product/{productID}", func(r chi.Router) {
+	// 	r.Get("/scrape", SearchArticles)
+	// })
+
+	projectID := "my-project-id"
+	// datasetID := "mydataset"
+	// tableID := "mytable"
+	ctx := context.Background()
+	client, err := bigquery.NewClient(ctx, projectID)
 	if err != nil {
-		log.Printf("Error reading body: %v", err)
-		http.Error(w, "can't read body", http.StatusBadRequest)
-		return
+		fmt.Errorf("bigquery.NewClient: %w", err)
 	}
-	bodyStr := strings.TrimSpace(string(body))
-	bodyStrSplit := strings.Split(bodyStr, ",")
-	numConcurrency := 4
-	if len(bodyStrSplit) > 1 {
-		numConc, err := strconv.Atoi(bodyStrSplit[1])
-		if err != nil {
-			log.Error().Err(err).Msg("numConcurrency is Default {4}")
-		} else {
-			numConcurrency = numConc
-			bodyStr = bodyStrSplit[0]
-		}
 
-	}
-	baseUrl := strings.TrimSpace(bodyStr)
-	storeNameRep := strings.NewReplacer(
-		".co.za", "",
-		".com", "",
-		"https://", "",
-		"http://", "",
-		"/", "",
+	ProductsStore := productsStore.New(
+		client,
 	)
-	urlRep := strings.NewReplacer(
-		"https://", "",
-		"http://", "",
-		"/", "",
-	)
-	urlReplaced := urlRep.Replace(baseUrl)
-	storeNameReplaced := storeNameRep.Replace(urlReplaced)
-	log.Info().Msg(fmt.Sprintf("Recieved Request for store: %s, with url: %s, numConcurrency: %d",
-		storeNameReplaced, urlReplaced, numConcurrency))
-	utils.UpsertStore(storeNameReplaced, urlReplaced)
-	scrapers.Scrape(fmt.Sprintf("https://%s", urlReplaced), numConcurrency)
+
+	defer client.Close()
 }
-
-// gcloud builds submit --tag gcr.io/spiderbyte-scapers/scraper-go
