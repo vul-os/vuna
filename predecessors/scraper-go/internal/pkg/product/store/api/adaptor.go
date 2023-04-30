@@ -3,8 +3,8 @@ package adaptor
 import (
 	"net/http"
 
-	products "scraper-go/internal/pkg/scrapers/products"
-	productsStore "scraper-go/internal/pkg/scrapers/products/store"
+	products "scraper-go/internal/pkg/product"
+	productsStore "scraper-go/internal/pkg/product/store"
 
 	"encoding/json"
 

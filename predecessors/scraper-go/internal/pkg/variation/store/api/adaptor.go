@@ -1,11 +1,11 @@
 package adaptor
 
 import (
-
-	products "scraper-go/internal/pkg/scrapers/products"
-	productsStore "scraper-go/internal/pkg/scrapers/products/store"
-
 	"net/http"
+
+	varitaion "scraper-go/internal/pkg/variation"
+	variationStore "scraper-go/internal/pkg/variation/store"
+
 	"encoding/json"
 
 	"github.com/go-chi/chi/v5"
@@ -13,7 +13,7 @@ import (
 )
 
 type api struct {
-	store productsStore.Store
+	store variationStore.Store
 }
 
 // Routes creates a REST router for the products resource
@@ -33,33 +33,31 @@ func (a api) Routes() chi.Router {
 
 func (a api) FindOne(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	resp, err := a.store.FindOne(productsStore.FindOneRequest{
+	resp, err := a.store.FindOne(variationStore.FindOneRequest{
 		ID: id,
 	})
 	if err != nil {
 		w.Write([]byte(err.Error()))
 		return
 	}
-	render.JSON(w, r, resp.Product)
-	return
+	render.JSON(w, r, resp.Variation)
 }
 
 func (a api) CreateOne(w http.ResponseWriter, r *http.Request) {
-	var p products.Product
+	var v varitaion.Variation
 
-	err := json.NewDecoder(r.Body).Decode(&p)
+	err := json.NewDecoder(r.Body).Decode(&v)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	resp, err := a.store.CreateOne(productsStore.CreateOneRequest{
-		Product: p,
+	resp, err := a.store.CreateOne(variationStore.CreateOneRequest{
+		Variation: v,
 	})
 	if err != nil {
 		w.Write([]byte(err.Error()))
 		return
 	}
 	render.JSON(w, r, resp.ID)
-	return
 }

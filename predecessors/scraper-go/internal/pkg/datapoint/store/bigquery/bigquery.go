@@ -1,11 +1,11 @@
 package bigquery
 
 import (
-	"scraper-go/internal/pkg/scrapers/products"
 
 	"cloud.google.com/go/bigquery"
 
-	productsStore "scraper-go/internal/pkg/scrapers/products/store"
+	dp "scraper-go/internal/pkg/datapoint"
+	dpStore "scraper-go/internal/pkg/datapoint/store"
 )
 
 type store struct {
@@ -14,14 +14,14 @@ type store struct {
 
 func New(
 	client *bigquery.Client,
-) productsStore.Store {
+) dpStore.Store {
 	return &store{
 		client: client,
 	}
 }
 
-func (s *store) CreateOne(request productsStore.CreateOneRequest) (*productsStore.CreateOneResponse, error) {
-	cO := request.Product
+func (s *store) CreateOne(request dpStore.CreateOneRequest) (*dpStore.CreateOneResponse, error) {
+	cO := request.Datapoint
 
 	// inserter := s.client.Dataset(datasetID).Table(tableID).Inserter()
 	// items := []*Item{
@@ -33,9 +33,10 @@ func (s *store) CreateOne(request productsStore.CreateOneRequest) (*productsStor
 	// 	log.Error().Err(result.Error).Msg("error creating dashboard")
 	// 	return nil, result.Error
 	// }
-	return &productsStore.CreateOneResponse{ID: cO.ID}, nil
+	
+	return &dpStore.CreateOneResponse{ID: cO.ID}, nil
 }
 
-func (s *store) FindOne(request productsStore.FindOneRequest) (*productsStore.FindOneResponse, error) {
-	return &productsStore.FindOneResponse{Product: products.Product{}}, nil
+func (s *store) FindOne(request dpStore.FindOneRequest) (*dpStore.FindOneResponse, error) {
+	return &dpStore.FindOneResponse{Datapoint: dp.DataPoint{}}, nil
 }

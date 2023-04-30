@@ -1,13 +1,16 @@
 package products
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
-	"scraper-go/utils"
 	"strings"
 
-	productsStore "scraper-go/internal/pkg/scrapers/products/store"
+	products "scraper-go/internal/pkg/product"
+	productStore "scraper-go/internal/pkg/product/store"
+	site "scraper-go/internal/pkg/site"
+	"scraper-go/utils"
 
 	"github.com/gocolly/colly"
 	"github.com/rs/zerolog/log"
@@ -16,28 +19,28 @@ import (
 )
 
 type api struct {
-	store productsStore.Store
+	store productStore.Store
 }
 
-// Routes creates a REST router for the products resource
 func (a api) Routes() chi.Router {
 	r := chi.NewRouter()
-
-	r.Route("/{id}", func(r chi.Router) {
-		r.Get("/", s.FindOne) // GET /products/{id} - read a single products by :id
-		// r.Delete("/", a.Delete) // DELETE /products/{id} - delete a single products by :id
-	})
+	r.Post("/", a.ScrapeOne) // POST /products/scrape - scrape a single url
 
 	return r
 }
 
-
 // Robots.txt scraper
-func (a api) FindOne(w http.ResponseWriter, r *http.Request) {
+func (a api) ScrapeOne(w http.ResponseWriter, r *http.Request) {
+	var s site.Site
 
-	baseUrl = strings.TrimSuffix(baseUrl, "/")
+	err := json.NewDecoder(r.Body).Decode(&s)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-	
+	baseUrl := strings.TrimSuffix(s.Url, "/")
+
 	robotsTxtUrl := fmt.Sprintf("%s/robots.txt", baseUrl)
 	log.Info().Msg(
 		fmt.Sprintf(
@@ -52,13 +55,23 @@ func (a api) FindOne(w http.ResponseWriter, r *http.Request) {
 
 	// Create a callback on the XPath query searching for the URLs
 	getUrlsCollector.OnXML("//urlset/url/loc", func(e *colly.XMLElement) {
-		//knownUrls = append(knownUrls, e.Text)
-		if strings.Contains(e.Text, "/product/") ||
+
+		// Todo: sort this shit out
+		if !(strings.Contains(e.Text, "/product/") ||
 			strings.Contains(e.Text, "/products/") ||
 			strings.Contains(e.Text, "bikemarket.co.za/shop/") ||
-			strings.Contains(e.Text, "bottic.co.za/buy/") {
-			knownUrls = append(knownUrls, e.Text)
+			strings.Contains(e.Text, "bottic.co.za/buy/")) {
+			return
 		}
+		// old way, use it for logs
+		knownUrls = append(knownUrls, e.Text)
+
+		a.store.CreateOne(productStore.CreateOneRequest{
+			Product: products.Product{
+				Url:    e.Text, // e.Text is the product Url
+				SiteId: s.Id,
+			},
+		})
 	})
 
 	getUrlsCollector.OnXML("//sitemapindex/sitemap/loc", func(e *colly.XMLElement) {
@@ -80,9 +93,7 @@ func (a api) FindOne(w http.ResponseWriter, r *http.Request) {
 	robotsLines, err := utils.UrlToLines(robotsTxtUrl)
 	if err != nil {
 		log.Error().Err(err).Msg(
-			fmt.Sprintf(
-				"Err getting hostname",
-			),
+			"Err getting hostname",
 		)
 	}
 	for _, line := range robotsLines {
@@ -130,18 +141,7 @@ func (a api) FindOne(w http.ResponseWriter, r *http.Request) {
 			"Error: sitemap.xml",
 		),
 	)
-	fmt.Println("NumUrls", knownUrls)
-	// for _, knownUrl := range knownUrls {
-	// 	// log.Info().Msg(
-	// 	// 	fmt.Sprintf(
-	// 	// 		"Visiting Url: %s",
-	// 	// 		knownUrl,
-	// 	// 	),
-	// 	// )
-	// 	// if err := productsCollector.Visit(knownUrl); err != nil {
-	// 	// 	log.Error().Err(err).Msg("unable to visit")
-	// 	// }
-	// }
+
 	log.Info().Msg(
 		fmt.Sprintf(
 			"Collected %d URLs",
