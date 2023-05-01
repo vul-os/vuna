@@ -1,17 +1,19 @@
-package scraper
+package woocommerce
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
-	"scraper-go/internal/pkg/datapoint/scraper/utils"
+	"scraper-go/internal/pkg/product/scraper/utils"
 	"scraper-go/internal/pkg/product"
 	"strconv"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/gocolly/colly"
+	"github.com/gocolly/colly/v2"
+	"github.com/gocolly/colly/v2/proxy"
+
 	"github.com/rs/zerolog/log"
 )
 
@@ -41,7 +43,8 @@ func Min(values []float32) (min float32, e error) {
 type ScrapeOneRequest struct {
 	Product product.Product `json:"product"`
 	// Site    site.Site `json:"site"`
-	NumConcurrency int `json:"numConcurrency"`
+	NumConcurrency int      `json:"numConcurrency"`
+	Proxys         []string `json:"proxys"`
 }
 
 func ScrapeOne(w http.ResponseWriter, r *http.Request) {
@@ -56,6 +59,15 @@ func ScrapeOne(w http.ResponseWriter, r *http.Request) {
 	baseUrl := strings.TrimSuffix(rq.Product.Url, "/")
 
 	productsCollector := colly.NewCollector()
+
+	// Todo: dont need to rotate, only goes to one address
+	// Rotate two socks5 proxies
+	rp, err := proxy.RoundRobinProxySwitcher(rq.Proxys...)
+	if err != nil {
+		log.Error().Err(err).Msg("proxy error")
+		return
+	}
+	productsCollector.SetProxyFunc(rp)
 
 	productsCollector.OnHTML(".summary,.entry-summary,.product-summary,.product-info",
 		func(e *colly.HTMLElement) {
@@ -114,7 +126,7 @@ func ScrapeOne(w http.ResponseWriter, r *http.Request) {
 			} else {
 				var priceFloat float32 = 0.00
 				selector := "p[class*='price'] > span[class*='amount']"
-				maxQtySelector := "p[class*='stock in-stock']"
+				maxQtySelector := "p[class*='stock'], div[class*='avada-availability'], span[class*='electro-stock-availability'] > p[class*='stock']"
 				if strings.Contains(baseUrl, "biltongandbudz") {
 					selector = "div[class*='product-info'] > div[class*='price'] > " +
 						"p[class*='price'] > span[class*='amount']"
@@ -209,6 +221,7 @@ func ScrapeOne(w http.ResponseWriter, r *http.Request) {
 		},
 	)
 
+	productsCollector.Visit(baseUrl)
 	productsCollector.Wait()
 	log.Info().Msg("Finished")
 }

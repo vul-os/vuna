@@ -1,162 +1,35 @@
 package scraper
 
 import (
-	"encoding/json"
-	"fmt"
-	"net/http"
-	"net/url"
-	"strings"
-
-	products "scraper-go/internal/pkg/product"
-	utils "scraper-go/internal/pkg/product/scraper/utils"
+	dpStore "scraper-go/internal/pkg/datapoint/store"
+	woocommerce "scraper-go/internal/pkg/product/scraper/woocommerce"
 	productStore "scraper-go/internal/pkg/product/store"
-	site "scraper-go/internal/pkg/site"
-
-	"github.com/gocolly/colly"
-	"github.com/rs/zerolog/log"
+	variationStore "scraper-go/internal/pkg/variation/store"
 
 	"github.com/go-chi/chi/v5"
 )
 
 type scraper struct {
-	store productStore.Store
-	// collector *colly.Collector
+	ps  productStore.Store
+	vs  variationStore.Store
+	dps dpStore.Store
 }
 
 func New(
 	ps productStore.Store,
+	vs variationStore.Store,
+	dps dpStore.Store,
 ) *scraper {
 	return &scraper{
-		store: ps,
+		ps:  ps,
+		vs:  vs,
+		dps: dps,
 	}
 }
 
-func (s scraper) Routes() chi.Router {
+func (a scraper) Routes() chi.Router {
 	r := chi.NewRouter()
-	r.Post("/", s.ScrapeOne) // POST /products/scrape - scrape a single url
+	r.Post("/scraper", woocommerce.ScrapeOne) // POST /datapoint/scrape - scrape a single url
 
 	return r
-}
-
-// Robots.txt scraper
-func (s scraper) ScrapeOne(w http.ResponseWriter, r *http.Request) {
-	var st site.Site
-
-	err := json.NewDecoder(r.Body).Decode(&st)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	baseUrl := strings.TrimSuffix(st.Url, "/")
-
-	robotsTxtUrl := fmt.Sprintf("%s/robots.txt", baseUrl)
-	log.Info().Msg(
-		fmt.Sprintf(
-			"robots.txt URL: %s",
-			robotsTxtUrl,
-		),
-	)
-	// Array containing all the known URLs
-	knownUrls := []string{}
-	// // Create a Collector specifically for robots.txt and sitemap urls
-	getUrlsCollector := colly.NewCollector()
-
-	// Create a callback on the XPath query searching for the URLs
-	getUrlsCollector.OnXML("//urlset/url/loc", func(e *colly.XMLElement) {
-
-		// Todo: sort this shit out
-		if !(strings.Contains(e.Text, "/product/") ||
-			strings.Contains(e.Text, "/products/") ||
-			strings.Contains(e.Text, "bikemarket.co.za/shop/") ||
-			strings.Contains(e.Text, "bottic.co.za/buy/")) {
-			return
-		}
-		// old way, use it for logs
-		knownUrls = append(knownUrls, e.Text)
-
-		// Todo: go routine? investigate on cloud run
-		s.store.CreateOne(productStore.CreateOneRequest{
-			Product: products.Product{
-				Url:    e.Text, // e.Text is the product Url
-				SiteId: st.ID,
-			},
-		})
-	})
-
-	getUrlsCollector.OnXML("//sitemapindex/sitemap/loc", func(e *colly.XMLElement) {
-		if err := e.Request.Visit(e.Text); err != nil {
-			log.Error().Err(err).Msg("unable to visit")
-		}
-	})
-	// visit robots.txt and get the sitemaps
-	u, err := url.Parse(baseUrl)
-	if err != nil {
-		log.Error().Err(err).Msg(
-			fmt.Sprintf(
-				"Err getting hostname",
-			),
-		)
-		panic(err)
-	}
-	hostName := u.Host
-	robotsLines, err := utils.UrlToLines(robotsTxtUrl)
-	if err != nil {
-		log.Error().Err(err).Msg(
-			"Err getting hostname",
-		)
-	}
-	for _, line := range robotsLines {
-		lowerLine := strings.ToLower(line)
-		if strings.Contains(lowerLine, "sitemap:") {
-			sitemapUrl := strings.Replace(lowerLine, "sitemap: ", "", 1)
-			if !(strings.Contains(sitemapUrl, hostName)) {
-				sitemapUrl = fmt.Sprintf("%s/%s", baseUrl, strings.TrimRight(sitemapUrl, "/"))
-			}
-			log.Info().Msg(
-				fmt.Sprintf(
-					"Sitemap Url: %s",
-					sitemapUrl,
-				),
-			)
-			err = getUrlsCollector.Visit(sitemapUrl)
-			if err != nil {
-				log.Error().Err(err).Msg(
-					fmt.Sprintf(
-						"Err Sitemap Url",
-					),
-				)
-			}
-		}
-	}
-	// Else visit the known sitemaps
-	err = getUrlsCollector.Visit(fmt.Sprintf("%s/%s", baseUrl, "/sitemap_index.xml"))
-	if err != nil {
-		log.Error().Err(err).Msg(
-			fmt.Sprintf(
-				"Error: sitemap_index.xml",
-			),
-		)
-	}
-	err = getUrlsCollector.Visit(fmt.Sprintf("%s/%s", baseUrl, "/sitemap.xml"))
-	if err != nil {
-		log.Error().Err(err).Msg(
-			fmt.Sprintf(
-				"Error: sitemap.xml",
-			),
-		)
-	}
-	log.Err(err).Msg(
-		fmt.Sprintf(
-			"Error: sitemap.xml",
-		),
-	)
-
-	log.Info().Msg(
-		fmt.Sprintf(
-			"Collected %d URLs",
-			len(knownUrls),
-		),
-	)
-	log.Info().Msg("Finished")
 }

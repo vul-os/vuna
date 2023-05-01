@@ -2,6 +2,8 @@ package store
 
 import (
 	"scraper-go/internal/pkg/variation"
+
+	"github.com/google/uuid"
 )
 
 type Store interface {
@@ -14,11 +16,11 @@ type CreateOneRequest struct {
 }
 
 type CreateOneResponse struct {
-	ID string
+	ID uuid.UUID
 }
 
 type FindOneRequest struct {
-	ID string
+	ID uuid.UUID
 }
 
 type FindOneResponse struct {

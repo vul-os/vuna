@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	cloud.google.com/go/bigquery v1.51.0 // indirect
+	cloud.google.com/go/storage v1.30.1 // indirect
 	code.cloudfoundry.org/go-diodes v0.0.0-20190809170250-f77fb823c7ee
 	github.com/PuerkitoBio/goquery v1.6.0
 	github.com/antchfx/htmlquery v1.2.3 // indirect
@@ -12,6 +13,7 @@ require (
 	github.com/go-chi/render v1.0.2 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gocolly/colly v1.2.0
+	github.com/gocolly/colly/v2 v2.1.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/jackc/pgx/v4 v4.10.1
 	github.com/kennygrant/sanitize v1.2.4 // indirect

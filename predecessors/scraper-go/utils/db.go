@@ -3,18 +3,19 @@ package utils
 import (
 	"context"
 	"fmt"
-	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/rs/zerolog/log"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/rs/zerolog/log"
 )
 
 var Pool *pgxpool.Pool
 
 type Items struct {
-	Name string
-	ItemUrl  string
+	Name    string
+	ItemUrl string
 }
 
 // type ProdStruct struct {
@@ -30,7 +31,6 @@ type Items struct {
 // 	Attributes map[string]string
 // 	AvailabilityHtml string
 // }
-
 
 func DoAllDb(products []ProdStruct, productName string, productId int, storeId int, URL string,
 	tagList []Items, catList []Items) {
@@ -90,7 +90,6 @@ func GetStoreIdByUrl(url string) (int, error) {
 	log.Info().Msg(fmt.Sprintf("Store ID: %d", resultId))
 	return resultId, nil
 }
-
 
 func UpsertItemAndProductItem(tableName string, nameField string, item string, urlItem string,
 	productId int, storeId int) (int, error) {
@@ -153,7 +152,6 @@ func UpsertItemAndProductItem(tableName string, nameField string, item string, u
 	log.Info().Msg(fmt.Sprintf("DB Insert product_(%s) ResultID: %d", tableName, resultId))
 	return resultId, nil
 }
-
 
 func UpsertItem(tableName string, nameField string, item string, urlItem string, storeId int) (int, error) {
 	item = strings.ReplaceAll(item, "'", "''")
@@ -270,7 +268,7 @@ func UpsertAttributes(name string, value string, storeId int) (int, error) {
 	return resultId, nil
 }
 
-func UpsertProductAndProductVariations(productId int, attrId int, varIdRaw string, sku string) (int, error){
+func UpsertProductAndProductVariations(productId int, attrId int, varIdRaw string, sku string) (int, error) {
 	sku = strings.ReplaceAll(sku, "'", "''")
 	c, err := Pool.Acquire(context.Background())
 	if err != nil {
@@ -327,7 +325,7 @@ func UpsertProductAndProductVariations(productId int, attrId int, varIdRaw strin
 	return resultId, nil
 }
 
-func UpsertDatapoints(variationId int, stock int, price float32, ) (int, error) {
+func UpsertDatapoints(variationId int, stock int, price float32) (int, error) {
 	queryFind := fmt.Sprintf(`
 		SELECT id FROM datapoints 
 		WHERE variation_id = %d AND stock = %d AND price = %.2f AND date_added = CURRENT_TIMESTAMP`,
@@ -373,4 +371,3 @@ func GenerateConnPool() {
 		log.Error().Err(err).Msg("Error connecting to the database")
 	}
 }
-

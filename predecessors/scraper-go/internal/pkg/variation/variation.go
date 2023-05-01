@@ -1,9 +1,13 @@
 package variation
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Variation struct {
-	ID string `gorm:"id"`
+	ID uuid.UUID `json:"id" gorm:"type:uuid;default:uuid_generate_v4()"`
 
 	Identifier string `gorm:"identifier"` // could be SKU or VariationId
 

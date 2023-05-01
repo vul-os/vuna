@@ -1,11 +1,16 @@
 package product
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Product struct {
-	ID     string `gorm:"id"`
-	Url    string `gorm:"name"`
-	SiteId string `gorm:"site_id"`
+	ID     uuid.UUID `json:"id" gorm:"type:uuid;default:uuid_generate_v4()"`
+	Url    string    `gorm:"name"`
+	SiteId uuid.UUID    `gorm:"site_id"`
+    
 
 	DateAdded   time.Time `gorm:"date_added"`
 	DateUpdated time.Time `gorm:"date_updated"`

@@ -2,13 +2,14 @@ package store
 
 import (
 	"scraper-go/internal/pkg/product"
+
+	"github.com/google/uuid"
 )
 
 type Store interface {
 	CreateOne(CreateOneRequest) (*CreateOneResponse, error)
 	FindOne(FindOneRequest) (*FindOneResponse, error)
 	UpsertOne(UpsertOneRequest) (*UpsertOneResponse, error)
-	
 }
 
 type CreateOneRequest struct {
@@ -16,7 +17,7 @@ type CreateOneRequest struct {
 }
 
 type CreateOneResponse struct {
-	ID string
+	ID uuid.UUID
 }
 
 type UpsertOneRequest struct {
@@ -24,15 +25,13 @@ type UpsertOneRequest struct {
 }
 
 type UpsertOneResponse struct {
-	ID string
+	ID uuid.UUID
 }
 
 type FindOneRequest struct {
-	ID string
+	ID uuid.UUID
 }
 
 type FindOneResponse struct {
 	Product product.Product
 }
-
-

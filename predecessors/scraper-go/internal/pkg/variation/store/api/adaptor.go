@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
+	"github.com/google/uuid"
 )
 
 type api struct {
@@ -41,8 +42,14 @@ func (a api) Routes() chi.Router {
 
 func (a api) FindOne(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
+	u, err := uuid.Parse(id)
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+
 	resp, err := a.store.FindOne(variationStore.FindOneRequest{
-		ID: id,
+		ID: u,
 	})
 	if err != nil {
 		w.Write([]byte(err.Error()))

@@ -1,9 +1,13 @@
 package site
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Site struct {
-	ID   string `gorm:"id"`
+	ID   uuid.UUID `json:"id" gorm:"type:uuid;default:uuid_generate_v4()"`
 	Url  string `gorm:"url"`
 	Name string `gorm:"name"`
 
