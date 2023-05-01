@@ -1,4 +1,4 @@
-package products
+package scraper
 
 import (
 	"encoding/json"
@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	products "scraper-go/internal/pkg/product"
+	utils "scraper-go/internal/pkg/product/scraper/utils"
 	productStore "scraper-go/internal/pkg/product/store"
 	site "scraper-go/internal/pkg/site"
-	"scraper-go/utils"
 
 	"github.com/gocolly/colly"
 	"github.com/rs/zerolog/log"
@@ -18,28 +18,37 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type api struct {
+type scraper struct {
 	store productStore.Store
+	// collector *colly.Collector
 }
 
-func (a api) Routes() chi.Router {
+func New(
+	ps productStore.Store,
+) *scraper {
+	return &scraper{
+		store: ps,
+	}
+}
+
+func (s scraper) Routes() chi.Router {
 	r := chi.NewRouter()
-	r.Post("/", a.ScrapeOne) // POST /products/scrape - scrape a single url
+	r.Post("/", s.ScrapeOne) // POST /products/scrape - scrape a single url
 
 	return r
 }
 
 // Robots.txt scraper
-func (a api) ScrapeOne(w http.ResponseWriter, r *http.Request) {
-	var s site.Site
+func (s scraper) ScrapeOne(w http.ResponseWriter, r *http.Request) {
+	var st site.Site
 
-	err := json.NewDecoder(r.Body).Decode(&s)
+	err := json.NewDecoder(r.Body).Decode(&st)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	baseUrl := strings.TrimSuffix(s.Url, "/")
+	baseUrl := strings.TrimSuffix(st.Url, "/")
 
 	robotsTxtUrl := fmt.Sprintf("%s/robots.txt", baseUrl)
 	log.Info().Msg(
@@ -50,7 +59,7 @@ func (a api) ScrapeOne(w http.ResponseWriter, r *http.Request) {
 	)
 	// Array containing all the known URLs
 	knownUrls := []string{}
-	// Create a Collector specifically for robots.txt and sitemap urls
+	// // Create a Collector specifically for robots.txt and sitemap urls
 	getUrlsCollector := colly.NewCollector()
 
 	// Create a callback on the XPath query searching for the URLs
@@ -66,10 +75,11 @@ func (a api) ScrapeOne(w http.ResponseWriter, r *http.Request) {
 		// old way, use it for logs
 		knownUrls = append(knownUrls, e.Text)
 
-		a.store.CreateOne(productStore.CreateOneRequest{
+		// Todo: go routine? investigate on cloud run
+		s.store.CreateOne(productStore.CreateOneRequest{
 			Product: products.Product{
 				Url:    e.Text, // e.Text is the product Url
-				SiteId: s.Id,
+				SiteId: st.ID,
 			},
 		})
 	})

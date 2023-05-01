@@ -16,6 +16,14 @@ type api struct {
 	store dpStore.Store
 }
 
+func New(
+	dps dpStore.Store,
+) *api {
+	return &api{
+		store: dps,
+	}
+}
+
 // Routes creates a REST router for the products resource
 func (a api) Routes() chi.Router {
 	r := chi.NewRouter()

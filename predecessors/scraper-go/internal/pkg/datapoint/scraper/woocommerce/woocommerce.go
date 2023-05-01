@@ -1,10 +1,12 @@
-package scrapers
+package scraper
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"scraper-go/utils"
+	"net/http"
+	"scraper-go/internal/pkg/datapoint/scraper/utils"
+	"scraper-go/internal/pkg/product"
 	"strconv"
 	"strings"
 
@@ -36,25 +38,24 @@ func Min(values []float32) (min float32, e error) {
 	return min, nil
 }
 
-func Scrape(baseUrl string, numConcurrency int) {
-	baseUrl = strings.TrimSuffix(baseUrl, "/")
+type ScrapeOneRequest struct {
+	Product product.Product `json:"product"`
+	// Site    site.Site `json:"site"`
+	NumConcurrency int `json:"numConcurrency"`
+}
 
-	// storeId, err := utils.GetStoreIdByUrl(baseUrl)
-	// if err != nil {
-	// 	return
-	// }
+func ScrapeOne(w http.ResponseWriter, r *http.Request) {
+	var rq ScrapeOneRequest
 
-	robotsTxtUrl := fmt.Sprintf("%s/robots.txt", baseUrl)
-	log.Info().Msg(
-		fmt.Sprintf(
-			"robots.txt URL: %s",
-			robotsTxtUrl,
-		),
-	)
-	productsCollector := colly.NewCollector(
-		colly.Async(true),
-	)
-	productsCollector.Limit(&colly.LimitRule{DomainGlob: "*", Parallelism: numConcurrency})
+	err := json.NewDecoder(r.Body).Decode(&rq)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	baseUrl := strings.TrimSuffix(rq.Product.Url, "/")
+
+	productsCollector := colly.NewCollector()
 
 	productsCollector.OnHTML(".summary,.entry-summary,.product-summary,.product-info",
 		func(e *colly.HTMLElement) {
@@ -68,7 +69,7 @@ func Scrape(baseUrl string, numConcurrency int) {
 				Find("form[class='variations_form cart']").
 				Attr("data-product_variations")
 
-			var products []utils.ProdStruct
+			var products []product.Product
 
 			if vsResult {
 				// if there are
@@ -97,16 +98,17 @@ func Scrape(baseUrl string, numConcurrency int) {
 					}
 					price := utils.PriceFloatConverter(result.Price, priceReplacer)
 					if maxQty > 0 {
-						products = append(products, utils.ProdStruct{
-							ProductName: productName,
-							ProductUrl:  e.Request.URL.String(),
-							StoreId:     5,
-							VarID:       result.VarID,
-							Sku:         result.Sku,
-							MaxQty:      maxQty,
-							Price:       price,
-							Attributes:  result.Attributes,
-						})
+						fmt.Println(productName, price, maxQty)
+
+						// products = append(products, utils.ProdStruct{
+						// 	ProductName: productName,
+						// 	ProductUrl:  e.Request.URL.String(),
+						// 	StoreId:     5,
+						// 	VarID:       result.VarID,
+						// 	Sku:         result.Sku,
+						// 	MaxQty:      maxQty,
+						// 	Price:       price,
+						// })
 					}
 				}
 			} else {
@@ -174,19 +176,21 @@ func Scrape(baseUrl string, numConcurrency int) {
 					log.Error().Err(err).Msg("Error Converting VarId String to Int!")
 				}
 				if maxQtyInt > 0 && priceFloat > 0 {
-					products = append(products, utils.ProdStruct{
-						ProductName: productName,
-						ProductUrl:  e.Request.URL.String(),
-						StoreId:     5,
-						VarID:       varId,
-						Sku:         sku,
-						MaxQty:      maxQtyInt,
-						Price:       priceFloat,
-						Attributes:  nil,
-					})
+					fmt.Println(varId)
+					// products = append(products, utils.ProdStruct{
+					// 	ProductName: productName,
+					// 	ProductUrl:  e.Request.URL.String(),
+					// 	StoreId:     5,
+					// 	VarID:       varId,
+					// 	Sku:         sku,
+					// 	MaxQty:      maxQtyInt,
+					// 	Price:       priceFloat,
+					// 	Attributes:  nil,
+					// })
 				}
 
 			}
+			fmt.Println("Products: ", products)
 			// productId, err := utils.UpsertItem("products", "product",
 			// 	productName, e.Request.URL.String(), storeId)
 			// if err != nil {

@@ -3,8 +3,8 @@ package adaptor
 import (
 	"net/http"
 
-	products "scraper-go/internal/pkg/product"
-	productsStore "scraper-go/internal/pkg/product/store"
+	product "scraper-go/internal/pkg/product"
+	productStore "scraper-go/internal/pkg/product/store"
 
 	"encoding/json"
 
@@ -13,7 +13,15 @@ import (
 )
 
 type api struct {
-	store productsStore.Store
+	store productStore.Store
+}
+
+func New(
+	ps productStore.Store,
+) *api {
+	return &api{
+		store: ps,
+	}
 }
 
 // Routes creates a REST router for the products resource
@@ -33,7 +41,7 @@ func (a api) Routes() chi.Router {
 
 func (a api) FindOne(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	resp, err := a.store.FindOne(productsStore.FindOneRequest{
+	resp, err := a.store.FindOne(productStore.FindOneRequest{
 		ID: id,
 	})
 	if err != nil {
@@ -45,7 +53,7 @@ func (a api) FindOne(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a api) CreateOne(w http.ResponseWriter, r *http.Request) {
-	var p products.Product
+	var p product.Product
 
 	err := json.NewDecoder(r.Body).Decode(&p)
 	if err != nil {
@@ -53,7 +61,7 @@ func (a api) CreateOne(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := a.store.CreateOne(productsStore.CreateOneRequest{
+	resp, err := a.store.CreateOne(productStore.CreateOneRequest{
 		Product: p,
 	})
 	if err != nil {

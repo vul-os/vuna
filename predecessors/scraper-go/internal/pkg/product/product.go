@@ -1,4 +1,4 @@
-package products
+package product
 
 import "cloud.google.com/go/bigquery"
 

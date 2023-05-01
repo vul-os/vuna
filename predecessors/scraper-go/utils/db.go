@@ -17,19 +17,19 @@ type Items struct {
 	ItemUrl  string
 }
 
-type ProdStruct struct {
-	ProductName string
-	ProductUrl string
-	StoreId 	int
-	Categories []Items
-	Tags []Items
-	VarID      int
-	Sku		   string
-	MaxQty     int
-	Price      float32
-	Attributes map[string]string
-	AvailabilityHtml string
-}
+// type ProdStruct struct {
+// 	ProductName string
+// 	ProductUrl string
+// 	StoreId 	int
+// 	Categories []Items
+// 	Tags []Items
+// 	VarID      int
+// 	Sku		   string
+// 	MaxQty     int
+// 	Price      float32
+// 	Attributes map[string]string
+// 	AvailabilityHtml string
+// }
 
 
 func DoAllDb(products []ProdStruct, productName string, productId int, storeId int, URL string,

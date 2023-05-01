@@ -8,11 +8,11 @@ type Store interface {
 	CreateOne(CreateOneRequest) (*CreateOneResponse, error)
 	FindOne(FindOneRequest) (*FindOneResponse, error)
 	UpsertOne(UpsertOneRequest) (*UpsertOneResponse, error)
-
+	
 }
 
 type CreateOneRequest struct {
-	Product products.Product
+	Product product.Product
 }
 
 type CreateOneResponse struct {
@@ -20,7 +20,7 @@ type CreateOneResponse struct {
 }
 
 type UpsertOneRequest struct {
-	Product products.Product
+	Product product.Product
 }
 
 type UpsertOneResponse struct {
@@ -32,7 +32,7 @@ type FindOneRequest struct {
 }
 
 type FindOneResponse struct {
-	Product products.Product
+	Product product.Product
 }
 
 

@@ -5,13 +5,25 @@ import (
 
 	"context"
 	"fmt"
-	
-	productsStore "scraper-go/internal/pkg/scrapers/products/store"
+
+	dpScraper "scraper-go/internal/pkg/datapoint/scraper"
+	dpStoreApi "scraper-go/internal/pkg/datapoint/store/api"
+	dpStore "scraper-go/internal/pkg/datapoint/store/bigquery"
+	productScraper "scraper-go/internal/pkg/product/scraper"
+	productStoreApi "scraper-go/internal/pkg/product/store/api"
+	productStore "scraper-go/internal/pkg/product/store/gorm"
+	siteStoreApi "scraper-go/internal/pkg/site/store/api"
+	siteStore "scraper-go/internal/pkg/site/store/gorm"
+	varitationStoreApi "scraper-go/internal/pkg/variation/store/api"
+	varitationStore "scraper-go/internal/pkg/variation/store/gorm"
 
 	"cloud.google.com/go/bigquery"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -25,20 +37,6 @@ func main() {
 	r.Use(middleware.URLFormat)
 	r.Use(render.SetContentType(render.ContentTypeJSON))
 
-	// // RESTy routes
-	// r.Route("/store", func(r chi.Router) {
-	// 	// r.Get("/delete", SearchArticles)
-	// 	// r.Get("/scrape", SearchArticles)
-
-	// 	r.Route("/{storeID}", func(r chi.Router) {
-	// 		r.Get("/scrape", GetArticle)       // GET /articles/123
-	// 	})
-	// })
-
-	// r.Route("/product/{productID}", func(r chi.Router) {
-	// 	r.Get("/scrape", SearchArticles)
-	// })
-
 	projectID := "my-project-id"
 	// datasetID := "mydataset"
 	// tableID := "mytable"
@@ -48,9 +46,76 @@ func main() {
 		fmt.Errorf("bigquery.NewClient: %w", err)
 	}
 
-	ProductsStore := productsStore.New(
+	gormDb, err := gorm.Open(postgres.Open("dsn"), &gorm.Config{})
+	if err != nil {
+		log.Fatal().Err(err).Msg("Gorm DB error")
+	}
+
+	SiteStore := siteStore.New(
+		gormDb,
+	)
+
+	ProductStore := productStore.New(
+		gormDb,
+	)
+
+	VaritationStore := varitationStore.New(
+		gormDb,
+	)
+
+	DataPointStore := dpStore.New(
 		client,
 	)
+
+	// APIs
+	SiteStoreApi := siteStoreApi.New(
+		SiteStore,
+	)
+
+	ProductStoreApi := productStoreApi.New(
+		ProductStore,
+	)
+
+	VariationStoreApi := varitationStoreApi.New(
+		VaritationStore,
+	)
+
+	DataPointStoreApi := dpStoreApi.New(
+		DataPointStore,
+	)
+
+	// Scraper APIs
+	ProductScraper := productScraper.New(
+		ProductStore,
+	)
+
+	DataPointScraper := dpScraper.New(
+		ProductStore,
+		VaritationStore,
+		DataPointStore,
+	)
+
+	// Mount the sub-routers
+	r.Route("/site", func(r chi.Router) {
+		r.Mount("/", SiteStoreApi.Routes())
+		// r.Route("/scrape", func(r chi.Router) {
+		// 	r.Mount()
+		// })
+	})
+
+	r.Route("/product", func(r chi.Router) {
+		r.Mount("/", ProductStoreApi.Routes())
+		r.Mount("/scraper", ProductScraper.Routes())
+	})
+
+	r.Route("/variation", func(r chi.Router) {
+		r.Mount("/", VariationStoreApi.Routes())
+	})
+
+	r.Route("/datapoint", func(r chi.Router) {
+		r.Mount("/", DataPointStoreApi.Routes())
+		r.Mount("/scraper", DataPointScraper.Routes())
+	})
 
 	defer client.Close()
 }
