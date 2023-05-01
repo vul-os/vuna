@@ -28,13 +28,15 @@ type Config struct {
 	DatabasePort                   string
 	DatabaseInstanceConnectionName string // for gcp cloud storage
 
+	// gcp bigquery
+	BQClientProjectID string
 }
 
 func GetConfig(configFileName *string) (*Config, error) {
 	// set places to look for config file
 
 	// local
-	viper.AddConfigPath("cmd" + string(os.PathSeparator) + "cog")
+	viper.AddConfigPath("cmd" + string(os.PathSeparator) + "scraper-go")
 	viper.AddConfigPath(".")
 
 	// cloud run

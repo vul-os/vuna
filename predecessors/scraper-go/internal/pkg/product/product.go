@@ -1,14 +1,14 @@
 package product
 
-import "cloud.google.com/go/bigquery"
+import "time"
 
 type Product struct {
-	ID     string `bigquery:"id"`
-	Url    string `bigquery:"name"`
-	SiteId string `bigquery:"site_id"`
+	ID     string `gorm:"id"`
+	Url    string `gorm:"name"`
+	SiteId string `gorm:"site_id"`
 
-	DateAdded   bigquery.NullDate `bigquery:"date_added"`
-	DateUpdated bigquery.NullDate `bigquery:"date_updated"`
+	DateAdded   time.Time `gorm:"date_added"`
+	DateUpdated time.Time `gorm:"date_updated"`
 }
 
 // CREATE TABLE product_variations (

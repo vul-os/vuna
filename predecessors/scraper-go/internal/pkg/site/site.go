@@ -1,14 +1,14 @@
 package site
 
-import "cloud.google.com/go/bigquery"
+import "time"
 
 type Site struct {
-	ID   string `bigquery:"id"`
-	Url  string `bigquery:"url"`
-	Name string `bigquery:"name"`
+	ID   string `gorm:"id"`
+	Url  string `gorm:"url"`
+	Name string `gorm:"name"`
 
-	Technology string `bigquery:"technology"`
+	Technology string `gorm:"technology"`
 
-	DateAdded   bigquery.NullDate `bigquery:"date_added"`
-	DateUpdated bigquery.NullDate `bigquery:"date_updated"`
+	DateAdded   time.Time `gorm:"date_added"`
+	DateUpdated time.Time `gorm:"date_updated"`
 }

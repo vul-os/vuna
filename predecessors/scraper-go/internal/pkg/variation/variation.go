@@ -1,12 +1,12 @@
 package variation
 
-import "cloud.google.com/go/bigquery"
+import "time"
 
 type Variation struct {
-	ID string `bigquery:"id"`
+	ID string `gorm:"id"`
 
-	Identifier string `bigquery:"identifier"` // could be SKU or VariationId
+	Identifier string `gorm:"identifier"` // could be SKU or VariationId
 
-	DateAdded   bigquery.NullDate `bigquery:"date_added"`
-	DateUpdated bigquery.NullDate `bigquery:"date_updated"`
+	DateAdded   time.Time `gorm:"date_added"`
+	DateUpdated time.Time `gorm:"date_updated"`
 }
