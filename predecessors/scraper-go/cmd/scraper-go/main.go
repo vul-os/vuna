@@ -4,17 +4,21 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"context"
-	"fmt"
 	"flag"
+	"fmt"
 
+	"scraper-go/internal/pkg/datapoint"
 	dpScraper "scraper-go/internal/pkg/datapoint/scraper"
 	dpStoreApi "scraper-go/internal/pkg/datapoint/store/api"
 	dpStore "scraper-go/internal/pkg/datapoint/store/bigquery"
+	"scraper-go/internal/pkg/product"
 	productScraper "scraper-go/internal/pkg/product/scraper"
 	productStoreApi "scraper-go/internal/pkg/product/store/api"
 	productStore "scraper-go/internal/pkg/product/store/gorm"
+	"scraper-go/internal/pkg/site"
 	siteStoreApi "scraper-go/internal/pkg/site/store/api"
 	siteStore "scraper-go/internal/pkg/site/store/gorm"
+	"scraper-go/internal/pkg/variation"
 	varitationStoreApi "scraper-go/internal/pkg/variation/store/api"
 	varitationStore "scraper-go/internal/pkg/variation/store/gorm"
 
@@ -22,7 +26,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
-	
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -62,6 +66,13 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("Gorm DB error")
 	}
+
+	err = gormDb.AutoMigrate(
+		site.Site{},
+		product.Product{},
+		variation.Variation{},
+		datapoint.DataPoint{},
+	)
 
 	SiteStore := siteStore.New(
 		gormDb,
