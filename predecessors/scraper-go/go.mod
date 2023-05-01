@@ -20,6 +20,7 @@ require (
 	github.com/projectdiscovery/wappalyzergo v0.0.91 // indirect
 	github.com/rs/zerolog v1.20.0
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect
+	github.com/spf13/viper v1.15.0 // indirect
 	github.com/temoto/robotstxt v1.1.1 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	gorm.io/driver/postgres v1.5.0 // indirect

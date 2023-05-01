@@ -5,6 +5,7 @@ import (
 
 	"context"
 	"fmt"
+	"flag"
 
 	dpScraper "scraper-go/internal/pkg/datapoint/scraper"
 	dpStoreApi "scraper-go/internal/pkg/datapoint/store/api"
@@ -21,12 +22,21 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
-
+	
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
+var configFileName = flag.String("config-file-name", "config", "specify config file")
+
 func main() {
+	// get config
+	config, err := GetConfig(configFileName)
+	if err != nil {
+		log.Fatal().Err(err).Msg("getting config from file")
+	}
+
+		
 	log.Info().Msg("starting server...")
 
 	r := chi.NewRouter()
@@ -46,7 +56,9 @@ func main() {
 		fmt.Errorf("bigquery.NewClient: %w", err)
 	}
 
-	gormDb, err := gorm.Open(postgres.Open("dsn"), &gorm.Config{})
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", config.DatabaseHost,
+		config.DatabaseUser, config.DatabasePassword, config.DatabaseName, config.DatabasePort)
+	gormDb, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal().Err(err).Msg("Gorm DB error")
 	}

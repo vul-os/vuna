@@ -1,0 +1,5 @@
+DatabaseName = "postgres"
+DatabasePassword = "***REMOVED-SECRET***"
+DatabaseUser = "postgres"
+
+ServerPort = "8082"
