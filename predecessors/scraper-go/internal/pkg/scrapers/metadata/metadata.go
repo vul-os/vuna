@@ -1,4 +1,4 @@
-package scraper
+package metadata
 
 import (
 	"encoding/json"
@@ -10,7 +10,6 @@ import (
 	products "scraper-go/internal/pkg/product"
 	productStore "scraper-go/internal/pkg/product/store"
 	site "scraper-go/internal/pkg/site"
-	utils "scraper-go/internal/pkg/site/scraper/utils"
 
 	"github.com/gocolly/colly"
 	"github.com/gocolly/colly/proxy"
@@ -84,8 +83,8 @@ func (s scraper) ScrapeOne(w http.ResponseWriter, r *http.Request) {
 		// Todo: sort this shit out
 		if !(strings.Contains(e.Text, "/product/") ||
 			strings.Contains(e.Text, "/products/") ||
-			strings.Contains(e.Text, "bikemarket.co.za/shop/") ||
-			strings.Contains(e.Text, "bottic.co.za/buy/")) {
+			strings.Contains(e.Text, "/shop/") ||
+			strings.Contains(e.Text, "/buy/")) {
 			return
 		}
 		// old way, use it for logs
@@ -116,7 +115,7 @@ func (s scraper) ScrapeOne(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 	hostName := u.Host
-	robotsLines, err := utils.UrlToLines(robotsTxtUrl)
+	robotsLines, err := UrlToLines(robotsTxtUrl)
 	if err != nil {
 		log.Error().Err(err).Msg(
 			"Err getting hostname",

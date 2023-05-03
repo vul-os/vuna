@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"scraper-go/internal/pkg/product/scraper/utils"
 	"scraper-go/internal/pkg/product"
 	"strconv"
 	"strings"
@@ -93,7 +92,7 @@ func ScrapeOne(w http.ResponseWriter, r *http.Request) {
 
 				// for each variation...
 				for _, result := range results {
-					maxQty := utils.MaxQtyIntConverter(result.MaxQty, maxQtyReplacer)
+					maxQty := MaxQtyIntConverter(result.MaxQty, maxQtyReplacer)
 					if maxQty == 0 {
 						maxQtyStr := result.AvailabilityHtml
 						r := strings.NewReplacer(
@@ -108,7 +107,7 @@ func ScrapeOne(w http.ResponseWriter, r *http.Request) {
 						maxQtyStr = strings.TrimSpace(maxQtyStr)
 						maxQty, _ = strconv.Atoi(maxQtyStr)
 					}
-					price := utils.PriceFloatConverter(result.Price, priceReplacer)
+					price := PriceFloatConverter(result.Price, priceReplacer)
 					if maxQty > 0 {
 						fmt.Println(productName, price, maxQty)
 
@@ -127,15 +126,7 @@ func ScrapeOne(w http.ResponseWriter, r *http.Request) {
 				var priceFloat float32 = 0.00
 				selector := "p[class*='price'] > span[class*='amount']"
 				maxQtySelector := "p[class*='stock'], div[class*='avada-availability'], span[class*='electro-stock-availability'] > p[class*='stock']"
-				if strings.Contains(baseUrl, "biltongandbudz") {
-					selector = "div[class*='product-info'] > div[class*='price'] > " +
-						"p[class*='price'] > span[class*='amount']"
-				} else if strings.Contains(baseUrl, "smokinggunseeds") {
-					maxQtySelector = "div[class*='avada-availability'] > p[class*='stock in-stock']"
-				} else if strings.Contains(baseUrl, "livestainable") {
-					maxQtySelector = "span[class*='electro-stock-availability'] > p[class*='stock in-stock']"
-					selector = ".single-product-wrapper > span[class='electro-price'] * span[class*='woocommerce-Price-amount amount']"
-				}
+
 				if strings.Contains(baseUrl, "livestainable") {
 					var prices []float32
 					// otherwise there are no variations
@@ -153,7 +144,7 @@ func ScrapeOne(w http.ResponseWriter, r *http.Request) {
 				} else {
 					priceStr := querySelection.Find(selector).Text()
 					priceStr = strings.ReplaceAll(strings.ReplaceAll(priceStr, "R", ""), ",", "")
-					priceFloat = utils.PriceFloatConverter(priceStr, priceReplacer)
+					priceFloat = PriceFloatConverter(priceStr, priceReplacer)
 				}
 
 				maxQty := querySelection.Find(maxQtySelector).Text()
@@ -173,7 +164,7 @@ func ScrapeOne(w http.ResponseWriter, r *http.Request) {
 						maxQty = maxQtyNew
 					}
 				}
-				maxQtyInt := utils.MaxQtyIntConverter(maxQty, maxQtyReplacer)
+				maxQtyInt := MaxQtyIntConverter(maxQty, maxQtyReplacer)
 				sku := querySelection.Find("span[class*='sku']").Text()
 				sku = strings.ReplaceAll(sku, "SKU:", "")
 				sku = strings.ReplaceAll(sku, "sku:", "")

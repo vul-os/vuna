@@ -14,7 +14,6 @@ import (
 	// dpStoreApi "scraper-go/internal/pkg/datapoint/store/api"
 	// dpStore "scraper-go/internal/pkg/datapoint/store/bigquery"
 	"scraper-go/internal/pkg/product"
-	productScraper "scraper-go/internal/pkg/product/scraper"
 	productStoreApi "scraper-go/internal/pkg/product/store/api"
 	productStore "scraper-go/internal/pkg/product/store/gorm"
 	"scraper-go/internal/pkg/site"
@@ -110,11 +109,6 @@ func main() {
 	// 	DataPointStore,
 	// )
 
-	// Scraper APIs
-	ProductScraper := productScraper.New(
-		ProductStore,
-	)
-
 	// DataPointScraper := dpScraper.New(
 	// 	ProductStore,
 	// 	VaritationStore,
@@ -131,7 +125,6 @@ func main() {
 
 	r.Route("/product", func(r chi.Router) {
 		r.Mount("/", ProductStoreApi.Routes())
-		r.Mount("/scraper", ProductScraper.Routes())
 	})
 
 	r.Route("/variation", func(r chi.Router) {
