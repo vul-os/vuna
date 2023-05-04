@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 logger = logging.getLogger(__name__)
 
 
-class WebScraper:
+class MetaScraper:
     def __init__(self):
         self.known_urls = []
 
