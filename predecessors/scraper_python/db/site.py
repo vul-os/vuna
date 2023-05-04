@@ -1,47 +1,3 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-
-from api import site, product, variation
-from db.base import Base, engine
-
-Base.metadata.create_all(bind=engine)
-
-app = FastAPI()
-
-# Add routes for each table
-app.include_router(site.router, prefix="/site", tags=["site"])
-app.include_router(product.router, prefix="/product", tags=["product"])
-app.include_router(variation.router, prefix="/variation", tags=["variation"])
-
-# CORS settings
-origins = [
-    "http://localhost",
-    "http://localhost:8080",
-    "https://example.com",
-    "https://www.example.com",
-]
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-db/base.py:
-
-python
-Copy code
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-
-engine = create_engine("postgresql://user:password@localhost/db_name")
-SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
-Base = declarative_base()
-db/site.py:
-
-python
-Copy code
 from datetime import datetime
 import uuid
 
@@ -98,9 +54,3 @@ class Site(Base):
         with SessionLocal() as session:
             session.delete(self)
             session.commit()
-
-
-
-
-
-
