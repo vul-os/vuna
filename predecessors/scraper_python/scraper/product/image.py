@@ -1,17 +1,15 @@
-import hashlib
 import io
 import os
-from urllib.parse import urlparse
 import uuid
-
-from google.cloud import storage
+import hashlib
 import requests
+from urllib.parse import urlparse
 
 
 class GCSUploader:
-    def __init__(self, bucket_name):
+    def __init__(self, storage_client, bucket_name):
+        self.storage_client = storage_client
         self.bucket_name = bucket_name
-        self.client = storage.Client()
 
     def upload_image(self, image_url, site_id):
         # Fetch the image from the URL

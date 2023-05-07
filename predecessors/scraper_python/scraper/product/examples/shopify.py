@@ -1,5 +1,4 @@
 import requests
-from google.cloud import storage
 from fake_useragent import UserAgent
 
 class Scraper:
