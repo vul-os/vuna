@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Union
 
 
-class ScraperData(dict):
+class ProductData(dict):
     name: Optional[str]
     url: Optional[str]
     sku: Optional[str]
@@ -16,7 +16,6 @@ class Scraper(ABC):
     def __init__(
         self,
         proxies: Optional[Dict[str, str]] = None,
-        bucket_name: Optional[str] = None,
     ):
         """
         Initialize the scraper with optional arguments.
@@ -29,7 +28,7 @@ class Scraper(ABC):
         self.bucket_name = bucket_name
 
     @abstractmethod
-    def __call__(self, site_url: str) -> ScraperData:
+    def __call__(self, site_url: str) -> List[ProductData]:
         """
         Scrape the site at the specified URL and return a dictionary with the following keys:
 
@@ -43,3 +42,18 @@ class Scraper(ABC):
         - 'image_url': the URL of the product image (str)
         """
         pass
+
+    @staticmethod(f)
+    def validate_data(self, data: Dict[str, Any]) -> bool:
+        """
+        Validate scraped data to ensure it is not blank.
+
+        Returns:
+            bool: True if the scraped data is valid, False otherwise.
+        """
+        if not data["name"]:
+            return False
+        if not data["url"]:
+            return False
+
+        return True

@@ -41,14 +41,15 @@ class Variation(Base):
         with SessionLocal() as session:
             return session.query(cls).all()
 
-    def update(self, product_id: Optional[uuid.UUID] = None, identifier: Optional[str] = None):
+    @classmethod
+    def merge(cls, product_id: uuid.UUID, identifier: str):
         with SessionLocal() as session:
-            if product_id is not None:
-                self.product_id = product_id
-            if identifier is not None:
-                self.identifier = identifier
-            self.date_updated = datetime.now()
+            variation = session.query(cls).filter(cls.product_id == product_id, cls.identifier == identifier).one_or_none()
+            if variation is None:
+                variation = cls(product_id=product_id, identifier=identifier)
+                session.add(variation)
             session.commit()
+            return variation
 
     def delete(self):
         with SessionLocal() as session:

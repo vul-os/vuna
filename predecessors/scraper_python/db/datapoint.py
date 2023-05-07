@@ -42,18 +42,21 @@ class DataPoint(Base):
         with SessionLocal() as session:
             return session.query(cls).all()
 
-    def update(self, var_id: Optional[uuid.UUID] = None, max_qty: Optional[int] = None, price: Optional[float] = None):
-        with SessionLocal() as session:
-            if var_id is not None:
-                self.var_id = var_id
-            if max_qty is not None:
-                self.max_qty = max_qty
-            if price is not None:
-                self.price = price
-            self.date_updated = datetime.now()
-            session.commit()
-
     def delete(self):
         with SessionLocal() as session:
             session.delete(self)
             session.commit()
+
+    @classmethod
+    def merge(cls, var_id: uuid.UUID, max_qty: int, price: float):
+        with SessionLocal() as session:
+            datapoint = session.query(cls).filter(cls.var_id == var_id).one_or_none()
+            if datapoint is None:
+                datapoint = cls(id=str(uuid.uuid4()), var_id=var_id, max_qty=max_qty, price=price)
+                session.add(datapoint)
+            else:
+                datapoint.max_qty = max_qty
+                datapoint.price = price
+                datapoint.date_updated = datetime.now()
+            session.commit()
+            return datapoint

@@ -12,16 +12,19 @@ class GCSUploader:
         self.bucket_name = bucket_name
 
     def upload_image(self, image_url, site_id):
+        gcs_url = self._get_gcs_url(image_url, site_id)
+
+        bucket = self.client.bucket(self.bucket_name)
+        blob = bucket.blob(gcs_url)
+
+        if blob.exists():
+            return gcs_url
+
         # Fetch the image from the URL
         response = requests.get(image_url)
         response.raise_for_status()
         image_bytes = io.BytesIO(response.content).read()
 
-        gcs_url = self._get_gcs_url(image_url, site_id)
-
-        # Upload the image to Google Cloud Storage
-        bucket = self.client.bucket(self.bucket_name)
-        blob = bucket.blob(gcs_url)
         blob.upload_from_string(image_bytes)
 
         return gcs_url

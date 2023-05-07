@@ -54,8 +54,24 @@ class Site(Base):
                 self.scraperfile = scraperfile
             self.date_updated = datetime.now()
             session.commit()
+    
+    @classmethod
+    def merge(cls, url: str, name: str, technology: str, scraperfile: Optional[str] = None):
+        with SessionLocal() as session:
+            site = session.query(cls).filter(cls.url == url).one_or_none()
+            if site is None:
+                site = cls(url=url, name=name, technology=technology, scraperfile=scraperfile)
+                session.add(site)
+            else:
+                site.name = name
+                site.technology = technology
+                if scraperfile is not None:
+                    site.scraperfile = scraperfile
+            session.commit()
+            return site
 
     def delete(self):
         with SessionLocal() as session:
             session.delete(self)
             session.commit()
+
