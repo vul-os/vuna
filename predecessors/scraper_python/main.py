@@ -10,19 +10,7 @@ import uvicorn
 
 app = FastAPI()
 
-app.include_router(scraper_router)
-
-
-
-@app.on_event("startup")
-async def startup():
-    await base.Base().connect()
-    base.Base().metadata.create_all(bind=base.engine)
-
-
-@app.on_event("shutdown")
-async def shutdown():
-    await base.Base().disconnect()
+app.include_router(scraper_router, prefix="/scraper")
 
 
 @app.get("/")

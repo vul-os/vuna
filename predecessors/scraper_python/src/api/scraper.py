@@ -18,24 +18,17 @@ router = APIRouter()
 scraper_cache = TTLCache(maxsize=100, ttl=600)
 
 # Create a GCSUploader object
-storage_client = storage.Client()
-image_uploader = GCSUploader(storage_client, config.gcs_bucket_name)
+storage_client = storage.Client() if config.gcs_bucket_name else None
+image_uploader = GCSUploader(storage_client, config.gcs_bucket_name) if storage_client else None
 
 @router.get("/meta/{site_id}/{base_url}")
-async def meta(site_id: uuid.UUID, base_url: str) -> List[str]:
+async def meta(site_id: str, base_url: str) -> List[str]:
     # Use the database settings to create a database session
     try:
+        url = f"https://{requests.utils.unquote(base_url)}"
+        
         scraper = MetaScraper()
-        product_urls = scraper.scrape(base_url=base_url)
-
-        # Get the site from the database
-        site = Site.get(site_id)
-        if site is None:
-            raise HTTPException(status_code=404, detail="Site not found")
-
-        # Add the products to the database
-        for url in product_urls:
-            site.add_product(url)
+        product_urls = scraper.scrape(base_url=url)
 
         return product_urls
 
@@ -56,7 +49,7 @@ async def product_scrape(site_id: str, product_url_encoded: str, proxies: List[s
                          script_gcs_bucket_name: str, scraper_filename: str, 
                          image_bucket_name: str) -> dict:
     try:
-        product_url = requests.utils.unquote(product_url_encoded)
+        product_url = f"https://{requests.utils.unquote(product_url_encoded)}"
 
         # Set up scraper and orchestrator
         scraper = get_scraper(script_gcs_bucket_name=script_gcs_bucket_name, scraper_filename=scraper_filename)()

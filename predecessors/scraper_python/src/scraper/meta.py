@@ -6,8 +6,10 @@ from bs4 import BeautifulSoup
 
 from src.db.product import Product
 
-logger = logging.getLogger(__name__)
+from requests.exceptions import RequestException
 
+
+logger = logging.getLogger(__name__)
 
 class MetaScraper:
     def __init__(self):
@@ -33,7 +35,6 @@ class MetaScraper:
             f'{base_url}/sitemap_index.xml',
         ]
         sitemap_urls.extend(default_sitemap_urls)
-
         # Parse sitemaps for URLs
         for sitemap_url in sitemap_urls:
             logger.info('Parsing sitemap: %s', sitemap_url)
@@ -43,13 +44,17 @@ class MetaScraper:
 
         # Filter URLs for ecommerce product URLs
         product_urls = self._filter_product_urls(self.known_urls)
-
+        print(self.known_urls)
         return product_urls
 
     def _url_to_text(self, url: str) -> str:
-        response = requests.get(url)
-        response.raise_for_status()
-        return response.text
+        try:
+            response = requests.get(url)
+            return response.text
+        except RequestException as myEx:
+            print(myEx)
+            logger.exception(f"Error retrieving {url}: {myEx}")
+            return ""
 
     def _parse_robots_txt(self, text: str) -> List[str]:
         sitemap_urls = []
@@ -59,8 +64,11 @@ class MetaScraper:
                 sitemap_urls.append(url)
         return sitemap_urls
 
-    def _parse_sitemap(self, text: str) -> List[str]:
-        soup = BeautifulSoup(text, 'html.parser')
+    def _parse_sitemap(self, text) -> List[str]:
+        # soup = BeautifulSoup(content, "lxml", features="xml")
+        # soup = BeautifulSoup(html, features='html.parser')
+        soup = BeautifulSoup(text, features="xml")
+
         urls = [loc.text for loc in soup.find_all('loc')]
         return urls
 

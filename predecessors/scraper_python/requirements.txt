@@ -15,11 +15,16 @@ grpc-google-iam-v1==0.12.6
 grpcio==1.54.0
 grpcio-status==1.54.0
 h11==0.14.0
+lxml==4.9.2
 proto-plus==1.22.2
 protobuf==4.22.4
+psycopg2-binary==2.9.6
 pyasn1==0.5.0
 pyasn1-modules==0.3.0
 pydantic==1.10.7
+pylint-plugin-utils==0.7
+pylint-pydantic==0.1.8
+python-dotenv==1.0.0
 rsa==4.9
 SQLAlchemy==2.0.12
 starlette==0.26.1
