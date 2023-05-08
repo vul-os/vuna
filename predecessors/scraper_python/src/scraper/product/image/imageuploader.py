@@ -14,7 +14,7 @@ class GCSUploader:
     def upload_image(self, image_url, site_id):
         gcs_url = self._get_gcs_url(image_url, site_id)
 
-        bucket = self.client.bucket(self.bucket_name)
+        bucket = self.storage_client.bucket(self.bucket_name)
         blob = bucket.blob(gcs_url)
 
         if blob.exists():

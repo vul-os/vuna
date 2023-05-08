@@ -15,10 +15,12 @@ class Site(Base):
     name: str = Column(String, nullable=False)
     technology: str = Column(String, nullable=False)
 
+    technology: str = Column(String, nullable=False)
+
     date_added: datetime = Column(DateTime, nullable=False, server_default=text("now()"))
     date_updated: datetime = Column(DateTime, nullable=False, server_default=text("now()"))
 
-    scraperfile: Optional[str] = Column(String, nullable=True)
+    scraperfile: Optional[str] = Column(String, nullable=False)
 
     def __repr__(self):
         return f"<Site(id={self.id}, name={self.name}, url={self.url})>"

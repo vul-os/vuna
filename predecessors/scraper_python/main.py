@@ -1,106 +1,38 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-
-from api import site, product, variation
-from db.base import Base, engine
-
-Base.metadata.create_all(bind=engine)
+from db import base
+from db.site import Site
+from db.product import Product
+from db.variation import Variation
+from db.datapoint import DataPoint
+from api.site import site_router
+from api.product import product_router
+from api.variation import variation_router
+from api.datapoint import datapoint_router
 
 app = FastAPI()
 
-# Add routes for each table
-app.include_router(site.router, prefix="/site", tags=["site"])
-app.include_router(product.router, prefix="/product", tags=["product"])
-app.include_router(variation.router, prefix="/variation", tags=["variation"])
-
-# CORS settings
-origins = [
-    "http://localhost",
-    "http://localhost:8080",
-    "https://example.com",
-    "https://www.example.com",
-]
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-db/base.py:
-
-python
-Copy code
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-
-engine = create_engine("postgresql://user:password@localhost/db_name")
-SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
-Base = declarative_base()
-db/site.py:
-
-python
-Copy code
-from datetime import datetime
-import uuid
-
-from sqlalchemy import Column, String, DateTime, text
-from sqlalchemy.dialects.postgresql import UUID
-
-from db.base import Base, SessionLocal
-
-class Site(Base):
-    __tablename__ = "sites"
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    url = Column(String, nullable=False)
-    name = Column(String, nullable=False)
-    technology = Column(String, nullable=False)
-
-    date_added = Column(DateTime, nullable=False, server_default=text("now()"))
-    date_updated = Column(DateTime, nullable=False, server_default=text("now()"))
-
-    def __repr__(self):
-        return f"<Site(id={self.id}, name={self.name})>"
-
-    @classmethod
-    def create(cls, url, name, technology):
-        site = cls(url=url, name=name, technology=technology)
-        with SessionLocal() as session:
-            session.add(site)
-            session.commit()
-            session.refresh(site)
-        return site
-
-    @classmethod
-    def get(cls, site_id):
-        with SessionLocal() as session:
-            return session.query(cls).filter(cls.id == site_id).one_or_none()
-
-    @classmethod
-    def get_all(cls):
-        with SessionLocal() as session:
-            return session.query(cls).all()
-
-    def update(self, url=None, name=None, technology=None):
-        with SessionLocal() as session:
-            if url is not None:
-                self.url = url
-            if name is not None:
-                self.name = name
-            if technology is not None:
-                self.technology = technology
-            self.date_updated = datetime.now()
-            session.commit()
-
-    def delete(self):
-        with SessionLocal() as session:
-            session.delete(self)
-            session.commit()
+app.include_router(site_router)
+app.include_router(product_router)
+app.include_router(variation_router)
+app.include_router(datapoint_router)
 
 
+@app.on_event("startup")
+async def startup():
+    await base.Base().connect()
+    base.Base().metadata.create_all(bind=base.engine)
 
 
+@app.on_event("shutdown")
+async def shutdown():
+    await base.Base().disconnect()
 
 
+@app.get("/")
+async def root():
+    return {"message": "Hello World"}
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

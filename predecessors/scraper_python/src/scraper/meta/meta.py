@@ -4,6 +4,7 @@ from typing import List
 import requests
 from bs4 import BeautifulSoup
 
+from src.db.product import Product
 
 logger = logging.getLogger(__name__)
 
@@ -11,6 +12,13 @@ logger = logging.getLogger(__name__)
 class MetaScraper:
     def __init__(self):
         self.known_urls = []
+
+    def __call__(self, base_url: str, site_id: uuid.UUID, session):
+        products = self.scrape(base_url)
+
+        # Save products to db
+        for p in products:
+            Product.merge(url=p.url, site_id=site_id, session=session)
 
     def scrape(self, base_url: str) -> List[str]:
         # Parse robots.txt

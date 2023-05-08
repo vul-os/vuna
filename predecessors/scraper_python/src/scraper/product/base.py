@@ -25,7 +25,6 @@ class Scraper(ABC):
             bucket_name (str, optional): The name of the Google Cloud Storage bucket to upload scraped images to.
         """
         self.proxies = proxies
-        self.bucket_name = bucket_name
 
     @abstractmethod
     def __call__(self, site_url: str) -> List[ProductData]:
@@ -42,18 +41,3 @@ class Scraper(ABC):
         - 'image_url': the URL of the product image (str)
         """
         pass
-
-    @staticmethod(f)
-    def validate_data(self, data: Dict[str, Any]) -> bool:
-        """
-        Validate scraped data to ensure it is not blank.
-
-        Returns:
-            bool: True if the scraped data is valid, False otherwise.
-        """
-        if not data["name"]:
-            return False
-        if not data["url"]:
-            return False
-
-        return True

@@ -1,9 +1,11 @@
-from datetime import datetime
 import uuid
 from typing import Optional
+from datetime import datetime
+
 from sqlalchemy import Column, Integer, Float, String, DateTime, text, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+
 from db.base import Base, SessionLocal
 
 class DataPoint(Base):
