@@ -6,7 +6,7 @@ from sqlalchemy import Column, Integer, Float, String, DateTime, text, ForeignKe
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
-from db.base import Base, SessionLocal
+from src.db.base import Base, SessionLocal
 
 class DataPoint(Base):
     __tablename__ = "datapoints"

@@ -12,11 +12,10 @@ from src.scraper.product.image.imageuploader import GCSUploader
 
 
 class ProductScraper:
-    def __init__(self, site_id: str, scraper: ScraperLoader, session: Session, proxies: List[str],
+    def __init__(self, site_id: str, scraper: ScraperLoader, proxies: List[str],
                  image_uploader: GCSUploader = None):
         self.site_id = site_id
         self.scraper = scraper
-        self.session = session
         self.proxies = proxies
         self.image_uploader = image_uploader
 
@@ -62,8 +61,6 @@ class ProductScraper:
                     self.image_uploader.upload_image(image_url.strip(), self.site_id)
 
         # Update product metadata
-        product.date_updated = datetime.now()
-
-        self.session.commit()
+        # product.date_updated = datetime.now()
 
         return product_data

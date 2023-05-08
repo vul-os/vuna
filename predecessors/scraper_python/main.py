@@ -1,11 +1,17 @@
+import os
+
+os.environ['CONFIG_PATH'] = str("/workspace/scraper_python/config.env")
+
 from fastapi import FastAPI
 
 from src.db import base
+from src.api.scraper import router as scraper_router
 import uvicorn
 
 app = FastAPI()
 
-app.include_router(site_router)
+app.include_router(scraper_router)
+
 
 
 @app.on_event("startup")

@@ -5,7 +5,7 @@ from typing import Optional
 from sqlalchemy import Column, String, DateTime, text
 from sqlalchemy.dialects.postgresql import UUID
 
-from db.base import Base, SessionLocal
+from src.db.base import Base, SessionLocal
 
 class Site(Base):
     __tablename__ = "sites"

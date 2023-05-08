@@ -2,10 +2,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from src.config.setting import Settings  # import your Settings class
+from src.config.config import config  # import your Settings class
 
-settings = Settings()
-
-engine = create_engine(settings.postgre_dsn())
+engine = create_engine(config.db_url)
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 Base = declarative_base()

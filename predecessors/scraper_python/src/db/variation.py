@@ -4,7 +4,7 @@ from typing import Optional
 from sqlalchemy import Column, String, DateTime, text, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from db.base import Base, SessionLocal
+from src.db.base import Base, SessionLocal
 
 class Variation(Base):
     __tablename__ = "variations"

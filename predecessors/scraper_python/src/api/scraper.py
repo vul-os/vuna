@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import APIRouter, HTTPException
 from typing import List
 import uuid
 import requests
@@ -10,20 +10,18 @@ from src.db.site import Site
 from src.db.base import SessionLocal
 from src.scraper.product.image.imageuploader import GCSUploader
 
-from src.config.setting import Settings  # import your Settings class
+from src.config.config import config  # import your Settings class
 
-app = FastAPI()
-settings = Settings()
-
+router = APIRouter()
 # Define a cache for ScraperLoader instances
 # The cache will store up to 100 instances for up to 10 minutes
 scraper_cache = TTLCache(maxsize=100, ttl=600)
 
 # Create a GCSUploader object
 storage_client = storage.Client()
-image_uploader = GCSUploader(storage_client, settings.gcs_bucket_name)
+image_uploader = GCSUploader(storage_client, config.gcs_bucket_name)
 
-@app.get("/meta/{site_id}/{base_url}")
+@router.get("/meta/{site_id}/{base_url}")
 async def meta(site_id: uuid.UUID, base_url: str) -> List[str]:
     # Use the database settings to create a database session
     try:
@@ -39,13 +37,9 @@ async def meta(site_id: uuid.UUID, base_url: str) -> List[str]:
         for url in product_urls:
             site.add_product(url)
 
-        # Commit the changes to the database
-        session.commit()
-
         return product_urls
+
     except Exception as e:
-        # Roll back the changes to the database on error
-        session.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -57,29 +51,21 @@ def get_scraper(script_gcs_bucket_name: str, scraper_filename: str) -> ScraperLo
     return ScraperLoader(script_gcs_bucket_name=script_gcs_bucket_name, scraper_filename=scraper_filename)
 
 
-@app.post("/product_scrape/{site_id}/{product_url_encoded}")
+@router.post("/product_scrape/{site_id}/{product_url_encoded}")
 async def product_scrape(site_id: str, product_url_encoded: str, proxies: List[str], 
                          script_gcs_bucket_name: str, scraper_filename: str, 
                          image_bucket_name: str) -> dict:
     try:
         product_url = requests.utils.unquote(product_url_encoded)
 
-        # Use the database settings to create a database session
-        session = SessionLocal(bind=settings.db_dsn)
-
         # Set up scraper and orchestrator
         scraper = get_scraper(script_gcs_bucket_name=script_gcs_bucket_name, scraper_filename=scraper_filename)()
 
         # Scrape product
-        product_scraper = ProductScraper(site_id=site_id, scraper=scraper,
-                                         session=session, proxies=proxies,
+        product_scraper = ProductScraper(site_id=site_id, scraper=scraper, proxies=proxies,
                                          image_uploader=image_uploader)
         product_data = product_scraper(product_url=product_url)
 
-        # Commit changes to the database
-        session.commit()
-
         return product_data
     except Exception as ex:
-        session.rollback()
         raise HTTPException(status_code=500, detail=str(ex))
