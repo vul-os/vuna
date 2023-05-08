@@ -20,10 +20,7 @@ class ProductScraper:
         self.proxies = proxies
         self.image_uploader = image_uploader
 
-    def scrape_product(self, product_url: str):
-        # scraper_loader = ScraperLoader(site_id=self.site_id, proxies=self.proxies,
-        #                                image_bucket_name=image_bucket_name)
-        # scraper = scraper_loader()
+    def __call__(self, product_url: str):
 
         product_data = self.scraper(product_url, self.proxies)
 
@@ -68,3 +65,5 @@ class ProductScraper:
         product.date_updated = datetime.now()
 
         self.session.commit()
+
+        return product_data

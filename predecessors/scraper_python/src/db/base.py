@@ -1,12 +1,11 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-import yaml
 
-config = yaml.safe_load(open("config.yml"))
+from src.config.setting import Settings  # import your Settings class
 
-db_url = f"postgresql://{config['db']['user']}:{config['db']['password']}@{config['db']['host']}:{config['db']['port']}/{config['db']['database']}"
+settings = Settings()
 
-engine = create_engine(db_url)
+engine = create_engine(settings.postgre_dsn())
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 Base = declarative_base()

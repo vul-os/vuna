@@ -4,10 +4,12 @@ from google.cloud import storage
 
 
 class ScraperLoader:
-    def __init__(self, script_gsc_bucket_name: str, script_cache_dir: str, scraper_filename: str):
-        self.script_gsc_bucket_name = script_gsc_bucket_name
-        self.script_cache_dir = script_cache_dir
+    def __init__(self, script_gcs_bucket_name: str, scraper_filename: str,  script_cache_dir: str = None):
+        self.script_gcs_bucket_name = script_gcs_bucket_name
         self.scraper_filename = scraper_filename
+        # Create the full path to the cache directory in /tmp
+        self.script_cache_dir = os.path.join("/tmp", "scraper_scripts") if not script_cache_dir else script_cache_dir
+        self.check_cache_dir()
         
     def __call__(self):
         # Check cache directory for scraper file
@@ -16,7 +18,7 @@ class ScraperLoader:
         if not os.path.isfile(scraper_file):
             # Download scraper file from GCS
             storage_client = storage.Client()
-            bucket = storage_client.get_bucket(self.script_gsc_bucket_name)
+            bucket = storage_client.get_bucket(self.script_gcs_bucket_name)
             blob = bucket.blob(f"{self.scraper_filename}")
             scraper_code = blob.download_as_string().decode('utf-8')
 
@@ -34,3 +36,8 @@ class ScraperLoader:
 
         # Instantiate the scraper and return it
         return scraper_class()
+    
+    def check_cache_dir(self):
+        # Make the cache directory if it doesn't exist
+        if not os.path.exists(self.script_cache_dir):
+            os.makedirs(self.script_cache_dir)
