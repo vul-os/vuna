@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from typing import List
+from typing import List, Dict, Union
 import uuid
 import requests
 from cachetools import cached, TTLCache
@@ -22,7 +22,7 @@ storage_client = storage.Client() if config.gcs_bucket_name else None
 image_uploader = GCSUploader(storage_client, config.gcs_bucket_name) if storage_client else None
 
 @router.get("/meta/{site_id}/{base_url}")
-async def meta(site_id: str, base_url: str) -> List[str]:
+async def meta(site_id: str, base_url: str) -> Dict[str, Union[List[str], int]]:
     # Use the database settings to create a database session
     try:
         url = f"https://{requests.utils.unquote(base_url)}"
@@ -30,7 +30,7 @@ async def meta(site_id: str, base_url: str) -> List[str]:
         scraper = MetaScraper()
         product_urls = scraper.scrape(base_url=url)
 
-        return product_urls
+        return {"product_urls": product_urls, "len": len(product_urls)}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

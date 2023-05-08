@@ -22,6 +22,29 @@ class MetaScraper:
         for p in products:
             Product.merge(url=p.url, site_id=site_id)
 
+    def parse_sitemaps(self, sitemap_urls):
+        """
+        Recursively parse sitemaps for URLs.
+
+        Args:
+            sitemap_urls (list): A list of sitemap URLs.
+
+        Returns:
+            list: A list of known URLs after parsing all sitemaps.
+        """
+        # Parse sitemaps for URLs
+        for sitemap_url in sitemap_urls:
+            logger.info('Parsing sitemap: %s', sitemap_url)
+            sitemap_text = self._url_to_text(sitemap_url)
+            urls = self._parse_sitemap(sitemap_text)
+            # Check for nested sitemaps
+            nested_sitemap_urls = [url for url in urls if ".xml" in url]
+            if nested_sitemap_urls:
+                self.parse_sitemaps(nested_sitemap_urls)
+            else:
+                u = [url for url in urls if 'jpg' not in url and 'cdn' not in url]
+                self.known_urls.extend(u)
+
     def scrape(self, base_url: str) -> List[str]:
         # Parse robots.txt
         robots_url = f'{base_url}/robots.txt'
@@ -36,15 +59,10 @@ class MetaScraper:
         ]
         sitemap_urls.extend(default_sitemap_urls)
         # Parse sitemaps for URLs
-        for sitemap_url in sitemap_urls:
-            logger.info('Parsing sitemap: %s', sitemap_url)
-            sitemap_text = self._url_to_text(sitemap_url)
-            urls = self._parse_sitemap(sitemap_text)
-            self.known_urls.extend(urls)
-
+        self.parse_sitemaps(sitemap_urls)
+        print(self.known_urls)
         # Filter URLs for ecommerce product URLs
         product_urls = self._filter_product_urls(self.known_urls)
-        print(self.known_urls)
         return product_urls
 
     def _url_to_text(self, url: str) -> str:
@@ -76,6 +94,9 @@ class MetaScraper:
         product_urls = []
         for url in urls:
             path = url.split('//', 1)[-1].split('/', 1)[-1]
-            if any(keyword in path for keyword in ['/product/', '/products/', '/shop/', '/buy/']):
-                product_urls.append(url)
+            if any(keyword in path for keyword in ['product', 'products', 'collections', 'pages']):
+                # Add the base URL if it's not already included in the product URL
+                base_url = url.split('/' + path, 1)[0]
+                product_url = base_url + '/' + path
+                product_urls.append(product_url)
         return product_urls
