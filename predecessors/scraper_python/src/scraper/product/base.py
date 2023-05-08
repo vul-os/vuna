@@ -1,18 +1,44 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
+
+class VariantData(dict):
+    """
+    Represents variant data.
+
+    Attributes:
+        identifier (str): The identifier of the variant.
+        price (float): The price of the variant.
+        max_qty (int): The maximum quantity of the variant available.
+        attributes (Optional[List[Dict[str, Any]]]): A list of dictionaries representing the variant attributes, where each dictionary has keys 'name' and 'value'.
+        image_urls (List[str]): A list of image URLs for the variant.
+    """
+    identifier: str
+    price: float
+    max_qty: int
+    attributes: Optional[List[Dict[str, Any]]]
+    image_urls: List[str]
 
 class ProductData(dict):
-    name: Optional[str]
-    url: Optional[str]
-    sku: Optional[str]
-    price: Optional[float]
-    max_qty: Optional[int]
-    attributes: Optional[List[Dict[str, Any]]]
-    image_url: Optional[str]
+    """
+    Represents product data.
 
+    Attributes:
+        name (str): The name of the product.
+        url (str): The URL of the product page.
+        variants (List[VariantData]): A list of variant data.
+    """
+    name: str
+    url: str
+    variants: List[VariantData]
 
 class Scraper(ABC):
+    """
+    Abstract base class for scrapers.
+
+    Attributes:
+        proxies (Optional[Dict[str, str]]): A dictionary of proxies to be used with the scraper.
+    """
     def __init__(
         self,
         proxies: Optional[Dict[str, str]] = None,
@@ -22,22 +48,17 @@ class Scraper(ABC):
 
         Args:
             proxies (dict, optional): A dictionary of proxies to be used with the scraper.
-            bucket_name (str, optional): The name of the Google Cloud Storage bucket to upload scraped images to.
         """
         self.proxies = proxies
 
     @abstractmethod
-    def __call__(self, site_url: str) -> List[ProductData]:
+    def __call__(self, site_url: str) -> ProductData:
         """
-        Scrape the site at the specified URL and return a dictionary with the following keys:
+        Scrape the site at the specified URL and return a list of ProductData objects.
 
-        - 'name': the name of the product (str)
-        - 'url': the URL of the product page (str)
-        - 'sku': the product SKU (str)
-        - 'price': the price of the product (float)
-        - 'max_qty': the maximum quantity of the product available (int)
-        - 'attributes': a list of dictionaries representing the product attributes, where each dictionary has keys
-          'name' and 'value' (List[Dict[str, Any]])
-        - 'image_url': the URL of the product image (str)
+        Args:
+            site_url (str): The URL of the site to scrape.
+
+        Returns:
+            List[ProductData]: A list of ProductData objects representing the scraped product data.
         """
-        pass

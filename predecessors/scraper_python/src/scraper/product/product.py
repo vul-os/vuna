@@ -1,77 +1,70 @@
-import uuid
 from datetime import datetime
-from typing import Optional, List, Dict, Any
+from typing import List
 
 from sqlalchemy.orm import Session
 
-from db.product import Product
-from src.db import Variation
-from src.db.models.datapoint import DataPoint
-from src.db.models.attribute import Attribute
+from src.db.product import Product
+from src.db.variation import Variation
+from src.db.datapoint import DataPoint
 
-from scraper_loader import ScraperLoader
+from src.scraper.product.loader import ScraperLoader
+from src.scraper.product.image.imageuploader import GCSUploader
 
 
+class ProductScraper:
+    def __init__(self, site_id: str, scraper: ScraperLoader, session: Session, proxies: List[str],
+                 image_uploader: GCSUploader = None):
+        self.site_id = site_id
+        self.scraper = scraper
+        self.session = session
+        self.proxies = proxies
+        self.image_uploader = image_uploader
 
-def scrape_product(site_id: str, scraper: ScraperLoader,
-                   product_url: str, session: Session, proxies: Optional[dict] = None,
-                   image_uploader: GCSUploader = None):
-    # scraper_loader = ScraperLoader(site_id=site_id, proxies=proxies,
-    #                                image_bucket_name=image_bucket_name)
-    # scraper = scraper_loader()
+    def scrape_product(self, product_url: str):
+        # scraper_loader = ScraperLoader(site_id=self.site_id, proxies=self.proxies,
+        #                                image_bucket_name=image_bucket_name)
+        # scraper = scraper_loader()
 
-    product_data = scraper(product_url)
+        product_data = self.scraper(product_url, self.proxies)
 
-    first_item = next(iter(product_data), None)
+        first_item = next(iter(product_data), None)
 
-    # Validate product data
-    if first_item.url is None or first_item.name is None:
-        return
+        # Validate product data
+        if first_item.url is None or first_item.name is None:
+            return
 
-    # Merge product
-    product = Product.merge(session=session, url=first_item["url"], site_id=site_id)
+        # Merge product
+        product = Product.merge(url=first_item["url"], site_id=self.site_id)
 
-    # Save variation datapoints
-    variation_sku_to_id = {}
-    for p in product_data:
-        
-        variation_sku = p.get("sku")
-        if not variation_sku:
-            variation_sku = "default"
+        # Save variation datapoints
+        variation_identifier_to_id = {}
+        for p in product_data:
+            
+            variation_identifier = p.get("sku")
+            if not variation_identifier:
+                variation_identifier = "default"
 
-        variation_id = variation_sku_to_id.get(variation_sku)
-        if not variation_id:
-            variation = Variation.merge(
-                session=session,
-                sku=variation_sku,
-                product_id=product.id,
+            variation_id = variation_identifier_to_id.get(variation_identifier)
+            if not variation_id:
+                variation = Variation.merge(
+                    identifier=variation_identifier,
+                    product_id=product.id,
+                )
+                variation_identifier_to_id[variation_identifier] = variation.id
+                variation_id = variation.id
+
+            datapoint = DataPoint.create(
+                var_id=variation_id,
+                max_qty=p["max_qty"],
+                price=p["price"],
             )
-            variation_sku_to_id[variation_sku] = variation.id
-            variation_id = variation.id
 
-        datapoint = DataPoint.create(
-            session=session,
-            var_id=variation_id,
-            max_qty=p["max_qty"],
-            price=p["price"],
-        )
+            # Save variation images
+            if self.image_uploader and "image_urls" in p and len(p["image_urls"]) > 0:
+                for image_url in p["image_urls"]:
+                    self.image_uploader.upload_image(image_url.strip(), self.site_id)
 
-        # Save variation attributes
-        attributes_data = p.get("attributes", [])
-        for attribute_data in attributes_data:
-            attribute = Attribute.merge(
-                session=session,
-                name=attribute_data["name"],
-                value=attribute_data["value"],
-            )
-            variation.attributes.append(attribute)
+        # Update product metadata
+        product.date_updated = datetime.now()
 
-        # Save variation images
-        if image_bucket_name and "image_urls" in p and len(p["image_urls"]) > 0:
-            for image_url in p["image_urls"]:
-                gcs_uploader.upload_image(image_url.strip(), site_id)
-
-    # Update product metadata
-    product.date_updated = datetime.now()
-
-    session.commit()
+        self.session.commit()

@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException
 from typing import List
 import uuid
 
-from scraper.meta import MetaScraper
-from db.site import Site
+from src.scraper import MetaScraper, ProductScraper, Orchestrator
+from src.db.site import Site
 
 
 router = APIRouter()
@@ -34,5 +34,5 @@ async def meta(site_id: uuid.UUID, base_url: str) -> List[str]:
             site.add_product(url)
 
         return product_urls
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as ex:
+        raise HTTPException(status_code=500, detail=str(ex))
