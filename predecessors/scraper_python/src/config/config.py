@@ -10,7 +10,5 @@ class Config(BaseSettings):
     db_name: str
     db_organization: str
     
-    gcs_bucket_name: str = None
-
 config_path = os.environ.get("CONFIG_PATH", ".env")
 config = Config(_env_file=config_path, _env_file_encoding="utf-8")

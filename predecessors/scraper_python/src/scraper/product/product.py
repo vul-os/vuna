@@ -1,23 +1,19 @@
 from datetime import datetime
+import csv
+import hashlib
 from typing import List
 
-from sqlalchemy.orm import Session
-
-from src.db.product import Product
-from src.db.variation import Variation
-from src.db.datapoint import DataPoint
-
-from src.scraper.product.loader import ScraperLoader
-from src.scraper.product.image.imageuploader import GCSUploader
+from .loader import ScraperLoader
+from ..utils import StorageUtils, hashStringFromUrl
 
 
 class ProductScraper:
     def __init__(self, site_id: str, scraper: ScraperLoader, proxies: List[str],
-                 image_uploader: GCSUploader = None):
+                 storage_utils: StorageUtils = None):
         self.site_id = site_id
         self.scraper = scraper
         self.proxies = proxies
-        self.image_uploader = image_uploader
+        self.storage_utils = storage_utils
 
     def __call__(self, product_url: str):
 
@@ -29,38 +25,49 @@ class ProductScraper:
         if first_item.url is None or first_item.name is None:
             return
 
-        # Merge product
-        product = Product.merge(url=first_item["url"], site_id=self.site_id)
+        # Generate product ID from product URL
+        product_id = hashlib.sha256(first_item.url.encode()).hexdigest()
 
-        # Save variation datapoints
-        variation_identifier_to_id = {}
+        # Create dictionaries for products, variations, and datapoints
+        product_dict = {
+            "id": product_id,
+            "url": first_item.url,
+            "site_id": self.site_id,
+            "date_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }
+
+        variation_dict = {}
+        datapoint_dict = {}
+
         for p in product_data:
-            
-            variation_identifier = p.get("sku")
+            variation_identifier = p.get("identifier")
             if not variation_identifier:
                 variation_identifier = "default"
 
-            variation_id = variation_identifier_to_id.get(variation_identifier)
-            if not variation_id:
-                variation = Variation.merge(
-                    identifier=variation_identifier,
-                    product_id=product.id,
-                )
-                variation_identifier_to_id[variation_identifier] = variation.id
-                variation_id = variation.id
+            variation_dict[variation_identifier] = {
+                "id": hashlib.sha256(f"{product_id}:{variation_identifier}".encode()).hexdigest(),
+                "identifier": variation_identifier,
+                "product_id": product_id,
+            }
+            variation_id = variation_dict[variation_identifier]["id"]
 
-            datapoint = DataPoint.create(
-                var_id=variation_id,
-                max_qty=p["max_qty"],
-                price=p["price"],
-            )
+            datapoint_dict[f"{variation_id}:{p['max_qty']}:{p['price']}"] = {
+                "var_id": variation_id,
+                "max_qty": p["max_qty"],
+                "price": p["price"],
+            }
 
-            # Save variation images
-            if self.image_uploader and "image_urls" in p and len(p["image_urls"]) > 0:
-                for image_url in p["image_urls"]:
-                    self.image_uploader.upload_image(image_url.strip(), self.site_id)
+            # # Save variation images
+            # if self.gcs_utils and "image_urls" in p and len(p["image_urls"]) > 0:
+            #     for image_url in p["image_urls"]:
+            #         self.gcs_utils.upload_image(image_url.strip(), self.site_id)
 
-        # Update product metadata
-        # product.date_updated = datetime.now()
+        # Write dictionaries to CSV files
+        self.storage_utils.upload_csv_from_dict(f"{product_id}-products.csv", [product_dict])
+        self.storage_utils.upload_csv_from_dict(f"{product_id}-variations.csv", variation_dict.values())
+        self.storage_utils.upload_csv_from_dict(f"{product_id}-datapoints.csv", datapoint_dict.values())
+        self.storage_utils.upload_csv_from_dict(f"{product_id}-images.csv", [{"images": p["image_urls"]}])
 
         return product_data
+
+

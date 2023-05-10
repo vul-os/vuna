@@ -1,30 +1,16 @@
 import os
 import importlib
-from google.cloud import storage
+from ..utils import StorageUtils
 
 
 class ScraperLoader:
-    def __init__(self, script_gcs_bucket_name: str, scraper_filename: str,  script_cache_dir: str = None):
-        self.script_gcs_bucket_name = script_gcs_bucket_name
+    def __init__(self, storage_utils: StorageUtils, scraper_filename: str):
+        self.storage_utils = storage_utils
         self.scraper_filename = scraper_filename
-        # Create the full path to the cache directory in /tmp
-        self.script_cache_dir = os.path.join("/tmp", "scraper_scripts") if not script_cache_dir else script_cache_dir
-        self.check_cache_dir()
         
     def __call__(self):
         # Check cache directory for scraper file
-        scraper_file = os.path.join(self.script_cache_dir, f"{self.scraper_filename}")
-
-        if not os.path.isfile(scraper_file):
-            # Download scraper file from GCS
-            storage_client = storage.Client()
-            bucket = storage_client.get_bucket(self.script_gcs_bucket_name)
-            blob = bucket.blob(f"{self.scraper_filename}")
-            scraper_code = blob.download_as_string().decode('utf-8')
-
-            # Save scraper file to cache directory
-            with open(scraper_file, "w") as f:
-                f.write(scraper_code)
+        scraper_file = self.storage_utils.download_file(self.scraper_filename)
 
         # Execute scraper file dynamically
         spec = importlib.util.spec_from_file_location("scraper_module", scraper_file)
@@ -36,8 +22,3 @@ class ScraperLoader:
 
         # Instantiate the scraper and return it
         return scraper_class()
-    
-    def check_cache_dir(self):
-        # Make the cache directory if it doesn't exist
-        if not os.path.exists(self.script_cache_dir):
-            os.makedirs(self.script_cache_dir)

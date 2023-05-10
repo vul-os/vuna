@@ -4,23 +4,46 @@ import requests
 from typing import List
 from bs4 import BeautifulSoup
 
-from src.db.product import Product
-
 from requests.exceptions import RequestException
-
+from .utils import StorageUtils, hashStringFromUrl
 
 logger = logging.getLogger(__name__)
 
 class MetaScraper:
-    def __init__(self):
+    def __init__(self, storage_utils: StorageUtils = None):
         self.known_urls = []
+        self.storage_utils = storage_utils
 
-    def __call__(self, base_url: str, site_id: uuid.UUID):
-        products = self.scrape(base_url)
+    def __call__(self, base_url: str):
+        products = self.scrape_products(base_url)
+        hashSiteId = hashStringFromUrl(base_url)
+        if len(products) > 0:
+            site_info = self.get_site_info(base_url)
+            if self.storage_utils:
+                self.storage_utils.upload_csv_from_dict(f"{hashSiteId}-products.csv", products)
+                self.storage_utils.upload_csv_from_dict(f"{hashSiteId}-site.csv", site_info)
+            else:
+                return site_info, products
+        return None
 
-        # Save products to db
-        for p in products:
-            Product.merge(url=p.url, site_id=site_id)
+    @staticmethod
+    def get_site_info(url):
+        # Send an HTTP GET request to the website and retrieve the HTML content
+        response = requests.get(url)
+        html_content = response.content
+
+        # Parse the HTML content using BeautifulSoup
+        soup = BeautifulSoup(html_content, "html.parser")
+
+        # Extract the name of the website
+        name = soup.title.string
+         # Extract the description of the website
+        description = soup.find("meta", property="og:description")["content"]
+        # Extract the image of the website
+        image = soup.find("meta", property="og:image")["content"]
+        # Return the name of the website
+        return {"name": name, "description": description, "image": image}
+
 
     def parse_sitemaps(self, sitemap_urls):
         """
@@ -45,33 +68,13 @@ class MetaScraper:
                 u = [url for url in urls if 'jpg' not in url and 'cdn' not in url]
                 self.known_urls.extend(u)
 
-    def scrape(self, base_url: str) -> List[str]:
-        # Parse robots.txt
-        robots_url = f'{base_url}/robots.txt'
-        logger.info('Parsing robots.txt: %s', robots_url)
-        robots_text = self._url_to_text(robots_url)
-        sitemap_urls = self._parse_robots_txt(robots_text)
-
-        # Add default sitemap URLs
-        default_sitemap_urls = [
-            f'{base_url}/sitemap.xml',
-            f'{base_url}/sitemap_index.xml',
-        ]
-        sitemap_urls.extend(default_sitemap_urls)
-        # Parse sitemaps for URLs
-        self.parse_sitemaps(sitemap_urls)
-        print(self.known_urls)
-        # Filter URLs for ecommerce product URLs
-        product_urls = self._filter_product_urls(self.known_urls)
-        return product_urls
-
     def _url_to_text(self, url: str) -> str:
         try:
             response = requests.get(url)
             return response.text
-        except RequestException as myEx:
-            print(myEx)
-            logger.exception(f"Error retrieving {url}: {myEx}")
+        except RequestException as exception:
+            print(exception)
+            logger.exception(f"Error retrieving {url}: {exception}")
             return ""
 
     def _parse_robots_txt(self, text: str) -> List[str]:
@@ -99,4 +102,24 @@ class MetaScraper:
                 base_url = url.split('/' + path, 1)[0]
                 product_url = base_url + '/' + path
                 product_urls.append(product_url)
+        return product_urls
+
+    def scrape_products(self, base_url: str) -> List[str]:
+        # Parse robots.txt
+        robots_url = f'{base_url}/robots.txt'
+        logger.info('Parsing robots.txt: %s', robots_url)
+        robots_text = self._url_to_text(robots_url)
+        sitemap_urls = self._parse_robots_txt(robots_text)
+
+        # Add default sitemap URLs
+        default_sitemap_urls = [
+            f'{base_url}/sitemap.xml',
+            f'{base_url}/sitemap_index.xml',
+        ]
+        sitemap_urls.extend(default_sitemap_urls)
+        # Parse sitemaps for URLs
+        self.parse_sitemaps(sitemap_urls)
+        print(self.known_urls)
+        # Filter URLs for ecommerce product URLs
+        product_urls = self._filter_product_urls(self.known_urls)
         return product_urls
