@@ -1,26 +1,27 @@
-from datetime import datetime
 import uuid
 from typing import Optional
+from datetime import datetime
 
 from sqlalchemy import Column, String, DateTime, text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 
 from src.db.base import Base, SessionLocal
+
 
 class Site(Base):
     __tablename__ = "sites"
 
-    id: uuid.UUID = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    url: str = Column(String, nullable=False)
-    name: str = Column(String, nullable=False)
-    technology: str = Column(String, nullable=False)
+    id: str = Column(String(36), primary_key=True, default=str(uuid.uuid4()))
+    url: str = Column(String(1000), nullable=False)
+    name: str = Column(String(1000), nullable=False)
+    technology: str = Column(String(100), nullable=False)
 
-    technology: str = Column(String, nullable=False)
+    date_added: datetime = Column(DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
+    date_updated: datetime = Column(DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
-    date_added: datetime = Column(DateTime, nullable=False, server_default=text("now()"))
-    date_updated: datetime = Column(DateTime, nullable=False, server_default=text("now()"))
+    scraperfile: Optional[str] = Column(String(100), nullable=True)
 
-    scraperfile: Optional[str] = Column(String, nullable=False)
+    products = relationship("Product", back_populates="site")
 
     def __repr__(self):
         return f"<Site(id={self.id}, name={self.name}, url={self.url})>"
@@ -56,7 +57,7 @@ class Site(Base):
                 self.scraperfile = scraperfile
             self.date_updated = datetime.now()
             session.commit()
-    
+
     @classmethod
     def merge(cls, url: str, name: str, technology: str, scraperfile: Optional[str] = None):
         with SessionLocal() as session:
@@ -76,4 +77,3 @@ class Site(Base):
         with SessionLocal() as session:
             session.delete(self)
             session.commit()
-

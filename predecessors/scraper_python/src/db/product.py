@@ -1,8 +1,8 @@
-from datetime import datetime
 import uuid
+from typing import Optional
+from datetime import datetime
 
-from sqlalchemy import Column, String, DateTime, text, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, Integer, Float, String, DateTime, text, ForeignKey
 from sqlalchemy.orm import relationship
 
 from src.db.base import Base, SessionLocal
@@ -10,12 +10,12 @@ from src.db.base import Base, SessionLocal
 class Product(Base):
     __tablename__ = "products"
 
-    id: uuid.UUID = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    url: str = Column(String, nullable=False)
-    site_id: uuid.UUID = Column(UUID(as_uuid=True), ForeignKey("sites.id"), nullable=False)
+    id: str = Column(String(36), primary_key=True, default=str(uuid.uuid4()), unique=True, index=True)
+    url: str = Column(String(1000), nullable=False)
+    site_id: uuid.UUID = Column(String(36), ForeignKey("sites.id"), nullable=False)
 
-    date_added: datetime = Column(DateTime, nullable=False, server_default=text("now()"))
-    date_updated: datetime = Column(DateTime, nullable=False, server_default=text("now()"))
+    date_added: datetime = Column(DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP"))
+    date_updated: datetime = Column(DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
     site = relationship("Site", back_populates="products")
     variations = relationship("Variation", back_populates="product")
@@ -24,7 +24,7 @@ class Product(Base):
         return f"<Product(id={self.id}, url={self.url})>"
 
     @classmethod
-    def get(cls, product_id: uuid.UUID):
+    def get(cls, product_id: str):
         with SessionLocal() as session:
             return session.query(cls).filter(cls.id == product_id).one_or_none()
 
@@ -39,7 +39,7 @@ class Product(Base):
             session.commit()
     
     @classmethod
-    def merge(cls, url: str, site_id: uuid.UUID):
+    def merge(cls, url: str, site_id: str):
         with SessionLocal() as session:
             product = session.query(cls).filter(cls.url == url).one_or_none()
             if product is None:
@@ -53,11 +53,10 @@ class Product(Base):
             return product
 
     @classmethod
-    def create(cls, url: str, site_id: uuid.UUID):
+    def create(cls, url: str, site_id: str):
         product = cls(url=url, site_id=site_id)
         with SessionLocal() as session:
             session.add(product)
             session.commit()
             session.refresh(product)
         return product
-

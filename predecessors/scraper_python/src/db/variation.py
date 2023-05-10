@@ -1,24 +1,27 @@
-from datetime import datetime
 import uuid
 from typing import Optional
+from datetime import datetime
+
 from sqlalchemy import Column, String, DateTime, text, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+
 from src.db.base import Base, SessionLocal
+
 
 class Variation(Base):
     __tablename__ = "variations"
+    __table_args__ = {'extend_existing': True}
 
-    id: uuid.UUID = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    product_id: uuid.UUID = Column(UUID(as_uuid=True), ForeignKey("products.id"), nullable=False)
-    identifier: str = Column(String, nullable=False)
+    id: str = Column(String(32), primary_key=True, default=lambda: str(uuid.uuid4().hex))
+    product_id: str = Column(String(32), ForeignKey("products.id"), nullable=False)
+    identifier: str = Column(String(255), nullable=False)
 
     date_added: datetime = Column(DateTime, nullable=False, server_default=text("now()"))
     date_updated: datetime = Column(DateTime, nullable=False, server_default=text("now()"))
 
     product = relationship("Product", back_populates="variations")
     datapoints = relationship("DataPoint", back_populates="variation")
-
+    
     def __repr__(self):
         return f"<Variation(id={self.id}, identifier={self.identifier})>"
 

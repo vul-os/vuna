@@ -28,7 +28,7 @@ async def meta(site_id: str, base_url: str) -> Dict[str, Union[List[str], int]]:
         url = f"https://{requests.utils.unquote(base_url)}"
         
         scraper = MetaScraper()
-        product_urls = scraper.scrape(base_url=url)
+        product_urls = scraper(base_url=url)
 
         return {"product_urls": product_urls, "len": len(product_urls)}
 
