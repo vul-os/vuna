@@ -1,21 +1,20 @@
 import os
+import io
 import csv
 import uuid
 import hashlib
+import tempfile
 import requests
 from typing import List
 from urllib.parse import urlparse
 from google.cloud import storage
-import io
-import tempfile
+
+from src.storage.storage import StorageUtils
 
 
-def hashStringFromUrl(url: str): 
-    return hashlib.sha256(url.encode()).hexdigest()
-
-
-class StorageUtils:
+class StorageUtilsGCS(StorageUtils):
     def __init__(self, storage_client, bucket_name):
+        super().__init__()
         self.storage_client = storage_client
         self.bucket_name = bucket_name
         self.local_dir = tempfile.TemporaryDirectory().name
@@ -61,21 +60,23 @@ class StorageUtils:
         # Construct the object name with the hash and correct file extension
         return f"{site_id}/{url_hash}{file_ext}"
 
-    def write_dicts_to_csv(self, filepath: str, data: List[dict]):
-        with open(filepath, 'a', newline='') as f:
+    def write_dicts_to_csv(self, file_path: str, data: List[dict]):
+        with open(file_path, 'a', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=data[0].keys())
             if f.tell() == 0:
                 writer.writeheader()
             writer.writerows(data)
 
-    def upload_csv_from_dict(self, filename: str, data: List[dict]):
-        # Create a blob object with the destination path and name
-        blob = self.storage_client.bucket(self.bucket_name).blob(filename)
+    def upload_csv_from_dict(self, file_name: str, data: List[dict]):
 
-        filepath = os.path.join(self.local_dir, filename)
-        self.write_dicts_to_csv(filepath, data)
 
-        # Upload the file to GCS
-        blob.upload_from_filename(filepath)
+        file_path = os.path.join(self.local_dir, file_name)
+        self.write_dicts_to_csv(file_path, data)
 
-        print(f"File {filename} uploaded to gs://{self.bucket_name}/{filename}")
+        if self.storage_client:
+            # Create a blob object with the destination path and name
+            blob = self.storage_client.bucket(self.bucket_name).blob(file_name)
+            # Upload the file to GCS
+            blob.upload_from_filename(file_path)
+
+        print(f"File {file_name} uploaded to gs://{self.bucket_name}/{file_name}")

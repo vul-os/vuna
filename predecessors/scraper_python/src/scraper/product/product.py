@@ -4,15 +4,15 @@ import hashlib
 from typing import List
 
 from .loader import ScraperLoader
-from ..utils import StorageUtils, hashStringFromUrl
+from src.storage.storage import StorageUtils
 
 
 class ProductScraper:
-    def __init__(self, site_id: str, scraper: ScraperLoader, proxies: List[str],
+    def __init__(self, site_url: str, scraper: ScraperLoader, proxies: List[str],
                  storage_utils: StorageUtils = None):
-        self.site_id = site_id
-        self.scraper = scraper
+        self.site_url = site_url
         self.proxies = proxies
+        self.scraper = scraper
         self.storage_utils = storage_utils
 
     def __call__(self, product_url: str):
@@ -25,14 +25,15 @@ class ProductScraper:
         if first_item.url is None or first_item.name is None:
             return
 
-        # Generate product ID from product URL
-        product_id = hashlib.sha256(first_item.url.encode()).hexdigest()
+        # Generate product & store IDs from their respective URLs
+        product_id = hashlib.sha256(product_url.encode()).hexdigest()
+        site_id = hashlib.sha256(self.site_url.encode()).hexdigest()
 
         # Create dictionaries for products, variations, and datapoints
         product_dict = {
             "id": product_id,
             "url": first_item.url,
-            "site_id": self.site_id,
+            "site_id": site_id,
             "date_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         }
 
@@ -56,17 +57,18 @@ class ProductScraper:
                 "max_qty": p["max_qty"],
                 "price": p["price"],
             }
+        
+        # Get the current date and time
+        current_datetime = datetime.datetime.now()
 
-            # # Save variation images
-            # if self.gcs_utils and "image_urls" in p and len(p["image_urls"]) > 0:
-            #     for image_url in p["image_urls"]:
-            #         self.gcs_utils.upload_image(image_url.strip(), self.site_id)
-
+        # Format the date and time as a string
+        formatted_datetime = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
+        base_string = f"{site_id}-{formatted_datetime}-{product_id}"    
         # Write dictionaries to CSV files
-        self.storage_utils.upload_csv_from_dict(f"{product_id}-products.csv", [product_dict])
-        self.storage_utils.upload_csv_from_dict(f"{product_id}-variations.csv", variation_dict.values())
-        self.storage_utils.upload_csv_from_dict(f"{product_id}-datapoints.csv", datapoint_dict.values())
-        self.storage_utils.upload_csv_from_dict(f"{product_id}-images.csv", [{"images": p["image_urls"]}])
+        self.storage_utils.upload_csv_from_dict(f"{base_string}-products.csv", [product_dict])
+        self.storage_utils.upload_csv_from_dict(f"{base_string}-variations.csv", variation_dict.values())
+        self.storage_utils.upload_csv_from_dict(f"{base_string}-datapoints.csv", datapoint_dict.values())
+        self.storage_utils.upload_csv_from_dict(f"{base_string}-images.csv", [{"images": p["image_urls"]}])
 
         return product_data
 

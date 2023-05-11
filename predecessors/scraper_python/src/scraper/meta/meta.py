@@ -5,7 +5,7 @@ from typing import List
 from bs4 import BeautifulSoup
 
 from requests.exceptions import RequestException
-from .utils import StorageUtils, hashStringFromUrl
+from src.storage.storage import StorageUtils
 
 logger = logging.getLogger(__name__)
 
@@ -15,16 +15,23 @@ class MetaScraper:
         self.storage_utils = storage_utils
 
     def __call__(self, base_url: str):
-        products = self.scrape_products(base_url)
-        hashSiteId = hashStringFromUrl(base_url)
-        if len(products) > 0:
-            site_info = self.get_site_info(base_url)
-            if self.storage_utils:
-                self.storage_utils.upload_csv_from_dict(f"{hashSiteId}-products.csv", products)
-                self.storage_utils.upload_csv_from_dict(f"{hashSiteId}-site.csv", site_info)
-            else:
-                return site_info, products
-        return None
+        try:
+
+            products = self.scrape_products(base_url)
+            print(len(set(products)))
+        except Exception as exception:
+            print(exception)
+            return 1
+
+        # hashSiteId = hashStringFromUrl(base_url)
+        # if len(products) > 0:
+        #     site_info = self.get_site_info(base_url)
+        #     if self.storage_utils:
+        #         self.storage_utils.upload_csv_from_dict(f"{hashSiteId}-products.csv", products)
+        #         self.storage_utils.upload_csv_from_dict(f"{hashSiteId}-site.csv", site_info)
+        #     else:
+        #         return site_info, products
+        # return None
 
     @staticmethod
     def get_site_info(url):
@@ -97,7 +104,8 @@ class MetaScraper:
         product_urls = []
         for url in urls:
             path = url.split('//', 1)[-1].split('/', 1)[-1]
-            if any(keyword in path for keyword in ['product', 'products', 'collections', 'pages']):
+            if any(keyword in path for keyword in ['product', 'products', 'collections', 'pages']) and not \
+                any(keyword in path for keyword in ['product-tag', 'product-category']):
                 # Add the base URL if it's not already included in the product URL
                 base_url = url.split('/' + path, 1)[0]
                 product_url = base_url + '/' + path
@@ -119,7 +127,6 @@ class MetaScraper:
         sitemap_urls.extend(default_sitemap_urls)
         # Parse sitemaps for URLs
         self.parse_sitemaps(sitemap_urls)
-        print(self.known_urls)
         # Filter URLs for ecommerce product URLs
         product_urls = self._filter_product_urls(self.known_urls)
         return product_urls

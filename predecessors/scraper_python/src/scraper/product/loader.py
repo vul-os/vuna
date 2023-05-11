@@ -1,24 +1,34 @@
 import os
 import importlib
-from ..utils import StorageUtils
 
 
 class ScraperLoader:
-    def __init__(self, storage_utils: StorageUtils, scraper_filename: str):
-        self.storage_utils = storage_utils
-        self.scraper_filename = scraper_filename
-        
+    """Loader for dynamically loading a scraper class from a code string."""
+
+    def __init__(self, scraper_code_string: str):
+        """
+        Initialize the ScraperLoader.
+
+        Args:
+            scraper_code_string (str): The code string representing the scraper class.
+        """
+        self.scraper_code_string = scraper_code_string
+
     def __call__(self):
-        # Check cache directory for scraper file
-        scraper_file = self.storage_utils.download_file(self.scraper_filename)
+        """
+        Load and instantiate the scraper class.
 
-        # Execute scraper file dynamically
-        spec = importlib.util.spec_from_file_location("scraper_module", scraper_file)
-        scraper_module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(scraper_module)
-
+        Returns:
+            object: An instance of the scraper class.
+        """
+        # Create a module name
+        module_name = "scraper_module"
+        # Create a module spec from the module name and code string
+        module_spec = importlib.util.spec_from_loader(module_name, loader=None)
+        # Create an empty module
+        module = importlib.util.module_from_spec(module_spec)
+        # Execute the code string in the module's namespace
+        exec(self.scraper_code_string, module.__dict__)
         # Get the scraper class from the module
-        scraper_class = getattr(scraper_module, "Scraper")
-
-        # Instantiate the scraper and return it
+        scraper_class = getattr(module, "Scraper")
         return scraper_class()
