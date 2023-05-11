@@ -46,7 +46,7 @@ class ProductScraper:
                 variation_identifier = "default"
 
             variation_dict[variation_identifier] = {
-                "id": hashlib.sha256(f"{product_id}:{variation_identifier}".encode()).hexdigest(),
+                "id": hashlib.sha256(f"{site_id}:{product_id}:{variation_identifier}".encode()).hexdigest(),
                 "identifier": variation_identifier,
                 "product_id": product_id,
             }
@@ -58,17 +58,17 @@ class ProductScraper:
                 "price": p["price"],
             }
         
-        # Get the current date and time
-        current_datetime = datetime.datetime.now()
-
-        # Format the date and time as a string
-        formatted_datetime = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
-        base_string = f"{site_id}-{formatted_datetime}-{product_id}"    
-        # Write dictionaries to CSV files
-        self.storage_utils.upload_csv_from_dict(f"{base_string}-products.csv", [product_dict])
-        self.storage_utils.upload_csv_from_dict(f"{base_string}-variations.csv", variation_dict.values())
-        self.storage_utils.upload_csv_from_dict(f"{base_string}-datapoints.csv", datapoint_dict.values())
-        self.storage_utils.upload_csv_from_dict(f"{base_string}-images.csv", [{"images": p["image_urls"]}])
+        if self.storage_utils is not None:
+            # Get the current date and time
+            current_datetime = datetime.datetime.now()
+            # Format the date and time as a string
+            formatted_datetime = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
+            base_string = f"{site_id}-{formatted_datetime}-{product_id}"    
+            # Write dictionaries to CSV files
+            self.storage_utils.upload_csv_from_dict(f"{base_string}-products.csv", [product_dict])
+            self.storage_utils.upload_csv_from_dict(f"{base_string}-variations.csv", variation_dict.values())
+            self.storage_utils.upload_csv_from_dict(f"{base_string}-datapoints.csv", datapoint_dict.values())
+            self.storage_utils.upload_csv_from_dict(f"{base_string}-images.csv", [{"images": p["image_urls"]}])
 
         return product_data
 

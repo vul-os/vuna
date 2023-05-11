@@ -21,6 +21,6 @@ class StorageUtilsLocal(StorageUtils):
 
     def upload_csv_from_dict(self, file_name: str, data: List[dict]):
         filepath = os.path.join(self.local_dir, file_name)
-        self.write_dicts_to_csv(filepath, data)
+        super().write_dicts_to_csv(filepath, data)
 
     
