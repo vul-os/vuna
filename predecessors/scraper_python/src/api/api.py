@@ -1,7 +1,7 @@
 import requests
 from google.cloud import storage
 from src.scraper import MetaScraper, ProductScraper, ScraperLoader
-from src.storage.local import StorageUtils
+from src.storage.local import StorageUtilsLocal as StorageUtils
 
 class ScraperAPI:
     def __init__(self):
@@ -15,7 +15,7 @@ class ScraperAPI:
         self.proxies = [""]
 
     def root(self, request):
-        return {"message": "Hello, World"}
+        return "Hello, World"
 
     def meta(self, request, base_url):
         try:
