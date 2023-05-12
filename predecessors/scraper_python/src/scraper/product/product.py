@@ -22,7 +22,6 @@ class ProductScraper:
         return site_url
 
     def __call__(self, product_url: str):
-
         product_data = self.scraper(product_url, self.proxies)
 
         first_item = next(iter(product_data), None)
