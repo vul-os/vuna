@@ -2,18 +2,24 @@ from datetime import datetime
 import csv
 import hashlib
 from typing import List
+from urllib.parse import urlparse
 
 from .loader import ScraperLoader
 from src.storage.storage import StorageUtils
 
 
 class ProductScraper:
-    def __init__(self, site_url: str, scraper: ScraperLoader, proxies: List[str],
+    def __init__(self, scraper: ScraperLoader, proxies: List[str],
                  storage_utils: StorageUtils = None):
-        self.site_url = site_url
-        self.proxies = proxies
         self.scraper = scraper
+        self.proxies = proxies
         self.storage_utils = storage_utils
+
+    @staticmethod
+    def get_site_url(product_url):
+        parsed_url = urlparse(product_url)
+        site_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+        return site_url
 
     def __call__(self, product_url: str):
 
@@ -27,7 +33,7 @@ class ProductScraper:
 
         # Generate product & store IDs from their respective URLs
         product_id = hashlib.sha256(product_url.encode()).hexdigest()
-        site_id = hashlib.sha256(self.site_url.encode()).hexdigest()
+        site_id = hashlib.sha256(self.get_site_url(product_url).encode()).hexdigest()
 
         # Create dictionaries for products, variations, and datapoints
         product_dict = {

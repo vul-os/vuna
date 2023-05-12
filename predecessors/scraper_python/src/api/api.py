@@ -30,14 +30,14 @@ class ScraperAPI:
         except Exception as exception:
             return str(exception), 500
 
-    def product_scrape(self, request, site_url, product_url, scraper_code):
+    def product_scrape(self, request, product_url, scraper_code):
         try:
             proxies = request.json.get("proxies", [])
             scraper_filename = request.json.get("scraper_filename")
        
             product_url = f"https://{requests.utils.unquote(product_url)}"
             scraper = ScraperLoader(scraper_code)
-            product_scraper = ProductScraper(site_url=site_url, scraper=scraper, proxies=self.proxies,
+            product_scraper = ProductScraper(scraper=scraper, proxies=self.proxies,
                                         storage_utils=self.data_storage_utils)
             product_data = product_scraper(product_url=product_url)
         
