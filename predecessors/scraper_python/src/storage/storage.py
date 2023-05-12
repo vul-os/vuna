@@ -19,12 +19,9 @@ class StorageUtils(ABC):
     def _get_gcs_url(self, image_url, site_id):
         pass
 
+    @abstractmethod
     def write_data_to_csv(self, file_path: str, data: List[dict]):
-        with open(filepath, 'a', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=data[0].keys())
-            if f.tell() == 0:
-                writer.writeheader()
-            writer.writerows(data)
+        pass
 
     @abstractmethod
     def upload_csv_from_data(self, file_name: str, data: List[dict]):
