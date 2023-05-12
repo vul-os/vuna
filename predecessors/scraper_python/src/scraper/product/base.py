@@ -14,12 +14,14 @@ class VariantData(dict):
         image_urls (List[str]): A list of image URLs for the variant.
     """
     identifier: str
-    attributes: Optional[List[Dict[str, Any]]]
     image_urls: List[str]
 
     # datapoint data
     price: float
     max_qty: int
+
+    attributes: Optional[List[Dict[str, Any]]]
+
 
 
 class ProductData(dict):
