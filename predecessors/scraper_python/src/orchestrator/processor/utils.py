@@ -12,7 +12,7 @@ def read_file_from_gcs_bucket(bucket_name, file_name, chunk_size=1024):
             chunk = file.read(chunk_size)
             if not chunk:
                 break
-
+            
             lines = (remainder + chunk).splitlines(keepends=True)
             if lines:
                 if lines[-1].endswith(b"\n"):
