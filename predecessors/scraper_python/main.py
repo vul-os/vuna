@@ -1,7 +1,6 @@
 import os
 from flask import Flask, request
 
-
 from src.api.api import ScraperAPI
 
 
