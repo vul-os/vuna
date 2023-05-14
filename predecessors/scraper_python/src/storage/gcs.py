@@ -68,7 +68,7 @@ class StorageUtilsGCS(StorageUtils):
 
     def upload_csv_from_data(self, file_name: str, data: List[dict]):
         file_path = os.path.join(self.local_dir, file_name)
-        self.write_dicts_to_csv(file_path, data)
+        self.write_data_to_csv(file_path, data)
 
         if self.storage_client:
             # Create a blob object with the destination path and name

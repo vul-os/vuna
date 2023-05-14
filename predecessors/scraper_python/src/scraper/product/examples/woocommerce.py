@@ -1,8 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
-import json
 
 from src.scraper.product.scraper import Scraper, ProductData
+
 
 class WooCommerceScraper(Scraper):
     """
