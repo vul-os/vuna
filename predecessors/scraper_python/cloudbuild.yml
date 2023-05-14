@@ -1,0 +1,12 @@
+steps:
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gcloud functions deploy function-1 \
+          --runtime=python310 \
+          --trigger-http \
+          --allow-unauthenticated \
+          --region=us-central-1 \
+          --project=scraping-is-hard
