@@ -1,6 +1,6 @@
 import os
 from flask import Flask, request
-# from google.cloud import functions
+
 
 from src.api.api import ScraperAPI
 
@@ -24,8 +24,9 @@ def main(path):
 
     return "Invalid request", 400
 
-# if os.getenv("GOOGLE_CLOUD_FUNCTION_TARGET"):
-#     main = functions.wrap(main)
-# else:
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000)
+if os.getenv("GOOGLE_CLOUD_FUNCTION_TARGET"):
+    from google.cloud import functions
+    main = functions.wrap(main)
+else:
+    if __name__ == "__main__":
+        app.run(host="0.0.0.0", port=8000)
