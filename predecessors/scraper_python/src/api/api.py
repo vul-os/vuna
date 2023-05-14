@@ -1,7 +1,7 @@
 import requests
 from google.cloud import storage
 from src.scraper import MetaScraper, ProductScraper, ScraperLoader
-from src.storage.local import StorageUtils
+from src.storage.local import StorageUtilsLocal as StorageUtils
 
 class ScraperAPI:
     def __init__(self):
@@ -15,7 +15,7 @@ class ScraperAPI:
         self.proxies = [""]
 
     def root(self, request):
-        return {"message": "Hello, World"}
+        return "Hello, World"
 
     def meta(self, request, base_url):
         try:
@@ -30,14 +30,14 @@ class ScraperAPI:
         except Exception as exception:
             return str(exception), 500
 
-    def product_scrape(self, request, site_url, product_url, scraper_code):
+    def product_scrape(self, request, product_url, scraper_code):
         try:
             proxies = request.json.get("proxies", [])
             scraper_filename = request.json.get("scraper_filename")
        
             product_url = f"https://{requests.utils.unquote(product_url)}"
             scraper = ScraperLoader(scraper_code)
-            product_scraper = ProductScraper(site_url=site_url, scraper=scraper, proxies=self.proxies,
+            product_scraper = ProductScraper(scraper=scraper, proxies=self.proxies,
                                         storage_utils=self.data_storage_utils)
             product_data = product_scraper(product_url=product_url)
         

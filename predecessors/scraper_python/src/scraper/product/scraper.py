@@ -2,26 +2,6 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 
 
-class VariantData(dict):
-    """
-    Represents variant data.
-
-    Attributes:
-        identifier (str): The identifier of the variant.
-        price (float): The price of the variant.
-        max_qty (int): The maximum quantity of the variant available.
-        attributes (Optional[List[Dict[str, Any]]]): A list of dictionaries representing the variant attributes, where each dictionary has keys 'name' and 'value'.
-        image_urls (List[str]): A list of image URLs for the variant.
-    """
-    identifier: str
-    attributes: Optional[List[Dict[str, Any]]]
-    image_urls: List[str]
-
-    # datapoint data
-    price: float
-    max_qty: int
-
-
 class ProductData(dict):
     """
     Represents product data.
@@ -33,7 +13,15 @@ class ProductData(dict):
     """
     name: str
     url: str
-    variants: List[VariantData]
+    
+    image_urls: List[str]
+    attributes: Optional[List[Dict[str, Any]]]
+
+    identifier: str
+
+    # datapoint data
+    price: float
+    max_qty: int
 
 
 class Scraper(ABC):
@@ -56,7 +44,7 @@ class Scraper(ABC):
         self.proxies = proxies
 
     @abstractmethod
-    def __call__(self, site_url: str) -> ProductData:
+    def __call__(self, site_url: str) -> List[ProductData]:
         """
         Scrape the site at the specified URL and return a list of ProductData objects.
 

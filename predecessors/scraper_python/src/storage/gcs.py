@@ -14,7 +14,6 @@ from src.storage.storage import StorageUtils
 
 class StorageUtilsGCS(StorageUtils):
     def __init__(self, storage_client, bucket_name):
-        super().__init__()
         self.storage_client = storage_client
         self.bucket_name = bucket_name
         self.local_dir = tempfile.TemporaryDirectory().name
@@ -60,18 +59,16 @@ class StorageUtilsGCS(StorageUtils):
         # Construct the object name with the hash and correct file extension
         return f"{site_id}/{url_hash}{file_ext}"
 
-    def write_dicts_to_csv(self, file_path: str, data: List[dict]):
+    def write_data_to_csv(self, file_path: str, data: List[dict]):
         with open(file_path, 'a', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=data[0].keys())
             if f.tell() == 0:
                 writer.writeheader()
             writer.writerows(data)
 
-    def upload_csv_from_dict(self, file_name: str, data: List[dict]):
-
-
+    def upload_csv_from_data(self, file_name: str, data: List[dict]):
         file_path = os.path.join(self.local_dir, file_name)
-        self.write_dicts_to_csv(file_path, data)
+        self.write_data_to_csv(file_path, data)
 
         if self.storage_client:
             # Create a blob object with the destination path and name
