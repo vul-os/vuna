@@ -9,7 +9,7 @@ scraper_api = ScraperAPI()
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>', methods=['GET', 'POST'])
-def main(path):
+def hello_http(path):
     if request.method == "GET":
         if request.path == "/":
             return scraper_api.root(request)
