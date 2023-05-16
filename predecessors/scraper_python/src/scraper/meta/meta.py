@@ -1,9 +1,11 @@
-import uuid
 import logging
 import requests
+import base64
+import datetime
 from typing import List
 from bs4 import BeautifulSoup
-
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from requests.exceptions import RequestException
 from src.storage.storage import StorageUtils
 
@@ -23,15 +25,23 @@ class MetaScraper:
             print(exception)
             return 1
 
-        # hashSiteId = hashStringFromUrl(base_url)
-        # if len(products) > 0:
-        #     site_info = self.get_site_info(base_url)
-        #     if self.storage_utils:
-        #         self.storage_utils.upload_csv_from_dict(f"{hashSiteId}-products.csv", products)
-        #         self.storage_utils.upload_csv_from_dict(f"{hashSiteId}-site.csv", site_info)
-        #     else:
-        #         return site_info, products
-        # return None
+        encoded_site = base64.b64encode(base_url.encode()).decode()
+        if len(products) > 0:
+            name, image = self.get_site_info(base_url)
+            current_datetime = datetime.datetime.now()
+            formatted_datetime = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
+            file_name = f"{encoded_site}-{formatted_datetime}-products.csv"
+            if self.storage_utils:
+                first_items = [
+                    f"name: {name.strip()}",
+                    f"image: {image.strip()}",
+                    f"num_product_urls: {len(products)}"
+                ]
+                first_items.extend(products)
+                self.storage_utils.write_data_to_txt(file_name, first_items)
+            else:
+                return products
+        return None
 
     @staticmethod
     def get_site_info(url):
@@ -44,12 +54,12 @@ class MetaScraper:
 
         # Extract the name of the website
         name = soup.title.string
-         # Extract the description of the website
-        description = soup.find("meta", property="og:description")["content"]
+        
         # Extract the image of the website
-        image = soup.find("meta", property="og:image")["content"]
+        image = soup.find("meta", property="og:image")
+        image = image["content"] if image else None
         # Return the name of the website
-        return {"name": name, "description": description, "image": image}
+        return name, image
 
 
     def parse_sitemaps(self, sitemap_urls):
@@ -77,7 +87,19 @@ class MetaScraper:
 
     def _url_to_text(self, url: str) -> str:
         try:
-            response = requests.get(url)
+            # Create a session
+            session = requests.Session()
+
+            # Define the retry behavior
+            retry = Retry(total=1, backoff_factor=0, status_forcelist=(),
+            raise_on_redirect=True, raise_on_status=True)
+
+            # Mount it for both http and https usage
+            adapter = HTTPAdapter(max_retries=retry)
+            session.mount('http://', adapter)
+            session.mount('https://', adapter)
+            response = session.get(url)
+            
             return response.text
         except RequestException as exception:
             print(exception)
@@ -117,14 +139,15 @@ class MetaScraper:
         robots_url = f'{base_url}/robots.txt'
         logger.info('Parsing robots.txt: %s', robots_url)
         robots_text = self._url_to_text(robots_url)
-        sitemap_urls = self._parse_robots_txt(robots_text)
 
         # Add default sitemap URLs
-        default_sitemap_urls = [
+        sitemap_urls = [
             f'{base_url}/sitemap.xml',
             f'{base_url}/sitemap_index.xml',
         ]
-        sitemap_urls.extend(default_sitemap_urls)
+        if robots_text != "":
+            sitemap_urls.extend(self._parse_robots_txt(robots_text))
+
         # Parse sitemaps for URLs
         self.parse_sitemaps(sitemap_urls)
         # Filter URLs for ecommerce product URLs

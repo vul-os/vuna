@@ -59,6 +59,11 @@ class StorageUtilsGCS(StorageUtils):
         # Construct the object name with the hash and correct file extension
         return f"{site_id}/{url_hash}{file_ext}"
 
+    def write_data_to_txt(self, file_path: str, data: List[dict]):
+        with open(file_path, 'w') as file:
+            for item in data:
+                file.write(item + '\n')
+
     def write_data_to_csv(self, file_path: str, data: List[dict]):
         with open(file_path, 'a', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=data[0].keys())

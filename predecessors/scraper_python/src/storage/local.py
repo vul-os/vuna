@@ -21,10 +21,16 @@ class StorageUtilsLocal(StorageUtils):
         # Implement this method to get the GCS URL for the given image URL and site ID
         pass
 
+    def write_data_to_txt(self, file_path: str, data: List[dict]):
+        with open(file_path, 'w') as file:
+            for item in data:
+                file.write(item + '\n')
+
     def write_data_to_csv(self, file_path: str, data: List[dict]):
         # Implement this method to write the given data to a CSV file at the specified file path
         with open(file_path, "w", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=data[0].keys())
+            print(data[0].keys())
             writer.writeheader()
             writer.writerows(data)
 

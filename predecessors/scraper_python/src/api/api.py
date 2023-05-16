@@ -1,16 +1,14 @@
 import requests
-from google.cloud import storage
 from src.scraper import MetaScraper, ProductScraper, ScraperLoader
 from src.storage.local import StorageUtilsLocal as StorageUtils
 
 class ScraperAPI:
-    def __init__(self):
+    def __init__(self, data_storage_utils: StorageUtils):
         # self.data_storage_utils = StorageUtils(storage_client=self.storage_client, bucket_name="mybucket")
         # self.scraper_storage_utils = StorageUtils(storage_client=self.storage_client, bucket_name="mybucket")
         # self.storage_client = storage.Client()
 
-        self.data_storage_utils = StorageUtils(local_dir="/workspace/scraper_python/src/scraper/product/examples")
-
+        self.data_storage_utils = data_storage_utils
         self.scraper_cache = {}
         self.proxies = [""]
 

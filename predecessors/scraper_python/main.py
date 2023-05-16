@@ -2,10 +2,20 @@ import os
 from flask import Flask, request
 
 from src.api.api import ScraperAPI
+from src.storage.gcs import StorageUtilsGCS 
+from src.storage.local import StorageUtilsLocal 
 
 
 app = Flask(__name__)
-scraper_api = ScraperAPI()
+
+# from google.cloud import storage
+# storage_client = storage.Client()
+# data_storage_utils = StorageUtilsGCS(client, )
+
+data_storage_utils = StorageUtilsLocal("/workspace/scraper_python/src/scraper/product/examples")
+
+
+scraper_api = ScraperAPI(data_storage_utils)
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>', methods=['GET', 'POST'])

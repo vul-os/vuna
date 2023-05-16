@@ -20,6 +20,10 @@ class StorageUtils(ABC):
         pass
 
     @abstractmethod
+    def write_data_to_txt(self, file_path: str, data: List[dict]):
+        pass
+
+    @abstractmethod
     def write_data_to_csv(self, file_path: str, data: List[dict]):
         pass
 
