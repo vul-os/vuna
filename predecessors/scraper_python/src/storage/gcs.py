@@ -19,8 +19,8 @@ class StorageUtilsGCS(StorageUtils):
 
         self.storage_client = storage_client
         self.bucket_name = bucket_name
-        self.local_dir = tempfile.TemporaryDirectory().name
-
+        self.local_dir = '/tmp/'
+        
     def upload_image(self, image_url, site_id):
         gcs_url = self._get_gcs_url(image_url, site_id)
 
