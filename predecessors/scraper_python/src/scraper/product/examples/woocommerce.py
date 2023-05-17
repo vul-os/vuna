@@ -1,10 +1,12 @@
+import json
 import requests
 from bs4 import BeautifulSoup
 
 from src.scraper.product.scraper import Scraper, ProductData
+from src.scraper.product.utils import price_to_float, max_qty_to_int
 
 
-class WooCommerceScraper(Scraper):
+class TheScraper(Scraper):
     """
     A web scraper for WooCommerce stores.
 
@@ -17,14 +19,14 @@ class WooCommerceScraper(Scraper):
         session (requests.Session): A persistent HTTP session to be used for making requests.
     """
 
-    def __init__(self, proxies=None):
+    def __init__(self):
         """
         Initialize a new instance of the WooCommerceScraper class.
 
         Args:
             proxies (dict, optional): A dictionary of proxies to be used with the scraper.
         """
-        self.proxies = proxies or {}
+        super().__init__()
         self.session = requests.Session()
 
             
@@ -66,22 +68,20 @@ class WooCommerceScraper(Scraper):
             'max_qty', 'attributes', and 'image_url'.
 
         """
-        price = soup.find('span', {'class': 'woocommerce-Price-amount amount'}).text.strip()
-        if '-' in price:
-            price_range = [float(x.strip().replace('$', '').replace(',', '')) for x in price.split('-')]
-            price = sum(price_range) / len(price_range)
-        else:
-            price = float(price.replace('$', '').replace(',', ''))
-        sku = soup.find('span', {'class': 'sku'}).text.strip() if soup.find('span', {'class': 'sku'}) else ''
-        max_qty = soup.find('p', {'class': 'stock'}).text.strip() if soup.find('p', {'class': 'stock'}) else ''
-        if isinstance(max_qty, str):
-            max_qty = max_qty.replace('in', '').replace('stock', '').strip()
-        max_qty = int(max_qty) if max_qty.isdigit() else None
+        summary_div = soup.find("div", {"class": "summary entry-summary"})
+        price = summary_div.find('span', {'class': 'woocommerce-Price-amount amount'}).text.strip()
+        sku = summary_div.find('span', {'class': 'sku'}).text.strip() if soup.find('span', {'class': 'sku'}) else ''
+        max_qty = summary_div.find('p', {'class': 'stock'}).text.strip() if soup.find('p', {'class': 'stock'}) else ''
+        
+        price = price_to_float(price)
+        max_qty = max_qty_to_int(max_qty)
+        
         image_url = soup.find('div', {'class': 'woocommerce-product-gallery__image'}).find('img')['src']
+
         return {
             'name': product_name,
             'url': product_url,
-            'sku': sku,
+            'identifier': sku,
             'price': price,
             'max_qty': max_qty,
             'attributes': [],
@@ -89,37 +89,32 @@ class WooCommerceScraper(Scraper):
         }
 
     def scrape_product_with_variations(self, product_url, soup, product_name):
-        """
-        Scrape a product with multiple variants and return a list of product variants.
+        product_variations = soup.find('form', class_='variations_form')['data-product_variations']
+        variations_data = json.loads(product_variations)
 
-        Args:
-            product_url (str): The URL of the product to be scraped.
-            soup (bs4.BeautifulSoup): A BeautifulSoup object representing the HTML of the product page.
-            product_name (str): The name of the product being scraped.
+        product_info = []
 
-        Returns:
-            list: A list of dictionaries, where each dictionary represents a product variant and has 
-            the keys 'name', 'url', 'sku', 'price', 'max_qty', 'attributes', and 'image_url'.
+        for variation in variations_data:
+            availability_html = variation['availability_html']
+            display_price = variation['display_price']
+            image_url = variation['image']['src']
+            sku = variation['sku']
 
-        """
-        price = soup.find('span', {'class': 'woocommerce-Price-amount amount'}).text.strip()
-        if '-' in price:
-            price_range = [float(x.strip().replace('$', '').replace(',', '')) for x in price.split('-')]
-            price = sum(price_range) / len(price_range)
-        else:
-            price = float(price.replace('$', '').replace(',', ''))
-        sku = soup.find('span', {'class': 'sku'}).text.strip() if soup.find('span', {'class': 'sku'}) else ''
-        max_qty = soup.find('p', {'class': 'stock'}).text.strip() if soup.find('p', {'class': 'stock'}) else ''
-        if isinstance(max_qty, str):
-            max_qty = max_qty.replace('in', '').replace('stock', '').strip()
-        max_qty = int(max_qty) if max_qty.isdigit() else None
-        image_url = soup.find('div', {'class': 'woocommerce-product-gallery__image'}).find('img')['src']
-        return [{
-            'name': product_name,
-            'url': product_url,
-            'sku': sku,
-            'price': price,
-            'max_qty': max_qty,
-            'attributes': [],
-            'image_url': image_url
-        }]
+            price = price_to_float(display_price)
+            max_qty = max_qty_to_int(availability_html)
+
+            attributes = variation['attributes']
+            first_key = next(iter(attributes))
+            first_value = attributes[first_key]
+
+            product_info.append({
+                'name': product_name,
+                'url': product_url,
+                'identifier': sku,
+                'price': price,
+                'max_qty': max_qty,
+                'attributes': first_value,
+                'image_url': image_url
+            })
+
+        return product_info

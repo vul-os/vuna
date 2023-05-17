@@ -26,12 +26,14 @@ def hello_http(path):
         if request.path == "/":
             return scraper_api.root(request)
         elif request.path.startswith("/meta/"):
-            base_url = '/'.join(request.path.split("/")[2:3])
-            return scraper_api.meta(request, base_url)
+            job_id = '/'.join(request.path.split("/")[2:3])
+            base_url = '/'.join(request.path.split("/")[3:4])
+            return scraper_api.meta(request, job_id, base_url)
     elif request.method == "POST":
-        if request.path.startswith("/product_scrape/"):
-            product_url = '/'.join(request.path.split("/")[2:3])
-            return scraper_api.product_scrape(request, product_url)
+        if request.path.startswith("/product/"):
+            job_id = '/'.join(request.path.split("/")[2:3])
+            product_url = '/'.join(request.path.split("/")[3:])
+            return scraper_api.product_scrape(request, job_id, product_url)
 
     return "Invalid request", 400
 

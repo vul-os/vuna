@@ -30,5 +30,5 @@ class ScraperLoader:
         # Execute the code string in the module's namespace
         exec(self.scraper_code_string, module.__dict__)
         # Get the scraper class from the module
-        scraper_class = getattr(module, "Scraper")
-        return scraper_class()
+        scraper_class = getattr(module, "TheScraper")
+        return scraper_class

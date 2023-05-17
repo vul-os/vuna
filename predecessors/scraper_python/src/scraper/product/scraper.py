@@ -15,7 +15,6 @@ class ProductData(dict):
     url: str
     
     image_urls: List[str]
-    attributes: Optional[List[Dict[str, Any]]]
 
     identifier: str
 

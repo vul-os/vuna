@@ -1,5 +1,5 @@
 import requests
-from src.scraper import MetaScraper, ProductScraper, ScraperLoader
+from src.scraper import MetaScraper, ScraperLoader, scrape_product_data
 from src.storage.local import StorageUtilsLocal as StorageUtils
 
 class ScraperAPI:
@@ -17,7 +17,7 @@ class ScraperAPI:
         print(sys.getrecursionlimit())
         return f"{sys.getrecursionlimit()}"
 
-    def meta(self, request, base_url):
+    def meta(self, request, job_identifier, base_url):
         try:
             url = f"https://{requests.utils.unquote(base_url)}"
         
@@ -30,17 +30,16 @@ class ScraperAPI:
         except Exception as exception:
             return str(exception), 500
 
-    def product_scrape(self, request, product_url):
+    def product_scrape(self, request, job_identifier, product_url):
         try:
             proxies = request.json.get("proxies", [])
-            scraper_code = request.json.get("scraper_code")
+            scraper_code = request.json.get("scraper_code", None)
        
+            print(scraper_code)
             product_url = f"https://{requests.utils.unquote(product_url)}"
-            scraper = ScraperLoader(scraper_code)
-            product_scraper = ProductScraper(scraper=scraper, proxies=self.proxies,
-                                        storage_utils=self.data_storage_utils)
-            product_data = product_scraper(product_url=product_url)
-        
+            scraper_loader = ScraperLoader(scraper_code)
+            product_data = scrape_product_data(scraper_loader=scraper_loader, proxies=self.proxies,
+                                        storage_utils=self.data_storage_utils, product_url=product_url)
             return product_data
 
         except Exception as ex:
