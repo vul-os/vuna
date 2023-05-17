@@ -9,12 +9,15 @@ from src.storage.local import StorageUtilsLocal
 
 app = Flask(__name__)
 
-# from google.cloud import storage
-# storage_client = storage.Client()
-# bucket_name = "exolution-scraper-data"
-# data_storage_utils = StorageUtilsGCS(storage_client, bucket_name)
 
-data_storage_utils = StorageUtilsLocal("/workspace/scraper_python/src/scraper/product/examples")
+data_storage_utils = None
+if 'FUNCTION_NAME' in os.environ:
+    from google.cloud import storage
+    storage_client = storage.Client()
+    bucket_name = "exolution-scraper-data"
+    data_storage_utils = StorageUtilsGCS(storage_client, bucket_name)
+else:
+    data_storage_utils = StorageUtilsLocal("/workspace/scraper_python/src/scraper/product/examples")
 
 
 scraper_api = ScraperAPI(data_storage_utils)
