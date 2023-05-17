@@ -13,7 +13,9 @@ class ScraperAPI:
         self.proxies = [""]
 
     def root(self, request):
-        return "Hello, World"
+        import sys
+        print(sys.getrecursionlimit())
+        return sys.getrecursionlimit()
 
     def meta(self, request, base_url):
         try:
