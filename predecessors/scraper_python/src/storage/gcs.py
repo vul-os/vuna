@@ -14,6 +14,9 @@ from src.storage.storage import StorageUtils
 
 class StorageUtilsGCS(StorageUtils):
     def __init__(self, storage_client, bucket_name):
+        # unnecesary 
+        super().__init__()
+
         self.storage_client = storage_client
         self.bucket_name = bucket_name
         self.local_dir = tempfile.TemporaryDirectory().name
@@ -35,6 +38,13 @@ class StorageUtilsGCS(StorageUtils):
         blob.upload_from_string(image_bytes)
 
         return gcs_url
+
+    def upload_file(self, file_name):
+        file_path = os.path.join(self.local_dir, file_name)
+        # Create a blob object with the destination path and name
+        blob = self.storage_client.bucket(self.bucket_name).blob(f"meta/{file_name}")
+        # Upload the file to GCS
+        blob.upload_from_filename(file_path)
 
     def download_file(self, file_name):
         scraper_file = os.path.join(self.local_dir, f"{file_name}")
@@ -60,25 +70,10 @@ class StorageUtilsGCS(StorageUtils):
         return f"{site_id}/{url_hash}{file_ext}"
 
     def write_data_to_txt(self, file_path: str, data: List[dict]):
-        with open(file_path, 'w') as file:
-            for item in data:
-                file.write(item + '\n')
+        super().write_data_to_txt(file_path, data)
+        self.upload_file(file_path)
+
 
     def write_data_to_csv(self, file_path: str, data: List[dict]):
-        with open(file_path, 'a', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=data[0].keys())
-            if f.tell() == 0:
-                writer.writeheader()
-            writer.writerows(data)
-
-    def upload_csv_from_data(self, file_name: str, data: List[dict]):
-        file_path = os.path.join(self.local_dir, file_name)
-        self.write_data_to_csv(file_path, data)
-
-        if self.storage_client:
-            # Create a blob object with the destination path and name
-            blob = self.storage_client.bucket(self.bucket_name).blob(file_name)
-            # Upload the file to GCS
-            blob.upload_from_filename(file_path)
-
-        print(f"File {file_name} uploaded to gs://{self.bucket_name}/{file_name}")
+        super().write_data_to_csv(file_path, data)
+        self.upload_file(file_path)
