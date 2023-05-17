@@ -30,7 +30,7 @@ class MetaScraper:
             name, image = self.get_site_info(base_url)
             current_datetime = datetime.datetime.now()
             formatted_datetime = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
-            file_name = f"{encoded_site}-{formatted_datetime}-products.csv"
+            file_name = f"{encoded_site}-{formatted_datetime}-products.txt"
             if self.storage_utils:
                 first_items = [
                     f"name: {name.strip()}",

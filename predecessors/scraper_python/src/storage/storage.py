@@ -11,6 +11,7 @@ class StorageUtils(ABC):
     
     # maybe seperate out these methods later
     def write_data_to_txt(self, file_name: str, data: List[dict]):
+        print(f"localdir: ", self.local_dir)
         file_path = os.path.join(self.local_dir, file_name)
         with open(file_path, 'w') as file:
             for item in data:
