@@ -77,14 +77,15 @@ class TheScraper(Scraper):
         max_qty = max_qty_to_int(max_qty)
         
         image_url = soup.find('div', {'class': 'woocommerce-product-gallery__image'}).find('img')['src']
-
+        product_id = self.get_product_id(soup)
         return {
             'name': product_name,
             'url': product_url,
-            'identifier': sku,
+            'sku': sku,
+            'identifier': product_id,
             'price': price,
             'max_qty': max_qty,
-            'attributes': [],
+            'attributes': None,
             'image_url': image_url
         }
 
@@ -99,6 +100,7 @@ class TheScraper(Scraper):
             display_price = variation['display_price']
             image_url = variation['image']['src']
             sku = variation['sku']
+            variation_id = variation['variation_id']
 
             price = price_to_float(display_price)
             max_qty = max_qty_to_int(availability_html)
@@ -110,7 +112,8 @@ class TheScraper(Scraper):
             product_info.append({
                 'name': product_name,
                 'url': product_url,
-                'identifier': sku,
+                'sku': sku,
+                'identifier': variation_id,
                 'price': price,
                 'max_qty': max_qty,
                 'attributes': first_value,
@@ -118,3 +121,9 @@ class TheScraper(Scraper):
             })
 
         return product_info
+
+    def get_product_id(self, soup):
+        product_id_tag = soup.find('input', {'name': 'add-to-cart'})
+        if product_id_tag:
+            return product_id_tag['value']
+        return None
