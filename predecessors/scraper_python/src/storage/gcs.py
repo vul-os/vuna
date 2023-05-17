@@ -70,9 +70,9 @@ class StorageUtilsGCS(StorageUtils):
         return f"{site_id}/{url_hash}{file_ext}"
 
     def write_data_to_txt(self, file_name: str, data: List[dict]):
-        super().write_data_to_txt(file_name, data)
         print(self.local_dir, file_name, data)
         print(os.path.exists(os.path.join(self.local_dir, file_name)))
+        super().write_data_to_txt(file_name, data)
         self.upload_file(file_name)
 
 
