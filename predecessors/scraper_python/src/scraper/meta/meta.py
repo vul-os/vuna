@@ -64,7 +64,7 @@ class MetaScraper:
 
     def parse_sitemaps(self, sitemap_urls):
         """
-        Recursively parse sitemaps for URLs.
+        Parse sitemaps for URLs.
 
         Args:
             sitemap_urls (list): A list of sitemap URLs.
@@ -72,19 +72,19 @@ class MetaScraper:
         Returns:
             list: A list of known URLs after parsing all sitemaps.
         """
-        # Parse sitemaps for URLs
-        for sitemap_url in sitemap_urls:
+        stack = list(sitemap_urls)
+        while stack:
+            sitemap_url = stack.pop()
             logger.info('Parsing sitemap: %s', sitemap_url)
             sitemap_text = self._url_to_text(sitemap_url)
             urls = self._parse_sitemap(sitemap_text)
-            # Check for nested sitemaps
             nested_sitemap_urls = [url for url in urls if ".xml" in url]
             if nested_sitemap_urls:
-                self.parse_sitemaps(nested_sitemap_urls)
+                stack.extend(nested_sitemap_urls)
             else:
                 u = [url for url in urls if 'jpg' not in url and 'cdn' not in url]
                 self.known_urls.extend(u)
-
+                
     def _url_to_text(self, url: str) -> str:
         try:
             # Create a session
