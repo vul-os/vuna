@@ -14,7 +14,7 @@ from src.storage.storage import StorageUtils
 
 class StorageUtilsGCS(StorageUtils):
     def __init__(self, storage_client, bucket_name):
-        # unnecesary 
+        # unnecesary
         super().__init__()
 
         self.storage_client = storage_client
@@ -70,10 +70,10 @@ class StorageUtilsGCS(StorageUtils):
         return f"{site_id}/{url_hash}{file_ext}"
 
     def write_data_to_txt(self, file_path: str, data: List[dict]):
-        super().write_data_to_txt(file_path, data)
+        self.write_data_to_txt(file_path, data)
         self.upload_file(file_path)
 
 
     def write_data_to_csv(self, file_path: str, data: List[dict]):
-        super().write_data_to_csv(file_path, data)
+        self.write_data_to_csv(file_path, data)
         self.upload_file(file_path)
