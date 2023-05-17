@@ -16,6 +16,7 @@ class StorageUtils(ABC):
         with open(file_path, 'w') as file:
             for item in data:
                 file.write(item + '\n')
+        print("yoo:", os.path.exists(os.path.join(self.local_dir, file_name)))
 
     def write_data_to_csv(self, file_name: str, data: List[dict]):
         file_path = os.path.join(self.local_dir, file_name)
