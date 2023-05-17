@@ -69,11 +69,11 @@ class StorageUtilsGCS(StorageUtils):
         # Construct the object name with the hash and correct file extension
         return f"{site_id}/{url_hash}{file_ext}"
 
-    def write_data_to_txt(self, file_path: str, data: List[dict]):
-        super().write_data_to_txt(file_path, data)
-        self.upload_file(file_path)
+    def write_data_to_txt(self, file_name: str, data: List[dict]):
+        super().write_data_to_txt(file_name, data)
+        self.upload_file(file_name)
 
 
-    def write_data_to_csv(self, file_path: str, data: List[dict]):
-        super().write_data_to_csv(file_path, data)
-        self.upload_file(file_path)
+    def write_data_to_csv(self, file_name: str, data: List[dict]):
+        super().write_data_to_csv(file_name, data)
+        self.upload_file(file_name)
