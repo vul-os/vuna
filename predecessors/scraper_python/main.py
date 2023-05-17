@@ -6,10 +6,7 @@ from src.storage.gcs import StorageUtilsGCS
 from src.storage.local import StorageUtilsLocal 
 
 
-
 app = Flask(__name__)
-
-
 # data_storage_utils = None
 # if 'FUNCTION_NAME' in os.environ:
 

@@ -70,10 +70,10 @@ class StorageUtilsGCS(StorageUtils):
         return f"{site_id}/{url_hash}{file_ext}"
 
     def write_data_to_txt(self, file_path: str, data: List[dict]):
-        self.write_data_to_txt(file_path, data)
+        super().write_data_to_txt(file_path, data)
         self.upload_file(file_path)
 
 
     def write_data_to_csv(self, file_path: str, data: List[dict]):
-        self.write_data_to_csv(file_path, data)
+        super().write_data_to_csv(file_path, data)
         self.upload_file(file_path)
