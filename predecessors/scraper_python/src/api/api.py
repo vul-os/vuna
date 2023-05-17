@@ -15,7 +15,7 @@ class ScraperAPI:
     def root(self, request):
         import sys
         print(sys.getrecursionlimit())
-        return sys.getrecursionlimit()
+        return f"{sys.getrecursionlimit()}"
 
     def meta(self, request, base_url):
         try:
