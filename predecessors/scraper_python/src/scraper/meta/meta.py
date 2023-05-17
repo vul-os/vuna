@@ -33,8 +33,8 @@ class MetaScraper:
             file_name = f"{encoded_site}-{formatted_datetime}-products.txt"
             if self.storage_utils:
                 first_items = [
-                    f"name: {name.strip()}",
-                    f"image: {image.strip()}",
+                    f"name: {name.strip() if name else ''}",
+                    f"image: {image.strip() if image else ''}",
                     f"num_product_urls: {len(products)}"
                 ]
                 first_items.extend(products)
