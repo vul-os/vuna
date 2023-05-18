@@ -33,16 +33,18 @@ class StorageUtilsGCS(StorageUtils):
         bucket = self.storage_client.get_bucket(self.bucket_name)
 
         # Split the file path into directories and file name
-        directories, file_name = file_path.rsplit('/', 1)
+        directories, file_name = os.path.split(file_path)
 
         # Create each directory in the path if it doesn't exist
-        for directory in directories.split('/'):
-            directory_blob = bucket.blob(directory + '/')
-            if not directory_blob.exists():
-                directory_blob.upload_from_string('')
+        current_dir = ""
+        for directory in directories.split("/"):
+            current_dir = os.path.join(current_dir, directory)
+            current_dir_blob = bucket.blob(os.path.join(current_dir, ""))
+            if not current_dir_blob.exists():
+                current_dir_blob.upload_from_string("")
 
         # Upload the file to the final file path
-        final_blob = bucket.blob(file_path)
+        final_blob = bucket.blob(os.path.join(file_path, file_name))
         final_blob.upload_from_filename(local_file_path)
 
     def download_file(self, file_path):

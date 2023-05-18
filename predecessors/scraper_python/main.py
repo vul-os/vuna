@@ -2,7 +2,8 @@ import os
 import sys
 from flask import Flask, request
 
-from src.api.api import ScraperAPI
+from src.api.scraper import ScraperAPI
+
 from src.storage.gcs import StorageUtilsGCS 
 from src.storage.local import StorageUtilsLocal 
 
@@ -20,28 +21,25 @@ else:
     data_storage_utils = StorageUtilsGCS(storage_client, bucket_name)
 
 scraper_api = ScraperAPI(data_storage_utils)
+orchestrator_api = OrchestratorAPI(data_storage_utils)
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>', methods=['GET', 'POST'])
-def hello_http(path):
-    if request.method == "GET":
-        if request.path == "/":
+def main_http(path):
+    if request.method == 'GET':
+        if path == '':
             return scraper_api.root(request)
-        elif request.path.startswith("/site/"):
-            job_id = '/'.join(request.path.split("/")[2:3])
-            base_url = '/'.join(request.path.split("/")[3:4])
-            return scraper_api.site(request, job_id, base_url)
-        elif request.path.startswith("/meta/"):
-            job_id = '/'.join(request.path.split("/")[2:3])
-            base_url = '/'.join(request.path.split("/")[3:4])
-            return scraper_api.meta(request, job_id, base_url)
-    elif request.method == "POST":
-        if request.path.startswith("/product/"):
-            job_id = '/'.join(request.path.split("/")[2:3])
-            product_url = '/'.join(request.path.split("/")[3:])
-            return scraper_api.product(request, job_id, product_url)
+        elif path.startswith('site/'):
+            return scraper_api.site(request, *path.split('/')[1:3])
+        elif path.startswith('meta/'):
+            return scraper_api.meta(request, *path.split('/')[1:3])
+        elif path.startswith('orchestrator/'):
+            return scraper_api.meta(request, *path.split('/')[1:3])
+    elif request.method == 'POST':
+        if path.startswith('product/'):
+            return scraper_api.product(request, *path.split('/')[1:])
 
-    return "Invalid request", 400
+    return 'Invalid request', 400
 
 if os.getenv("GOOGLE_CLOUD_FUNCTION_TARGET"):
     from google.cloud import functions
