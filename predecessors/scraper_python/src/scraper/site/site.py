@@ -27,7 +27,7 @@ class SiteScraper:
         current_datetime = datetime.datetime.now()
         formatted_datetime = current_datetime.strftime("%Y-%m-%d|%H-%M-%S")
 
-        path_prefix = f"/site/{self.job_identifier}"
+        path_prefix = f"site/{self.job_identifier}"
         file_name = f"{path_prefix}/{site_id}_{formatted_datetime}_site.csv"
         items = {
             "id": site_id,

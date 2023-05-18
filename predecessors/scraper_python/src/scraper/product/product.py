@@ -42,7 +42,7 @@ def scrape_product_data(product_url: str, scraper_loader: ScraperLoader, job_ide
         products_to_save.append(product_dict)
         
     if storage_utils is not None:
-        path_prefix = f"/product/{job_identifier}"
+        path_prefix = f"product/{job_identifier}"
         file_name = f"{path_prefix}/{site_id}_{formatted_datetime}_product.csv"
         # Write dictionaries to CSV files
         storage_utils.write_data_to_csv(file_name, products_to_save)

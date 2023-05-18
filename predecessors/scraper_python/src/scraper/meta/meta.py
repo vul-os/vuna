@@ -22,7 +22,7 @@ class MetaScraper:
         if len(products) > 0:
             current_datetime = datetime.datetime.now()
             formatted_datetime = current_datetime.strftime("%Y-%m-%d|%H-%M-%S")
-            path_prefix = f"/meta/{self.job_identifier}"
+            path_prefix = f"meta/{self.job_identifier}"
             file_name = f"{path_prefix}/{encoded_site}_{formatted_datetime}_products.txt"
             
             if self.storage_utils:
