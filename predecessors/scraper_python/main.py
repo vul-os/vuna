@@ -21,7 +21,7 @@ else:
     data_storage_utils = StorageUtilsGCS(storage_client, bucket_name)
 
 scraper_api = ScraperAPI(data_storage_utils)
-orchestrator_api = OrchestratorAPI(data_storage_utils)
+# orchestrator_api = OrchestratorAPI(data_storage_utils)
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>', methods=['GET', 'POST'])
@@ -33,8 +33,8 @@ def main_http(path):
             return scraper_api.site(request, *path.split('/')[1:3])
         elif path.startswith('meta/'):
             return scraper_api.meta(request, *path.split('/')[1:3])
-        elif path.startswith('orchestrator/'):
-            return scraper_api.meta(request, *path.split('/')[1:3])
+        # elif path.startswith('orchestrator/'):
+        #     return scraper_api.meta(request, *path.split('/')[1:3])
     elif request.method == 'POST':
         if path.startswith('product/'):
             return scraper_api.product(request, *path.split('/')[1:])
