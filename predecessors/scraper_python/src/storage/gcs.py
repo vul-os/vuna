@@ -27,38 +27,37 @@ class StorageUtilsGCS(StorageUtils):
         path_parts = file_path.rsplit("/", 1)
         return unquote(path_parts[0])
         
-    def upload_file(self, file_name, gcs_path):
-        file_path = os.path.join(self.local_dir, file_name)
+    def upload_file(self, file_path):
+        filename = self.get_filename(file_path)
+        local_file_path = os.path.join(self.local_dir, filename)
         # Create a blob object with the destination path and name
-        blob = self.storage_client.bucket(self.bucket_name).blob(f"{gcs_path}/{file_name}")
+        blob = self.storage_client.bucket(self.bucket_name).blob(file_path)
         # Upload the file to GCS
-        blob.upload_from_filename(file_path)
+        blob.upload_from_filename(local_file_path)
 
-    def download_file(self, file_name, gcs_path):
-        scraper_file = os.path.join(self.local_dir, f"{file_name}")
-
-        if not os.path.isfile(scraper_file):
+    def download_file(self, file_path):
+        filename = self.get_filename(file_path)
+        local_file_path = os.path.join(self.local_dir, filename)
+        if not os.path.isfile(local_file_path):
             # Download scraper file from GCS
             bucket = self.storage_client.get_bucket(self.bucket_name)
-            blob = bucket.blob(f"{gcs_path}/{file_name}")
-            scraper_code = blob.download_as_string().decode('utf-8')
+            blob = bucket.blob(file_path)
+            file_string = blob.download_as_string().decode('utf-8')
 
             # Save scraper file to cache directory
-            with open(scraper_file, "w") as f:
-                f.write(scraper_code)
-        return scraper_file
+            with open(local_file_path, "w") as f:
+                f.write(file_string)
+        return local_file_path
 
 
     def write_data_to_txt(self, file_name: str, data: List[dict]):
         super().write_data_to_txt(file_name, data)
-        directory = self.get_directory(file_name)
-        self.upload_file(file_name, directory)
+        self.upload_file(file_name)
 
 
     def write_data_to_csv(self, file_name: str, data: List[dict]):
         super().write_data_to_csv(file_name, data)
-        directory = self.get_directory(file_name)
-        self.upload_file(file_name, directory)
+        self.upload_file(file_name)
 
 
 
