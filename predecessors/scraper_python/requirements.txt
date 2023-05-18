@@ -28,3 +28,4 @@ starlette==0.26.1
 toml==0.10.2
 uvicorn==0.22.0
 Werkzeug==2.3.4
+beautifulsoup4==4.12.2
