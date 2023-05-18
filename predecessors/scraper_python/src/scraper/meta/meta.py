@@ -1,66 +1,35 @@
 import logging
-import requests
 import base64
 import datetime
 from typing import List
+from requests.sessions import Session
 from bs4 import BeautifulSoup
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 from requests.exceptions import RequestException
 from src.storage.storage import StorageUtils
 
 logger = logging.getLogger(__name__)
 
 class MetaScraper:
-    def __init__(self, storage_utils: StorageUtils = None):
+    def __init__(self, job_identifier: str, session: Session = None, storage_utils: StorageUtils = None):
         self.known_urls = []
+        self.job_identifier = job_identifier
         self.storage_utils = storage_utils
+        self.session = session or Session()
 
-    def __call__(self, base_url: str):
-        try:
-
-            products = self.scrape_products(base_url)
-            print(len(set(products)))
-        except Exception as exception:
-            print(exception)
-            return 1
-
+    def __call__(self, base_url: str) -> []:
+        products = self.scrape_products(base_url)
         encoded_site = base64.b64encode(base_url.encode()).decode()
         if len(products) > 0:
-            name, image = self.get_site_info(base_url)
             current_datetime = datetime.datetime.now()
-            formatted_datetime = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
-            file_name = f"{encoded_site}-{formatted_datetime}-products.txt"
+            formatted_datetime = current_datetime.strftime("%Y-%m-%d|%H-%M-%S")
+            path_prefix = f"/meta/{self.job_identifier}"
+            file_name = f"{path_prefix}/{encoded_site}_{formatted_datetime}_products.txt"
+            
             if self.storage_utils:
-                first_items = [
-                    f"name: {name.strip() if name else ''}",
-                    f"image: {image.strip() if image else ''}",
-                    f"num_product_urls: {len(products)}"
-                ]
-                first_items.extend(products)
-                self.storage_utils.write_data_to_txt(file_name, first_items)
+                self.storage_utils.write_data_to_txt(file_name, products)
             else:
                 return products
-        return None
-
-    @staticmethod
-    def get_site_info(url):
-        # Send an HTTP GET request to the website and retrieve the HTML content
-        response = requests.get(url)
-        html_content = response.content
-
-        # Parse the HTML content using BeautifulSoup
-        soup = BeautifulSoup(html_content, "html.parser")
-
-        # Extract the name of the website
-        name = soup.title.string
-        
-        # Extract the image of the website
-        image = soup.find("meta", property="og:image")
-        image = image["content"] if image else None
-        # Return the name of the website
-        return name, image
-
+        return []
 
     def parse_sitemaps(self, sitemap_urls):
         """
@@ -87,19 +56,7 @@ class MetaScraper:
                 
     def _url_to_text(self, url: str) -> str:
         try:
-            # Create a session
-            session = requests.Session()
-
-            # Define the retry behavior
-            retry = Retry(total=1, backoff_factor=0, status_forcelist=(),
-            raise_on_redirect=True, raise_on_status=True)
-
-            # Mount it for both http and https usage
-            adapter = HTTPAdapter(max_retries=retry)
-            session.mount('http://', adapter)
-            session.mount('https://', adapter)
-            response = session.get(url)
-            
+            response = self.session.get(url)
             return response.text
         except RequestException as exception:
             print(exception)
@@ -124,10 +81,12 @@ class MetaScraper:
 
     def _filter_product_urls(self, urls: List[str]) -> List[str]:
         product_urls = []
+        in_keywords = ['product', 'products']
+        out_keywords =  ['product-tag', 'product-category', 'collections', 'pages']
         for url in urls:
             path = url.split('//', 1)[-1].split('/', 1)[-1]
-            if any(keyword in path for keyword in ['product', 'products', 'collections', 'pages']) and not \
-                any(keyword in path for keyword in ['product-tag', 'product-category']):
+            if any(keyword in path for keyword in in_keywords) and not \
+                any(keyword in path for keyword in out_keywords):
                 # Add the base URL if it's not already included in the product URL
                 base_url = url.split('/' + path, 1)[0]
                 product_url = base_url + '/' + path

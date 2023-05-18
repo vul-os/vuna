@@ -7,14 +7,12 @@ from src.storage.local import StorageUtilsLocal
 
 
 app = Flask(__name__)
-# data_storage_utils = None
-# if 'FUNCTION_NAME' in os.environ:
 
-# else:
 from google.cloud import storage
 storage_client = storage.Client()
 bucket_name = "exolution-scraper-data"
 data_storage_utils = StorageUtilsGCS(storage_client, bucket_name)
+
 # data_storage_utils = StorageUtilsLocal("/workspace/scraper_python/src/scraper/product/examples")
 
 scraper_api = ScraperAPI(data_storage_utils)
@@ -25,6 +23,10 @@ def hello_http(path):
     if request.method == "GET":
         if request.path == "/":
             return scraper_api.root(request)
+        elif request.path.startswith("/site/"):
+            job_id = '/'.join(request.path.split("/")[2:3])
+            base_url = '/'.join(request.path.split("/")[3:4])
+            return scraper_api.site(request, job_id, base_url)
         elif request.path.startswith("/meta/"):
             job_id = '/'.join(request.path.split("/")[2:3])
             base_url = '/'.join(request.path.split("/")[3:4])
@@ -33,7 +35,7 @@ def hello_http(path):
         if request.path.startswith("/product/"):
             job_id = '/'.join(request.path.split("/")[2:3])
             product_url = '/'.join(request.path.split("/")[3:])
-            return scraper_api.product_scrape(request, job_id, product_url)
+            return scraper_api.product(request, job_id, product_url)
 
     return "Invalid request", 400
 

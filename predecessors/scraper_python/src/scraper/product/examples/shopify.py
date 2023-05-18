@@ -5,7 +5,6 @@ class Scraper:
     def __init__(self, url):
         self.url = url
         self.json_url = f"{self.url}.json"
-        self.headers = {'User-Agent': UserAgent().random}
 
     def scrape(self):
         response = requests.get(self.json_url, headers=self.headers)

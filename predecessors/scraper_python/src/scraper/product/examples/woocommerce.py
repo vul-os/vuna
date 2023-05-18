@@ -1,7 +1,6 @@
 import json
-import requests
 from bs4 import BeautifulSoup
-
+from requests.sessions import Session
 from src.scraper.product.scraper import Scraper, ProductData
 from src.scraper.product.utils import price_to_float, max_qty_to_int
 
@@ -19,7 +18,7 @@ class TheScraper(Scraper):
         session (requests.Session): A persistent HTTP session to be used for making requests.
     """
 
-    def __init__(self):
+    def __init__(self, session: Session = None):
         """
         Initialize a new instance of the WooCommerceScraper class.
 
@@ -27,7 +26,7 @@ class TheScraper(Scraper):
             proxies (dict, optional): A dictionary of proxies to be used with the scraper.
         """
         super().__init__()
-        self.session = requests.Session()
+        self.session = session or Session()
 
             
     def __call__(self, url):
@@ -46,15 +45,19 @@ class TheScraper(Scraper):
         response = self.session.get(product_url)
         soup = BeautifulSoup(response.text, 'html.parser')
         product_name = soup.find('h1', {'class': 'product_title'}).text.strip()
-        product_data_list = self.scrape_product_with_variations(product_url, soup, product_name) \
+        product_id_tag = soup.find('input', {'name': 'add-to-cart'}) or soup.find('button', {'name': 'add-to-cart'})
+        product_id = product_id_tag['value'] if product_id_tag else None
+
+   
+        product_data_list = self.scrape_product_with_variations(product_url, product_id, product_name, soup) \
             if soup.find('form', {'class': 'variations_form'}) \
-                else [self.scrape_product_without_variations(product_url, soup, product_name)]
+                else [self.scrape_product_without_variations(product_url, product_id, product_name, soup)]
         
         # Convert dictionaries to ProductData instances
         return [ProductData(**product_data) for product_data in product_data_list]
 
 
-    def scrape_product_without_variations(self, product_url, soup, product_name):
+    def scrape_product_without_variations(self, product_url, product_id, product_name, soup):
         """
         Scrape a product without variations.
 
@@ -68,7 +71,7 @@ class TheScraper(Scraper):
             'max_qty', 'attributes', and 'image_url'.
 
         """
-        summary_div = soup.find("div", {"class": "summary entry-summary"})
+        summary_div = soup.find("div", {"class": "summary"})
         price = summary_div.find('span', {'class': 'woocommerce-Price-amount amount'}).text.strip()
         sku = summary_div.find('span', {'class': 'sku'}).text.strip() if soup.find('span', {'class': 'sku'}) else ''
         max_qty = summary_div.find('p', {'class': 'stock'}).text.strip() if soup.find('p', {'class': 'stock'}) else ''
@@ -77,19 +80,18 @@ class TheScraper(Scraper):
         max_qty = max_qty_to_int(max_qty)
         
         image_url = soup.find('div', {'class': 'woocommerce-product-gallery__image'}).find('img')['src']
-        product_id = self.get_product_id(soup)
         return {
             'name': product_name,
             'url': product_url,
+            'image_url': image_url,
             'sku': sku,
-            'identifier': product_id,
+            'product_id': product_id,
+            'variation_id': None,
             'price': price,
             'max_qty': max_qty,
-            'attributes': None,
-            'image_url': image_url
         }
 
-    def scrape_product_with_variations(self, product_url, soup, product_name):
+    def scrape_product_with_variations(self, product_url, product_id, product_name, soup):
         product_variations = soup.find('form', class_='variations_form')['data-product_variations']
         variations_data = json.loads(product_variations)
 
@@ -110,20 +112,14 @@ class TheScraper(Scraper):
             first_value = attributes[first_key]
 
             product_info.append({
-                'name': product_name,
+                'name': first_value if first_value else product_name,
                 'url': product_url,
+                'image_url': image_url,
                 'sku': sku,
-                'identifier': variation_id,
+                'product_id': product_id,
+                'variation_id': variation_id,
                 'price': price,
                 'max_qty': max_qty,
-                'attributes': first_value,
-                'image_url': image_url
             })
 
         return product_info
-
-    def get_product_id(self, soup):
-        product_id_tag = soup.find('input', {'name': 'add-to-cart'})
-        if product_id_tag:
-            return product_id_tag['value']
-        return None

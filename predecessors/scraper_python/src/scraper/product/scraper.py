@@ -12,16 +12,23 @@ class ProductData(dict):
         variants (List[VariantData]): A list of variant data.
     """
     name: str
-    url: str
-    
     image_urls: List[str]
+    attribute: str
 
-    identifier: str
+    # these two identify product
+    url: str
+    product_id: str
+
+    # these two identify variation
+    variation_id: str
+    sku: str
 
     # datapoint data
     price: float
     max_qty: int
-
+    
+    def __getattr__(self, name):
+        return self.get(name)
 
 class Scraper(ABC):
     """
