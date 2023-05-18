@@ -1,4 +1,5 @@
 import os
+import sys
 from flask import Flask, request
 
 from src.api.api import ScraperAPI
@@ -8,12 +9,15 @@ from src.storage.local import StorageUtilsLocal
 
 app = Flask(__name__)
 
-from google.cloud import storage
-storage_client = storage.Client()
-bucket_name = "exolution-scraper-data"
-data_storage_utils = StorageUtilsGCS(storage_client, bucket_name)
-
-# data_storage_utils = StorageUtilsLocal("/workspace/scraper_python/src/scraper/product/examples")
+data_storage_utils = None
+if '--local' in sys.argv:
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    data_storage_utils = StorageUtilsLocal(f"{script_dir}/test_data")
+else:
+    from google.cloud import storage
+    storage_client = storage.Client()
+    bucket_name = "exolution-scraper-data"
+    data_storage_utils = StorageUtilsGCS(storage_client, bucket_name)
 
 scraper_api = ScraperAPI(data_storage_utils)
 

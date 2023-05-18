@@ -1,14 +1,15 @@
 import os
-from pydantic import BaseSettings
+import toml
 
+def parse_config():
+    local_file_path = os.path.join(os.path.dirname(__file__), 'config.toml')
 
-class Config(BaseSettings):
-    db_host: str = "localhost"
-    db_port: int = 5432
-    db_user: str
-    db_password: str
-    db_name: str
-    db_organization: str
-    
-config_path = os.environ.get("CONFIG_PATH", ".env")
-config = Config(_env_file=config_path, _env_file_encoding="utf-8")
+    config_string = ""
+    if os.path.exists(local_file_path):
+        with open(local_file_path, 'r') as file:
+            config_string = file.read()
+    else:
+        config_string = os.environ.get('CONFIG')
+
+    config = toml.loads(config_string)
+    return config

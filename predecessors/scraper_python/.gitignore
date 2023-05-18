@@ -13,3 +13,5 @@ scrapy/projects/
 projects/
 
 twistd\.pid
+
+test_data
