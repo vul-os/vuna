@@ -17,6 +17,7 @@ class StorageUtils(ABC):
     def write_data_to_txt(self, file_path: str, data: List[dict]):
         filename = self.get_filename(file_path)
         full_file_path = os.path.join(self.local_dir, filename)
+        print(f"Full file path: {full_file_path}")
         with open(full_file_path, 'w') as file:
             for item in data:
                 file.write(item + '\n')
@@ -24,6 +25,7 @@ class StorageUtils(ABC):
     def write_data_to_csv(self, file_path: str, data: List[dict]):
         filename = self.get_filename(file_path)
         full_file_path = os.path.join(self.local_dir, filename)
+        print(f"Full file path: {full_file_path}")
         with open(full_file_path, "w", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=data[0].keys())
             print(data[0].keys())
