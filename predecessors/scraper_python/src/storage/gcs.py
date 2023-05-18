@@ -26,14 +26,24 @@ class StorageUtilsGCS(StorageUtils):
         # Split the file path into directory and filename
         path_parts = file_path.rsplit("/", 1)
         return unquote(path_parts[0])
-        
+       
     def upload_file(self, file_path):
         filename = self.get_filename(file_path)
         local_file_path = os.path.join(self.local_dir, filename)
-        # Create a blob object with the destination path and name
-        blob = self.storage_client.bucket(self.bucket_name).blob(file_path)
-        # Upload the file to GCS
-        blob.upload_from_filename(local_file_path)
+        bucket = self.storage_client.get_bucket(self.bucket_name)
+
+        # Split the file path into directories and file name
+        directories, file_name = file_path.rsplit('/', 1)
+
+        # Create each directory in the path if it doesn't exist
+        for directory in directories.split('/'):
+            directory_blob = bucket.blob(directory + '/')
+            if not directory_blob.exists():
+                directory_blob.upload_from_string('')
+
+        # Upload the file to the final file path
+        final_blob = bucket.blob(file_path)
+        final_blob.upload_from_filename(local_file_path)
 
     def download_file(self, file_path):
         filename = self.get_filename(file_path)
