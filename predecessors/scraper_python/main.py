@@ -25,7 +25,7 @@ scraper_api = ScraperAPI(data_storage_utils)
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>', methods=['GET', 'POST'])
-def main_http(path):
+def hello_http(path):
     if request.method == 'GET':
         if path == '':
             return scraper_api.root(request)
