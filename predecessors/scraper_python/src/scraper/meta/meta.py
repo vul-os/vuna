@@ -24,7 +24,7 @@ class MetaScraper:
             file_name = f"meta/{encoded_site}_{formatted_datetime}_products.txt"
             
             if self.storage_utils:
-                self.storage_utils.write_data_to_txt(file_name, products)
+                self.storage_utils.write_data(products, 'txt', file_name)
             else:
                 return products
         return []

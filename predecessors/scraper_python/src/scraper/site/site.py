@@ -33,10 +33,11 @@ class SiteScraper:
             "image": image.strip() if image else "",
             "currency": currrency_code,
             "technology": technology,
+            "rate_limit": "1/s",
             "scraper_file": f"/{technology}/default.py"
         }
         if self.storage_utils:
-            self.storage_utils.write_data_to_csv(file_name, [items])
+            self.storage_utils.write_data([items], 'csv', file_name)
             return {"file_name": file_name, "site_data": items}
         return items
 

@@ -4,8 +4,8 @@ scraper = TheScraper()
 
 # Set the URL of the product to scrape
 product_urls = [
-    "https://www.biltongandbudz.co.za/product/barneys-farm-runtz-fem-autoflower/",
-    "https://www.biltongandbudz.co.za/product/red-jalapeno-seeds-30-seeds/",
+    # "https://www.biltongandbudz.co.za/product/barneys-farm-runtz-fem-autoflower/",
+    # "https://www.biltongandbudz.co.za/product/red-jalapeno-seeds-30-seeds/",
     "https://abies.co.za/product/polly-cotton-denim-printed"
 ]
 product_data_list = []

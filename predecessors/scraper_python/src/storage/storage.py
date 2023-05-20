@@ -1,33 +1,19 @@
-from abc import ABC
-from typing import List
+from abc import ABC, abstractmethod
 import csv
-import os
-
 
 class StorageUtils(ABC):
-    def __init__(self):
-        self.local_dir = "/"
+    @abstractmethod
+    def write_data(self, data, file_type):
+        pass
     
-    def get_filename(self, file_path):
-        path_parts = file_path.rsplit("/", 1)
-        filename = path_parts[1]
-        return filename
+    @abstractmethod
+    def read_data(self, file_type):
+        pass
 
-    # maybe seperate out these methods later
-    def write_data_to_txt(self, file_path: str, data: List[dict]):
-        filename = self.get_filename(file_path)
-        full_file_path = os.path.join(self.local_dir, filename)
-        print(f"Full file path: {full_file_path}")
-        with open(full_file_path, 'w') as file:
-            for item in data:
-                file.write(item + '\n')
+    @abstractmethod
+    def retrieve_last_file(self, folder_prefix, ends_with):
+        pass
 
-    def write_data_to_csv(self, file_path: str, data: List[dict]):
-        filename = self.get_filename(file_path)
-        full_file_path = os.path.join(self.local_dir, filename)
-        print(f"Full file path: {full_file_path}")
-        with open(full_file_path, "w", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=data[0].keys())
-            print(data[0].keys())
-            writer.writeheader()
-            writer.writerows(data)
+    @abstractmethod
+    def create_dirs_for_file(self, full_path):
+        pass

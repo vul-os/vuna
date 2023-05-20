@@ -36,14 +36,14 @@ def hello_http(path):
             return scraper_api.meta(request, base_url)
     elif request.method == "POST":
         if request.path.startswith("/product/"):
-            product_url = '/'.join(request.path.split("/")[2:3])
+            product_url = '/'.join(request.path.split("/")[2:])
             return scraper_api.product(request, product_url)
 
     return "Invalid request", 400
 
 if os.getenv("GOOGLE_CLOUD_FUNCTION_TARGET"):
-    # from google.cloud import functions
-    # main = functions.wrap(main)
+    from google.cloud import functions
+    main = functions.wrap(main)
 else:
     if __name__ == "__main__":
         app.run(host="0.0.0.0", port=8000)
