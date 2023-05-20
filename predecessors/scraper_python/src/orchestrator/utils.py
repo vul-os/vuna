@@ -1,41 +1,37 @@
 import requests
-from google.cloud import storage
+from src.storage.gcs import StorageUtils
 
-def get_urls_from_gcs_file(client: storage.Client, bucket_name: str, file_name: str):
-    bucket = client.bucket(bucket_name)
-    blob = bucket.blob(file_name)
-    
-    urls = []
-    
-    # Download the file as text
-    content = blob.download_as_text()
-    
-    # Split the content into lines and add each line as a URL
-    for line in content.splitlines():
-        urls.append(line)
-    
-    return urls
-
-def retrieve_proxys_from_file():
-    file_url = 'https://spys.me/proxy.txt'
+def create_proxy_list(file_path):
     # Send a GET request to retrieve the file contents
-    response = requests.get(file_url)
+    response = requests.get('https://spys.me/proxy.txt')
+    # Fetch the proxy list content from the URL
+    proxies = response.text.split('\n')
 
-    # Check if the request was successful
-    if response.status_code == 200:
-        # Get the text content of the response
-        file_content = response.text
+    # Determine the number of header lines
+    header_lines = 0
+    for line in proxies:
+        if line.startswith('IP address:Port'):
+            break
+        header_lines += 1
 
-        # Split the file content by newlines
-        lines = file_content.split('\n')
+    # Remove the header lines
+    proxies = proxies[header_lines:]
 
-        # Extract the URLs from the lines
-        urls = [line.split()[1] for line in lines if line.startswith('Http proxy')]
+    proxy_list = []
 
-        return urls
-    else:
-        print('Failed to retrieve the file:', response.status_code)
-        return []
+    # Create proxy URLs for each proxy
+    for proxy in proxies:
+        proxy_parts = proxy.strip().split(' ')
+        ip_port = proxy_parts[0]
+        supports_ssl = 'S' in proxy_parts[1]
+
+        # Create the proxy URL
+        if not supports_ssl:
+            proxy_url = f'http://{ip_port}'
+            proxy_list.append(proxy_url)
+
+    return proxy_list
+
 
 def retrieve_recent_files(client: storage.Client, bucket_name, folder_prefix):
     # Get the bucket

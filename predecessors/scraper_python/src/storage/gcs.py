@@ -61,6 +61,18 @@ class StorageUtilsGCS(StorageUtils):
                 f.write(file_string)
         return local_file_path
 
+    def get_file(self, file_path):
+        bucket = self.storage_client.get_bucket(self.bucket_name)
+        blob = bucket.blob(file_path)       
+        lines = []
+        # Download the file as text
+        content = blob.download_as_text()
+        
+        # Split the content into lines and add each line as a URL
+        for line in content.splitlines():
+            lines.append(line)
+        
+        return lines
 
     def write_data_to_txt(self, file_name: str, data: List[dict]):
         super().write_data_to_txt(file_name, data)
