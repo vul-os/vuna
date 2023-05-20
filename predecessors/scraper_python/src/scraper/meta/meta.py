@@ -10,9 +10,8 @@ from src.storage.storage import StorageUtils
 logger = logging.getLogger(__name__)
 
 class MetaScraper:
-    def __init__(self, job_identifier: str, session: Session = None, storage_utils: StorageUtils = None):
+    def __init__(self, session: Session = None, storage_utils: StorageUtils = None):
         self.known_urls = []
-        self.job_identifier = job_identifier
         self.storage_utils = storage_utils
         self.session = session or Session()
 
@@ -22,8 +21,7 @@ class MetaScraper:
         if len(products) > 0:
             current_datetime = datetime.datetime.now()
             formatted_datetime = current_datetime.strftime("%Y-%m-%d|%H-%M-%S")
-            path_prefix = f"meta/{self.job_identifier}"
-            file_name = f"{path_prefix}/{encoded_site}_{formatted_datetime}_products.txt"
+            file_name = f"meta/{encoded_site}_{formatted_datetime}_products.txt"
             
             if self.storage_utils:
                 self.storage_utils.write_data_to_txt(file_name, products)

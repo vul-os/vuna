@@ -12,9 +12,8 @@ from src.scraper.encoder.encoder import encode_url
 logger = logging.getLogger(__name__)
 
 class SiteScraper:
-    def __init__(self, job_identifier: str, session: Session = None, storage_utils: StorageUtils = None):
+    def __init__(self, session: Session = None, storage_utils: StorageUtils = None):
         self.known_urls = []
-        self.job_identifier = job_identifier
         self.storage_utils = storage_utils
         self.session = session or Session()
 
@@ -27,8 +26,7 @@ class SiteScraper:
         current_datetime = datetime.datetime.now()
         formatted_datetime = current_datetime.strftime("%Y-%m-%d|%H-%M-%S")
 
-        path_prefix = f"site/{self.job_identifier}"
-        file_name = f"{path_prefix}/{site_id}_{formatted_datetime}_site.csv"
+        file_name = f"site/{site_id}_{formatted_datetime}_site.csv"
         items = {
             "id": site_id,
             "name": name.strip() if name else "",

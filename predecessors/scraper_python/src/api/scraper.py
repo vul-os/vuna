@@ -5,10 +5,6 @@ from src.storage.local import StorageUtilsLocal as StorageUtils
 
 class ScraperAPI:
     def __init__(self, data_storage_utils: StorageUtils):
-        # self.data_storage_utils = StorageUtils(storage_client=self.storage_client, bucket_name="mybucket")
-        # self.scraper_storage_utils = StorageUtils(storage_client=self.storage_client, bucket_name="mybucket")
-        # self.storage_client = storage.Client()
-
         self.data_storage_utils = data_storage_utils
         self.scraper_cache = {}
         self.proxies = [""]
@@ -18,11 +14,11 @@ class ScraperAPI:
         print(sys.getrecursionlimit())
         return f"{sys.getrecursionlimit()}"
 
-    def meta(self, request, job_identifier, base_url):
+    def meta(self, request, base_url):
         try:
             url = f"https://{requests.utils.unquote(base_url)}"
         
-            scraper = MetaScraper(job_identifier=job_identifier, storage_utils=self.data_storage_utils)
+            scraper = MetaScraper(storage_utils=self.data_storage_utils)
             meta_data = scraper(base_url=url)
         
             return jsonify(meta_data)
@@ -31,11 +27,11 @@ class ScraperAPI:
         except Exception as exception:
             return str(exception), 500
 
-    def site(self, request, job_identifier, base_url):
+    def site(self, request, base_url):
         try:
             url = f"https://{requests.utils.unquote(base_url)}"
         
-            scraper = SiteScraper(job_identifier=job_identifier, storage_utils=self.data_storage_utils)
+            scraper = SiteScraper(storage_utils=self.data_storage_utils)
             site_data = scraper(base_url=url)
         
             return jsonify(site_data)
@@ -44,16 +40,14 @@ class ScraperAPI:
         except Exception as exception:
             return str(exception), 500
 
-    def product(self, request, job_identifier, product_url):
+    def product(self, request, product_url):
         try:
             proxies = request.json.get("proxies", [])
             scraper_code = request.json.get("scraper_code", None)
        
-            print(job_identifier, product_url)
             product_url = f"https://{requests.utils.unquote(product_url)}"
             scraper_loader = ScraperLoader(scraper_code)
-            product_data = scrape_product_data(job_identifier=job_identifier,
-                                        scraper_loader=scraper_loader,
+            product_data = scrape_product_data(scraper_loader=scraper_loader,
                                         proxies=self.proxies,
                                         storage_utils=self.data_storage_utils,
                                         product_url=product_url)

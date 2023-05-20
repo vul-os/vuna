@@ -8,7 +8,7 @@ from src.scraper.product.scraper import ProductData
 from src.storage.storage import StorageUtils
 from src.scraper.encoder.encoder import encode_url
 
-def scrape_product_data(product_url: str, scraper_loader: ScraperLoader, job_identifier: str, proxies: [] = None, storage_utils: StorageUtils = None):
+def scrape_product_data(product_url: str, scraper_loader: ScraperLoader, proxies: [] = None, storage_utils: StorageUtils = None):
     def get_site_url(url):
         parsed_url = urlparse(url)
         return f"{parsed_url.scheme}://{parsed_url.netloc}"
@@ -42,8 +42,7 @@ def scrape_product_data(product_url: str, scraper_loader: ScraperLoader, job_ide
         products_to_save.append(product_dict)
         
     if storage_utils is not None:
-        path_prefix = f"product/{job_identifier}"
-        file_name = f"{path_prefix}/{site_id}_{formatted_datetime}_product.csv"
+        file_name = f"product/{site_id}_{formatted_datetime}_product.csv"
         # Write dictionaries to CSV files
         storage_utils.write_data_to_csv(file_name, products_to_save)
 

@@ -29,24 +29,21 @@ def hello_http(path):
         if request.path == "/":
             return scraper_api.root(request)
         elif request.path.startswith("/site/"):
-            job_id = '/'.join(request.path.split("/")[2:3])
-            base_url = '/'.join(request.path.split("/")[3:4])
-            return scraper_api.site(request, job_id, base_url)
+            base_url = '/'.join(request.path.split("/")[2:3])
+            return scraper_api.site(request, base_url)
         elif request.path.startswith("/meta/"):
-            job_id = '/'.join(request.path.split("/")[2:3])
-            base_url = '/'.join(request.path.split("/")[3:4])
-            return scraper_api.meta(request, job_id, base_url)
+            base_url = '/'.join(request.path.split("/")[2:3])
+            return scraper_api.meta(request, base_url)
     elif request.method == "POST":
         if request.path.startswith("/product/"):
-            job_id = '/'.join(request.path.split("/")[2:3])
-            product_url = '/'.join(request.path.split("/")[3:])
-            return scraper_api.product(request, job_id, product_url)
+            product_url = '/'.join(request.path.split("/")[2:3])
+            return scraper_api.product(request, product_url)
 
     return "Invalid request", 400
 
 if os.getenv("GOOGLE_CLOUD_FUNCTION_TARGET"):
-    from google.cloud import functions
-    main = functions.wrap(main)
+    # from google.cloud import functions
+    # main = functions.wrap(main)
 else:
     if __name__ == "__main__":
         app.run(host="0.0.0.0", port=8000)
