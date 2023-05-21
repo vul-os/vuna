@@ -41,21 +41,21 @@ def hello_http(path):
             return root()
     print(request.path, 'orchestrator' in request.path)
     if 'scraper' in request.path:
-        if request.path.startswith("/scraper/site/"):
+        if request.path.startswith("/scraper/site"):
             base_url = '/'.join(request.path.split("/")[3:4])
             return scraper_api.site(request, base_url)
-        if request.path.startswith("/scraper/meta/"):
+        if request.path.startswith("/scraper/meta"):
             base_url = '/'.join(request.path.split("/")[3:4])
             return scraper_api.meta(request, base_url)
-        if request.path.startswith("/scraper/product/"):
+        if request.path.startswith("/scraper/product"):
             product_url = '/'.join(request.path.split("/")[3:])
             return scraper_api.product(request, product_url)
 
     if 'orchestrator' in request.path:
-        if request.path.startswith("/orchestrator/site/"):
-            print("here")
+        print("here")
+        if request.path.startswith("/orchestrator/site"):
             return orchestrator_api.site(request)
-        if request.path.startswith("/orchestrator/meta/"):
+        if request.path.startswith("/orchestrator/meta"):
             return orchestrator_api.meta(request)
 
     return "Invalid request", 400

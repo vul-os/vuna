@@ -15,5 +15,10 @@ class StorageUtils(ABC):
         pass
 
     @abstractmethod
+    def get_latest_file(self, folder_prefix, ends_with):
+        pass
+
+
+    @abstractmethod
     def create_dirs_for_file(self, full_path):
         pass
