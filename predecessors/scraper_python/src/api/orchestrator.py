@@ -15,18 +15,18 @@ class OrchestratorAPI:
             urls = self.storage_utils.get_latest_file('/', "sites.txt")
             for url in urls:
                 self.task_creator.create_task_meta(url, "https://function-1-gizrqdvcaq-uc.a.run.app")
-            return "hopefully created meta task", 200
+            return "hopefully created meta task"
         except Exception as exception:
-            return str(exception), 500
+            return str(exception)
 
     def site(self, request):
         try:
             urls = self.storage_utils.get_latest_file('/', "sites.txt")
             for url in urls:
                 self.task_creator.create_task_site(url, "https://function-1-gizrqdvcaq-uc.a.run.app")
-            return "hopefully created site task", 200
+            return "hopefully created site task"
         except Exception as exception:
-            return str(exception), 500
+            return str(exception)
 
 
     # def product(self, request):

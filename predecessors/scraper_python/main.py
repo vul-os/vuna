@@ -28,28 +28,6 @@ task_creator = TaskCreator(project_id="scraping-is-hard",
 scraper_api = ScraperAPI(data_storage_utils)
 orchestrator_api = OrchestratorAPI(task_creator, data_storage_utils)
 
-def scraper_routes(request):
-    if request.method == "GET":
-        # GET Scraper 
-        if request.path.startswith("/scraper/site/"):
-            base_url = '/'.join(request.path.split("/")[3:4])
-            return scraper_api.site(request, base_url)
-        elif request.path.startswith("/scraper/meta/"):
-            base_url = '/'.join(request.path.split("/")[3:4])
-            return scraper_api.meta(request, base_url)
-    elif request.method == "POST":
-        if request.path.startswith("/scraper/product/"):
-            product_url = '/'.join(request.path.split("/")[3:])
-            return scraper_api.product(request, product_url)
-
-def orchestrator_routes(request):
-    if request.method == "GET":
-        # GET Orchestrator
-        if request.path.startswith("/orchestrator/site/"):
-            return orchestrator_api.site(request)
-        elif request.path.startswith("/orchestrator/meta/"):
-            return orchestrator_api.meta(request)
-
 def root():
     import sys
     print(sys.getrecursionlimit())
@@ -62,9 +40,21 @@ def hello_http(path):
         if request.path == "/":
             return root()
     if 'scraper' in request.path:
-        return scraper_routes(request)
+        if request.path.startswith("/scraper/site/"):
+            base_url = '/'.join(request.path.split("/")[3:4])
+            return scraper_api.site(request, base_url)
+        elif request.path.startswith("/scraper/meta/"):
+            base_url = '/'.join(request.path.split("/")[3:4])
+            return scraper_api.meta(request, base_url)
+        elif request.path.startswith("/scraper/product/"):
+            product_url = '/'.join(request.path.split("/")[3:])
+            return scraper_api.product(request, product_url)
+
     elif 'orchestrator' in request.path:
-        return orchestrator_routes(request)
+        if request.path.startswith("/orchestrator/site/"):
+            return orchestrator_api.site(request)
+        elif request.path.startswith("/orchestrator/meta/"):
+            return orchestrator_api.meta(request)
 
     return "Invalid request", 400
 
