@@ -25,8 +25,7 @@ class MetaScraper:
             
             if self.storage_utils:
                 self.storage_utils.write_data(products, 'txt', file_name)
-            else:
-                return products
+            return products
         return []
 
     def parse_sitemaps(self, sitemap_urls):
