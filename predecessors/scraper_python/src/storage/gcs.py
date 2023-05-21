@@ -89,10 +89,10 @@ class StorageUtilsGCS(StorageUtils):
             blobs = self.bucket.list_blobs()
             for blob in blobs:
                 blob_name = blob.name
-                if blob_name.endswith("_products.txt"):
+                if blob_name.endswith(ends_with):
                     # Extract the datetime from the blob name
                     formatted_datetime = blob_name.split("_")[-2]
-                    datetime_obj = datetime.datetime.strptime(formatted_datetime, "%Y%m%d%H%M%S")
+                    datetime_obj = datetime.datetime.strptime(formatted_datetime, "%Y-%m-%d-%H-%M-%S")
 
                     # Check if this blob is the latest based on the datetime
                     if latest_datetime is None or datetime_obj > latest_datetime:
