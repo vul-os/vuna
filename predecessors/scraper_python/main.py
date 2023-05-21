@@ -57,7 +57,9 @@ def hello_http(path):
             return orchestrator_api.site(request)
         if request.path.startswith("/orchestrator/meta"):
             return orchestrator_api.meta(request)
-
+        if request.path.startswith("/orchestrator/product"):
+            return orchestrator_api.product(request)
+            
     return "Invalid request", 400
 
 if os.getenv("GOOGLE_CLOUD_FUNCTION_TARGET"):
