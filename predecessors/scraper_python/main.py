@@ -39,17 +39,17 @@ def hello_http(path):
     if request.method == "GET":
         if request.path == "/":
             return root()
-    print(request.path, 'orchestrator' in request.path)
     if 'scraper' in request.path:
         if request.path.startswith("/scraper/site"):
             base_url = '/'.join(request.path.split("/")[3:4])
-            return scraper_api.site(request, base_url)
+            print(base_url.strip())
+            return scraper_api.site(request, base_url.strip())
         if request.path.startswith("/scraper/meta"):
             base_url = '/'.join(request.path.split("/")[3:4])
-            return scraper_api.meta(request, base_url)
+            return scraper_api.meta(request, base_url.strip())
         if request.path.startswith("/scraper/product"):
             product_url = '/'.join(request.path.split("/")[3:])
-            return scraper_api.product(request, product_url)
+            return scraper_api.product(request, product_url.strip())
 
     if 'orchestrator' in request.path:
         print("here")
