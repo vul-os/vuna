@@ -38,6 +38,7 @@ class OrchestratorAPI:
             products_files_per_site = self.storage_utils.get_latest_files('meta/', 'products.txt')
             for products_file_per_site in products_files_per_site:
                 site_id = products_file_per_site.split('_')[0]
+                site_id = site_id.replace("meta/", "")
                 print(site_id)
                 site_info_file = self.storage_utils.get_latest_file('site/', site_id.strip())
                 print(site_info_file)
