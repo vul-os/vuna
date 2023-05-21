@@ -56,6 +56,7 @@ class OrchestratorAPI:
                     if site_info:
                         urls = self.storage_utils.read_data(products_file_per_site)
                         for url in urls:
+                            url = url.replace("https://", "")
                             scheduled_time += timedelta(seconds=rate_limit)
                             scheduled_timestamp = Timestamp()
                             scheduled_timestamp.FromDatetime(scheduled_time)
