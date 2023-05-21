@@ -18,7 +18,7 @@ class TaskCreator:
 
         return {
             "http_request": {
-                "http_method": tasks.HttpMethod.POST,
+                "http_method": tasks.HttpMethod.GET,
                 "url": f"{target_url}/scraper/site/{job_id}/{url}"
             }
         }
@@ -29,7 +29,7 @@ class TaskCreator:
 
         return {
             "http_request": {
-                "http_method": tasks.HttpMethod.POST,
+                "http_method": tasks.HttpMethod.GET,
                 "url": f"{target_url}/scraper/meta/{job_id}/{url}"
             }
         }
