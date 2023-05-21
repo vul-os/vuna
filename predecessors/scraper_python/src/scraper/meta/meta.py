@@ -6,6 +6,7 @@ from requests.sessions import Session
 from bs4 import BeautifulSoup
 from requests.exceptions import RequestException
 from src.storage.storage import StorageUtils
+from src.scraper.encoder.encoder import encode_url
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,7 @@ class MetaScraper:
 
     def __call__(self, base_url: str) -> []:
         products = self.scrape_products(base_url)
-        encoded_site = base64.b64encode(base_url.encode()).decode()
+        encoded_site = encode_url(base_url)
         if len(products) > 0:
             current_datetime = datetime.datetime.now()
             formatted_datetime = current_datetime.strftime("%Y-%m-%d-%H-%M-%S")
