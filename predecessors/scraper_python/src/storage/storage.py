@@ -11,11 +11,11 @@ class StorageUtils(ABC):
         pass
 
     @abstractmethod
-    def get_latest_files(self, folder_prefix, ends_with):
+    def get_latest_files(self, folder_prefix, text_in):
         pass
 
     @abstractmethod
-    def get_latest_file(self, folder_prefix, ends_with):
+    def get_latest_file(self, folder_prefix, text_in):
         pass
 
 

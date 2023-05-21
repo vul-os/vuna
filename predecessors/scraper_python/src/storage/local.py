@@ -10,11 +10,11 @@ class StorageUtilsLocal(StorageUtils):
     def __init__(self, local_dir):
         self.local_dir = local_dir
 
-    def get_latest_files(self, folder_prefix, ends_with):
+    def get_latest_files(self, folder_prefix, text_in):
         print("yaa")
         return "hello"
 
-    def get_latest_file(self, folder_prefix, ends_with):
+    def get_latest_file(self, folder_prefix, text_in):
         print("yaa")
         return "hello"
 

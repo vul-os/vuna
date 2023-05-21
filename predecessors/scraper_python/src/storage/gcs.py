@@ -67,13 +67,13 @@ class StorageUtilsGCS(StorageUtils):
             print("Directories created in GCS: " + directory)
 
     
-    def get_latest_files(self, folder_prefix, ends_with):
+    def get_latest_files(self, folder_prefix, text_in):
         # Dictionary to store the latest file for each encoded_site
         blobs = self.bucket.list_blobs(prefix=folder_prefix, delimiter="/")
         latest_files = {}
         for blob in blobs:
             blob_name = blob.name
-            if blob_name.endswith(ends_with):
+            if text_in in blob_name:
                 encoded_site, formatted_datetime, _ = blob_name.split("_")
                 datetime_obj = datetime.datetime.strptime(formatted_datetime, "%Y-%m-%d-%H-%M-%S")
 
@@ -83,7 +83,7 @@ class StorageUtilsGCS(StorageUtils):
 
         return [value['file'] for value in latest_files.values() if value]
 
-    def get_latest_file(self, folder_prefix, ends_with):
+    def get_latest_file(self, folder_prefix, text_in):
         latest_filename = None
         latest_datetime = None
         blobs = self.bucket.list_blobs(prefix=folder_prefix, delimiter="/")
@@ -91,7 +91,7 @@ class StorageUtilsGCS(StorageUtils):
         for blob in blobs:
             blob_name = blob.name
             print(blob_name)
-            if blob_name.endswith(ends_with):
+            if text_in in blob_name:
                 print("endswith")
                 # Extract the datetime from the blob name
                 formatted_datetime = blob_name.split("_")[-2]
