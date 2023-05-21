@@ -90,6 +90,7 @@ class StorageUtilsGCS(StorageUtils):
         print("blobs: ", blobs)
         for blob in blobs:
             blob_name = blob.name
+            print(blob_name)
             if blob_name.endswith(ends_with):
                 # Extract the datetime from the blob name
                 formatted_datetime = blob_name.split("_")[-2]
