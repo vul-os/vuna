@@ -95,6 +95,7 @@ class StorageUtilsGCS(StorageUtils):
             return datetime_objects[0]  # Get the first datetime object
         else:
             return None
+            
     def get_latest_files(self, folder_prefix, text_in):
         # Dictionary to store the latest file for each encoded_site
         blobs = self.bucket.list_blobs(prefix=folder_prefix, delimiter="/")
