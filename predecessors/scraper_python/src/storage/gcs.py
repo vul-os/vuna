@@ -11,8 +11,9 @@ class StorageUtilsGCS(StorageUtils):
         self.client = storage_client
         self.bucket = self.client.get_bucket(self.bucket_name)
     
-    def write_data(self, data, file_type, file_path):
+    def write_data(self, data, file_path):
         self.create_dirs_for_file(file_path)
+        file_type = self.get_file_extension(file_path)
         
         if file_type == 'csv':
             self.write_csv_data(data, file_path)
@@ -21,7 +22,9 @@ class StorageUtilsGCS(StorageUtils):
         else:
             print("Invalid file type.")
     
-    def read_data(self, file_type, file_path):
+    def read_data(self, file_path):
+        file_type = self.get_file_extension(file_path)
+
         if file_type == 'csv':
             return self.read_csv_data(file_path)
         elif file_type == 'txt':
@@ -35,6 +38,11 @@ class StorageUtilsGCS(StorageUtils):
         content = '\n'.join(','.join(str(value) for value in row.values()) for row in data)
         blob.upload_from_string(content)
         print(f"Data written to CSV file '{file_path}' in GCS.")
+
+    @staticmethod
+    def get_file_extension(file_path):
+        _, file_extension = os.path.splitext(file_path)
+        return file_extension.lstrip(".")
     
     def read_csv_data(self, file_path):
         blob = self.bucket.blob(file_path)
@@ -67,7 +75,6 @@ class StorageUtilsGCS(StorageUtils):
         content = blob.download_as_text()
         data = content.split('\n')
         data = self.flatten_list(data)
-        data = [item.rstrip('\r') for item in data]
         return data
 
     def create_dirs_for_file(self, file_path):

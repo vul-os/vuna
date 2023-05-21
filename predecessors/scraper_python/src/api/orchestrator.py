@@ -11,7 +11,7 @@ class OrchestratorAPI:
         try:
             latest_file = self.storage_utils.get_latest_file(None, "sites.txt")
             print(latest_file)
-            urls = self.storage_utils.read_data('csv', latest_file)
+            urls = self.storage_utils.read_data(latest_file)
             print(urls)
             for url in urls:
                 self.task_creator.create_task_meta(url, "https://function-1-gizrqdvcaq-uc.a.run.app")
@@ -23,7 +23,7 @@ class OrchestratorAPI:
         try:
             latest_file = self.storage_utils.get_latest_file(None, "sites.txt")
             print(latest_file)
-            urls = self.storage_utils.read_data('csv', latest_file)
+            urls = self.storage_utils.read_data(latest_file)
             print(urls)
             for url in urls:
                 self.task_creator.create_task_site(url, "https://function-1-gizrqdvcaq-uc.a.run.app")

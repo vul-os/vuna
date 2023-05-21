@@ -37,7 +37,7 @@ class SiteScraper:
             "scraper_file": f"/{technology}/default.py"
         }
         if self.storage_utils:
-            self.storage_utils.write_data([items], 'csv', file_name)
+            self.storage_utils.write_data([items], file_name)
             return {"file_name": file_name, "site_data": items}
         return items
 

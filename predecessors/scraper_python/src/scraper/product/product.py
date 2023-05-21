@@ -44,6 +44,6 @@ def scrape_product_data(product_url: str, scraper_loader: ScraperLoader, proxies
     if storage_utils is not None:
         file_name = f"product/{site_id}_{formatted_datetime}_product.csv"
         # Write dictionaries to CSV files
-        storage_utils.write_data(products_to_save, 'csv', file_name)
+        storage_utils.write_data(products_to_save, file_name)
 
     return product_data
