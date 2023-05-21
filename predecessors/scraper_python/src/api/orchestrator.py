@@ -44,8 +44,8 @@ class OrchestratorAPI:
                 print(site_info_file)
                 site_info = self.storage_utils.read_data(site_info_file)
                 print(site_info)
-                if len(site_info) > 0:
-                    scraper_code_loc = f"scraper_code/{site_info[0]}"
+                if len(site_info) and len(site_info[0]):
+                    scraper_code_loc = f"scraper_code/{site_info[0][7]}"
                     print(scraper_code_loc)
                     blob = self.storage_utils.bucket.blob(scraper_code_loc)
                     scraper_code = blob.download_as_text()
