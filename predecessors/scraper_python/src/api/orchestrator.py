@@ -41,13 +41,13 @@ class OrchestratorAPI:
                 site_info_file = self.storage_utils.get_latest_file('site/', site_id)
                 site_info = self.storage_utils.read_data(site_info_file)
                 if "scraper_file" in site_info.keys():
-                    scraper_code_loc = f"scraper_code/{site_info["scraper_file"]}"
+                    scraper_code_loc = f"scraper_code/{site_info.scraper_file}"
                     blob = self.storage_utils.bucket.blob(scraper_code_loc)
                     scraper_code = blob.download_as_text()
                     if site_info:
                         urls = self.storage_utils.read_data(products_file_per_site)
                         for url in urls:
-                            self.task_creator.create_task_product(url, scraper_code, target_url)
+                            self.task_creator.create_task_product(url, scraper_code, self.target_url)
             return "hopefully created", 200
         except Exception as exception:
             return str(exception), 500
