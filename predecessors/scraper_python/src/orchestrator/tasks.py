@@ -4,42 +4,41 @@ import time
 
 
 class TaskCreator:
-    def __init__(self, project_id, location, queue_id, host):
+    def __init__(self, project_id, location, queue_id):
         self.client = tasks.CloudTasksClient()
         self.parent = self.client.queue_path(project_id, location, queue_id)
-        self.host = host
 
     def create_task(self, task: dict):
         response = self.client.create_task(request={"parent": self.parent, "task": task})
         print(f"Task created: {response.name}")
 
-    def create_task_site(self, url):
+    def create_task_site(self, url: str, target_url: str):
         current_time = int(time.time())
         job_id = str(current_time)
 
         return {
             "http_request": {
                 "http_method": tasks.HttpMethod.POST,
-                "url": f"{self.host}/site/{job_id}/{url}"
+                "url": f"{target_url}/site/{job_id}/{url}"
             }
         }
 
-    def create_task_meta(self, url):
+    def create_task_meta(self, url: str, target_url: str):
         current_time = int(time.time())
         job_id = str(current_time)
 
         return {
             "http_request": {
                 "http_method": tasks.HttpMethod.POST,
-                "url": f"{self.host}/meta/{job_id}/{url}"
+                "url": f"{target_url}/meta/{job_id}/{url}"
             }
         }
 
-    def create_task_product(self, url, scraper_code):
+    def create_task_product(self, url: str, scraper_code: str, target_url: str):
         current_time = int(time.time())
         job_id = str(current_time)
 
-        task_url = f"{self.host}/product/{job_id}/{url}"
+        task_url = f"{target_url}/product/{job_id}/{url}"
 
         payload = {
             "scraper_code": scraper_code,

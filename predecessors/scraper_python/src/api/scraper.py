@@ -9,11 +9,6 @@ class ScraperAPI:
         self.scraper_cache = {}
         self.proxies = [""]
 
-    def root(self, request):
-        import sys
-        print(sys.getrecursionlimit())
-        return f"{sys.getrecursionlimit()}"
-
     def meta(self, request, base_url):
         try:
             url = f"https://{requests.utils.unquote(base_url)}"

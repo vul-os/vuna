@@ -3,10 +3,12 @@ import sys
 from flask import Flask, request
 
 from src.api.scraper import ScraperAPI
+from src.api.orchestrator import OrchestratorAPI
 
 from src.storage.gcs import StorageUtilsGCS 
 from src.storage.local import StorageUtilsLocal 
 
+from src.orchestrator.tasks import TaskCreator
 
 app = Flask(__name__)
 
@@ -20,24 +22,49 @@ else:
     bucket_name = "exolution-scraper-data"
     data_storage_utils = StorageUtilsGCS(storage_client, bucket_name)
 
+task_creator = TaskCreator(project_id="scraping-is-hard",
+    location="us-central1", queue_id="scraper")
+
 scraper_api = ScraperAPI(data_storage_utils)
+orchestrator_api = OrchestratorAPI(task_creator, data_storage_utils)
+
+def scraper_routes(request):
+    if request.method == "GET":
+        # GET Scraper 
+        if request.path.startswith("/scraper/site/"):
+            base_url = '/'.join(request.path.split("/")[2:3])
+            return scraper_api.site(request, base_url)
+        elif request.path.startswith("/scraper/meta/"):
+            base_url = '/'.join(request.path.split("/")[2:3])
+            return scraper_api.meta(request, base_url)
+    elif request.method == "POST":
+        if request.path.startswith("/scraper/product/"):
+            product_url = '/'.join(request.path.split("/")[2:])
+            return scraper_api.product(request, product_url)
+
+def orchestrator_routes(request):
+    if request.method == "GET":
+        # GET Orchestrator
+        if request.path.startswith("/orchestrator/site/"):
+            return orchestrator_api.site(request)
+        elif request.path.startswith("/orchestrator/meta/"):
+            return orchestrator_api.meta(request)
+
+def root():
+    import sys
+    print(sys.getrecursionlimit())
+    return f"{sys.getrecursionlimit()}"
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>', methods=['GET', 'POST'])
 def hello_http(path):
     if request.method == "GET":
         if request.path == "/":
-            return scraper_api.root(request)
-        elif request.path.startswith("/site/"):
-            base_url = '/'.join(request.path.split("/")[2:3])
-            return scraper_api.site(request, base_url)
-        elif request.path.startswith("/meta/"):
-            base_url = '/'.join(request.path.split("/")[2:3])
-            return scraper_api.meta(request, base_url)
-    elif request.method == "POST":
-        if request.path.startswith("/product/"):
-            product_url = '/'.join(request.path.split("/")[2:])
-            return scraper_api.product(request, product_url)
+            return root()
+    if 'scraper' in request.path:
+        return scraper_routes(request)
+    elif 'orchestrator' in request.path:
+        return orchestrator_routes(request)
 
     return "Invalid request", 400
 
