@@ -1,6 +1,3 @@
-import requests
-from flask import jsonify
-from src.scraper import MetaScraper, ScraperLoader, scrape_product_data, SiteScraper
 from src.storage.local import StorageUtilsLocal as StorageUtils
 from src.storage.gcs import StorageUtils
 from src.orchestrator.tasks import TaskCreator

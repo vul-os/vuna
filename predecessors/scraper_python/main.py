@@ -52,6 +52,7 @@ def hello_http(path):
 
     elif 'orchestrator' in request.path:
         if request.path.startswith("/orchestrator/site/"):
+            print("here")
             return orchestrator_api.site(request)
         elif request.path.startswith("/orchestrator/meta/"):
             return orchestrator_api.meta(request)
