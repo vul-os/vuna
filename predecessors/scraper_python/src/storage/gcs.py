@@ -92,9 +92,13 @@ class StorageUtilsGCS(StorageUtils):
             blob_name = blob.name
             print(blob_name)
             if blob_name.endswith(ends_with):
+                print("endswith")
                 # Extract the datetime from the blob name
                 formatted_datetime = blob_name.split("_")[-2]
+                print("formatted_datetime")
+
                 datetime_obj = datetime.datetime.strptime(formatted_datetime, "%Y-%m-%d-%H-%M-%S")
+                print("datetime_obj")
 
                 # Check if this blob is the latest based on the datetime
                 if latest_datetime is None or datetime_obj > latest_datetime:
