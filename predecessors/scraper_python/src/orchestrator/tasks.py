@@ -12,21 +12,23 @@ class TaskCreator:
         response = self.client.create_task(request={"parent": self.parent, "task": task})
         print(f"Task created: {response.name}")
 
-        return {
+    def create_task_site(self, url: str, target_url: str):
+        task = {
             "http_request": {
                 "http_method": tasks.HttpMethod.GET,
                 "url": f"{target_url}/scraper/site/{url}"
             }
         }
+        self.create_task(task)
 
     def create_task_meta(self, url: str, target_url: str):
- 
-        return {
+        task = {
             "http_request": {
                 "http_method": tasks.HttpMethod.GET,
                 "url": f"{target_url}/scraper/meta/{url}"
             }
         }
+        self.create_task(task)
 
     def create_task_product(self, url: str, scraper_code: str, target_url: str):
         task_url = f"{target_url}/scraper/product/{url}"
@@ -36,7 +38,7 @@ class TaskCreator:
         }
         json_payload = json.dumps(payload)
 
-        return {
+        task = {
             "http_request": {
                 "http_method": tasks.HttpMethod.POST,
                 "url": task_url,
@@ -44,3 +46,4 @@ class TaskCreator:
                 "body": json_payload.encode()
             }
         }
+        self.create_task(task)

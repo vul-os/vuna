@@ -14,7 +14,7 @@ class OrchestratorAPI:
             urls = self.storage_utils.read_data(latest_file)
             print(urls)
             for url in urls:
-                self.task_creator.create_task_meta(url, "https://function-1-gizrqdvcaq-uc.a.run.app")
+                task = self.task_creator.create_task_meta(url, "https://function-1-gizrqdvcaq-uc.a.run.app")
             return "hopefully created meta task"
         except Exception as exception:
             return str(exception)
