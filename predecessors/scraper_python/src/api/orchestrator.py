@@ -1,6 +1,10 @@
+from google.protobuf.timestamp_pb2 import Timestamp
+from datetime import datetime, timedelta
+
 from src.storage.local import StorageUtilsLocal as StorageUtils
 from src.storage.gcs import StorageUtils
 from src.orchestrator.tasks import TaskCreator
+
 
 class OrchestratorAPI:
     def __init__(self, task_creator: TaskCreator, storage_utils: StorageUtils):
@@ -39,11 +43,11 @@ class OrchestratorAPI:
             for products_file_per_site in products_files_per_site:
                 site_id = products_file_per_site.split('_')[0]
                 site_id = site_id.replace("meta/", "")
-                print(site_id)
                 site_info_file = self.storage_utils.get_latest_file('site/', site_id.strip())
-                print(site_info_file)
                 site_info = self.storage_utils.read_data(site_info_file)
-                print(site_info)
+
+                rate_limit = 1  # Number of requests per second
+                scheduled_time = datetime.utcnow()
                 if len(site_info) and len(site_info[0]):
                     scraper_code_loc = f"scraper_code{site_info[0][-1]}"
                     print(scraper_code_loc)
@@ -52,7 +56,10 @@ class OrchestratorAPI:
                     if site_info:
                         urls = self.storage_utils.read_data(products_file_per_site)
                         for url in urls:
-                            self.task_creator.create_task_product(url, scraper_code, self.target_url)
+                            scheduled_time += timedelta(seconds=rate_limit)
+                            scheduled_timestamp = Timestamp()
+                            scheduled_timestamp.FromDatetime(scheduled_time)
+                            self.task_creator.create_task_product(url, scraper_code, self.target_url, scheduled_timestamp)
             return "hopefully created", 200
         except Exception as exception:
             return str(exception), 500

@@ -1,7 +1,7 @@
 from google.cloud import tasks
 import json
 import time
-
+from google.protobuf.timestamp_pb2 import Timestamp
 
 class TaskCreator:
     def __init__(self, project_id, location, queue_id):
@@ -30,7 +30,7 @@ class TaskCreator:
         }
         self.create_task(task)
 
-    def create_task_product(self, url: str, scraper_code: str, target_url: str):
+    def create_task_product(self, url: str, scraper_code: str, target_url: str, scheduled_time: Timestamp):
         task_url = f"{target_url}/scraper/product/{url}"
 
         payload = {
@@ -44,6 +44,7 @@ class TaskCreator:
                 "url": task_url,
                 "headers": {"Content-Type": "application/json"},
                 "body": json_payload.encode()
-            }
+            },
+            "schedule_time": scheduled_time
         }
         self.create_task(task)
