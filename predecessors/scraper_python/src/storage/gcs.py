@@ -91,7 +91,7 @@ class StorageUtilsGCS(StorageUtils):
         regex_pattern = r"\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}"
         datetime_matches = re.findall(regex_pattern, string)
         if datetime_matches:
-            datetime_objects = [datetime.strptime(dt_str, "%Y-%m-%d-%H-%M-%S") for dt_str in datetime_matches]
+            datetime_objects = [datetime.datetime.strptime(dt_str, "%Y-%m-%d-%H-%M-%S") for dt_str in datetime_matches]
             return datetime_objects[0]  # Get the first datetime object
         else:
             return None
