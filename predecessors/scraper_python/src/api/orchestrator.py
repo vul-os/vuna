@@ -14,7 +14,7 @@ class OrchestratorAPI:
         try:
             urls = self.storage_utils.get_latest_file('/', "sites.txt")
             for url in urls:
-                self.task_creator.create_task_meta(url)
+                self.task_creator.create_task_meta(url, "https://function-1-gizrqdvcaq-uc.a.run.app")
             return "hopefully created meta task", 200
         except Exception as exception:
             return str(exception), 500
@@ -23,7 +23,7 @@ class OrchestratorAPI:
         try:
             urls = self.storage_utils.get_latest_file('/', "sites.txt")
             for url in urls:
-                self.task_creator.create_task_site(url)
+                self.task_creator.create_task_site(url, "https://function-1-gizrqdvcaq-uc.a.run.app")
             return "hopefully created site task", 200
         except Exception as exception:
             return str(exception), 500

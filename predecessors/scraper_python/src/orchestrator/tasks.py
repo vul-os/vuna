@@ -19,7 +19,7 @@ class TaskCreator:
         return {
             "http_request": {
                 "http_method": tasks.HttpMethod.POST,
-                "url": f"{target_url}/site/{job_id}/{url}"
+                "url": f"{target_url}/scraper/site/{job_id}/{url}"
             }
         }
 
@@ -30,7 +30,7 @@ class TaskCreator:
         return {
             "http_request": {
                 "http_method": tasks.HttpMethod.POST,
-                "url": f"{target_url}/meta/{job_id}/{url}"
+                "url": f"{target_url}/scraper/meta/{job_id}/{url}"
             }
         }
 
@@ -38,7 +38,7 @@ class TaskCreator:
         current_time = int(time.time())
         job_id = str(current_time)
 
-        task_url = f"{target_url}/product/{job_id}/{url}"
+        task_url = f"{target_url}/scraper/product/{job_id}/{url}"
 
         payload = {
             "scraper_code": scraper_code,
