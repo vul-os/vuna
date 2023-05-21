@@ -24,7 +24,7 @@ class SiteScraper:
         site_id = encode_url(base_url)
 
         current_datetime = datetime.datetime.now()
-        formatted_datetime = current_datetime.strftime("%Y-%m-%d|%H-%M-%S")
+        formatted_datetime = current_datetime.strftime("%Y-%m-%d-%H-%M-%S")
 
         file_name = f"site/{site_id}_{formatted_datetime}_site.csv"
         items = {

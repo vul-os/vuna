@@ -1,5 +1,7 @@
-from google.cloud.storage import Client
 import os
+import base64
+import datetime
+from google.cloud.storage import Client
 from src.storage.storage import StorageUtils
 
 
@@ -65,35 +67,18 @@ class StorageUtilsGCS(StorageUtils):
             print("Directories created in GCS: " + directory)
 
     
-    def retrieve_last_file(self, folder_prefix, ends_with):
-        # Get the blobs in the specified folder
-        blobs = self.bucket.list_blobs(prefix=folder_prefix)
+    def get_latest_files(self, folder_prefix, ends_with):
+        # Dictionary to store the latest file for each encoded_site
+        blobs = self.bucket.list_blobs(prefix=folder_prefix, delimiter="/")
+        latest_files = {}
+        for blob in blobs:
+            blob_name = blob.name
+            if blob_name.endswith(ends_with):
+                encoded_site, formatted_datetime, _ = blob_name.split("_")
+                datetime_obj = datetime.datetime.strptime(formatted_datetime, "%Y-%m-%d-%H-%M-%S")
 
-        # Filter blobs with the desired file name format
-        desired_files = [
-            blob for blob in blobs if blob.name.endswith(ends_with)
-        ]
+                # Check if this blob is the latest for the encoded_site
+                if encoded_site not in latest_files or datetime_obj > latest_files[encoded_site]["datetime"]:
+                    latest_files[encoded_site] = {"file": blob_name, "datetime": datetime_obj}
 
-        # Sort the files by their job identifier (datetime)
-        sorted_files = sorted(
-            desired_files,
-            key=lambda blob: int(blob.name.split('/')[1])
-        )
-
-        # Get the most recent file
-        most_recent_file = sorted_files[-1]
-
-        # Iterate through each file name
-        for file_blob in sorted_files:
-            file_name = file_blob.name.split('/')[2]
-
-            # Extract encoded_site and formatted_datetime
-            encoded_site, formatted_datetime, _ = file_name.split('_')
-
-            # Perform operations with the file name here
-            print('File name:', file_name)
-            print('Encoded site:', encoded_site)
-            print('Formatted datetime:', formatted_datetime)
-
-        # Return the most recent file
-        return most_recent_file
+        return [value['file'] for value in latest_files.values() if value]

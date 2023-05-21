@@ -11,7 +11,7 @@ class StorageUtils(ABC):
         pass
 
     @abstractmethod
-    def retrieve_last_file(self, folder_prefix, ends_with):
+    def get_latest_files(self, folder_prefix, ends_with):
         pass
 
     @abstractmethod

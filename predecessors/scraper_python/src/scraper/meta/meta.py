@@ -20,7 +20,7 @@ class MetaScraper:
         encoded_site = base64.b64encode(base_url.encode()).decode()
         if len(products) > 0:
             current_datetime = datetime.datetime.now()
-            formatted_datetime = current_datetime.strftime("%Y-%m-%d|%H-%M-%S")
+            formatted_datetime = current_datetime.strftime("%Y-%m-%d-%H-%M-%S")
             file_name = f"meta/{encoded_site}_{formatted_datetime}_products.txt"
             
             if self.storage_utils:

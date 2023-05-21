@@ -19,7 +19,7 @@ def scrape_product_data(product_url: str, scraper_loader: ScraperLoader, proxies
     # Get the current date and time
     current_datetime = datetime.now()
     # Format the date and time as a string
-    formatted_datetime = current_datetime.strftime("%Y-%m-%d|%H-%M-%S")
+    formatted_datetime = current_datetime.strftime("%Y-%m-%d-%H-%M-%S")
 
     first_item = next(iter(product_data), None)
     first_product = ProductData(**first_item)
