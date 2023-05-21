@@ -1,13 +1,13 @@
-from google.cloud import storage
+from google.cloud.storage import Client
 import os
 from src.storage.storage import StorageUtils
 
 
 class StorageUtilsGCS(StorageUtils):
-    def __init__(self, bucket_name):
+    def __init__(self, storage_client: Client, bucket_name: str):
         self.bucket_name = bucket_name
-        self.client = storage.Client()
-        self.bucket = self.client.get_bucket(bucket_name)
+        self.client = storage_client
+        self.bucket = self.client.get_bucket(self.bucket_name)
     
     def write_data(self, data, file_type, file_path):
         self.create_dirs_for_file(file_path)
