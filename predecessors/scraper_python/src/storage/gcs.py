@@ -86,7 +86,7 @@ class StorageUtilsGCS(StorageUtils):
         def get_latest_file(self, folder_prefix, ends_with):
             latest_filename = None
             latest_datetime = None
-            blobs = self.bucket.list_blobs()
+            blobs = self.bucket.list_blobs(prefix=folder_prefix, delimiter="/")
             for blob in blobs:
                 blob_name = blob.name
                 if blob_name.endswith(ends_with):

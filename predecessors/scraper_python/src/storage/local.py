@@ -13,6 +13,10 @@ class StorageUtilsLocal(StorageUtils):
     def get_latest_files(self, folder_prefix, ends_with):
         pass
 
+    def get_latest_file(self, folder_prefix, ends_with):
+        pass
+
+
     def write_data(self, data, file_type, file_path):
         file_path = os.path.join(self.local_dir, file_path)
         self.create_dirs_for_file(file_path)
