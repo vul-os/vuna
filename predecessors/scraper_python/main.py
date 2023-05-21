@@ -32,14 +32,14 @@ def scraper_routes(request):
     if request.method == "GET":
         # GET Scraper 
         if request.path.startswith("/scraper/site/"):
-            base_url = '/'.join(request.path.split("/")[2:3])
+            base_url = '/'.join(request.path.split("/")[3:4])
             return scraper_api.site(request, base_url)
         elif request.path.startswith("/scraper/meta/"):
-            base_url = '/'.join(request.path.split("/")[2:3])
+            base_url = '/'.join(request.path.split("/")[3:4])
             return scraper_api.meta(request, base_url)
     elif request.method == "POST":
         if request.path.startswith("/scraper/product/"):
-            product_url = '/'.join(request.path.split("/")[2:])
+            product_url = '/'.join(request.path.split("/")[3:])
             return scraper_api.product(request, product_url)
 
 def orchestrator_routes(request):
