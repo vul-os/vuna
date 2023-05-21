@@ -1,5 +1,6 @@
 import os
 import base64
+import re
 import datetime
 from google.cloud.storage import Client
 from src.storage.storage import StorageUtils
@@ -85,7 +86,15 @@ class StorageUtilsGCS(StorageUtils):
             blob.upload_from_string('')
             print("Directories created in GCS: " + directory)
 
-    
+    @staticmethod
+    def extract_datetime(string):
+        regex_pattern = r"\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}"
+        datetime_matches = re.findall(regex_pattern, string)
+        if datetime_matches:
+            datetime_objects = [datetime.strptime(dt_str, "%Y-%m-%d-%H-%M-%S") for dt_str in datetime_matches]
+            return datetime_objects[0]  # Get the first datetime object
+        else:
+            return None
     def get_latest_files(self, folder_prefix, text_in):
         # Dictionary to store the latest file for each encoded_site
         blobs = self.bucket.list_blobs(prefix=folder_prefix, delimiter="/")
@@ -93,9 +102,10 @@ class StorageUtilsGCS(StorageUtils):
         for blob in blobs:
             blob_name = blob.name
             if text_in in blob_name:
+                datetime_obj = self.extract_datetime(blob_name)
+                if not datetime_obj:
+                    continue
                 encoded_site, formatted_datetime, _ = blob_name.split("_")
-                datetime_obj = datetime.datetime.strptime(formatted_datetime, "%Y-%m-%d-%H-%M-%S")
-
                 # Check if this blob is the latest for the encoded_site
                 if encoded_site not in latest_files or datetime_obj > latest_files[encoded_site]["datetime"]:
                     latest_files[encoded_site] = {"file": blob_name, "datetime": datetime_obj}
@@ -110,10 +120,9 @@ class StorageUtilsGCS(StorageUtils):
         for blob in blobs:
             blob_name = blob.name
             if text_in in blob_name:
-                # Extract the datetime from the blob name
-                formatted_datetime = blob_name.split("_")[-2]
-                datetime_obj = datetime.datetime.strptime(formatted_datetime, "%Y-%m-%d-%H-%M-%S")
-
+                datetime_obj = self.extract_datetime(blob_name)
+                if not datetime_obj:
+                    continue
                 # Check if this blob is the latest based on the datetime
                 if latest_datetime is None or datetime_obj > latest_datetime:
                     latest_filename = blob_name
