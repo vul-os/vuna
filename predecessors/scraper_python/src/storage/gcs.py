@@ -52,10 +52,22 @@ class StorageUtilsGCS(StorageUtils):
         blob.upload_from_string(content)
         print(f"Data written to TXT file '{file_path}' in GCS.")
     
+    @staticmethod
+    def flatten_list(lst):
+        flattened_list = []
+        for item in lst:
+            if isinstance(item, list):
+                flattened_list.extend(item)
+            else:
+                flattened_list.append(item)
+        return flattened_list
+
     def read_txt_data(self, file_path):
         blob = self.bucket.blob(file_path)
         content = blob.download_as_text()
         data = content.split('\n')
+        data = self.flatten_list(data)
+        data = [item.rstrip('\r') for item in data]
         return data
 
     def create_dirs_for_file(self, file_path):

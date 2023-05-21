@@ -18,7 +18,6 @@ class StorageUtilsLocal(StorageUtils):
         print("yaa")
         return "hello"
 
-
     def write_data(self, data, file_type, file_path):
         file_path = os.path.join(self.local_dir, file_path)
         self.create_dirs_for_file(file_path)
