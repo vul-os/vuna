@@ -87,9 +87,8 @@ class StorageUtilsGCS(StorageUtils):
 
     
     def get_latest_files(self, folder_prefix, text_in):
-        prefix = f"{self.bucket_name}/{folder_prefix}" if folder_prefix else None
         # Dictionary to store the latest file for each encoded_site
-        blobs = self.bucket.list_blobs(prefix=prefix, delimiter="/")
+        blobs = self.bucket.list_blobs(prefix=folder_prefix, delimiter="/")
         latest_files = {}
         for blob in blobs:
             blob_name = blob.name
@@ -106,9 +105,8 @@ class StorageUtilsGCS(StorageUtils):
     def get_latest_file(self, folder_prefix, text_in):
         latest_filename = None
         latest_datetime = None
-        prefix = f"{self.bucket_name}/{folder_prefix}" if folder_prefix else None
         # Dictionary to store the latest file for each encoded_site
-        blobs = self.bucket.list_blobs(prefix=prefix, delimiter="/")
+        blobs = self.bucket.list_blobs(prefix=folder_prefix, delimiter="/")
         for blob in blobs:
             blob_name = blob.name
             if text_in in blob_name:
