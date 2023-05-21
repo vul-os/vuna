@@ -38,10 +38,14 @@ class OrchestratorAPI:
             products_files_per_site = self.storage_utils.get_latest_files('meta/', 'products.txt')
             for products_file_per_site in products_files_per_site:
                 site_id = products_file_per_site.split('_')[0]
-                site_info_file = self.storage_utils.get_latest_file('site/', site_id)
+                print(site_id)
+                site_info_file = self.storage_utils.get_latest_file('site/', site_id.strip())
+                print(site_info_file)
                 site_info = self.storage_utils.read_data(site_info_file)
+                print(site_info)
                 if "scraper_file" in site_info.keys():
                     scraper_code_loc = f"scraper_code/{site_info.scraper_file}"
+                    print(scraper_code_loc)
                     blob = self.storage_utils.bucket.blob(scraper_code_loc)
                     scraper_code = blob.download_as_text()
                     if site_info:
