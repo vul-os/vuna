@@ -16,7 +16,7 @@ class ScraperAPI:
             scraper = MetaScraper(storage_utils=self.data_storage_utils)
             meta_data = scraper(base_url=url)
         
-            return jsonify(meta_data)
+            return jsonify(meta_data), 200
             # return {"meta_data": meta_data, "len": len(meta_data)}
 
         except Exception as exception:
@@ -29,7 +29,7 @@ class ScraperAPI:
             scraper = SiteScraper(storage_utils=self.data_storage_utils)
             site_data = scraper(base_url=url)
         
-            return jsonify(site_data)
+            return jsonify(site_data), 200
             # return {"meta_data": meta_data, "len": len(meta_data)}
 
         except Exception as exception:
@@ -46,7 +46,7 @@ class ScraperAPI:
                                         proxies=self.proxies,
                                         storage_utils=self.data_storage_utils,
                                         product_url=product_url)
-            return jsonify(product_data)
+            return jsonify(product_data), 200
 
         except Exception as ex:
             return str(ex), 500

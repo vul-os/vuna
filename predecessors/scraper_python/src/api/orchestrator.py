@@ -9,7 +9,7 @@ class OrchestratorAPI:
 
     def meta(self, request):
         try:
-            latest_file = self.storage_utils.get_latest_file(None, "sites.txt")
+            latest_file = self.storage_utils.get_latest_file('/root/', "sites.txt")
             print(latest_file)
             urls = self.storage_utils.read_data(latest_file)
             print(urls)
@@ -21,7 +21,7 @@ class OrchestratorAPI:
 
     def site(self, request):
         try:
-            latest_file = self.storage_utils.get_latest_file(None, "sites.txt")
+            latest_file = self.storage_utils.get_latest_file('/root/', "sites.txt")
             print(latest_file)
             urls = self.storage_utils.read_data(latest_file)
             print(urls)
