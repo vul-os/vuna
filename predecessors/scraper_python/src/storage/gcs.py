@@ -82,3 +82,21 @@ class StorageUtilsGCS(StorageUtils):
                     latest_files[encoded_site] = {"file": blob_name, "datetime": datetime_obj}
 
         return [value['file'] for value in latest_files.values() if value]
+
+        def get_latest_file(self, folder_prefix, ends_with):
+            latest_filename = None
+            latest_datetime = None
+            blobs = self.bucket.list_blobs()
+            for blob in blobs:
+                blob_name = blob.name
+                if blob_name.endswith("_products.txt"):
+                    # Extract the datetime from the blob name
+                    formatted_datetime = blob_name.split("_")[-2]
+                    datetime_obj = datetime.datetime.strptime(formatted_datetime, "%Y%m%d%H%M%S")
+
+                    # Check if this blob is the latest based on the datetime
+                    if latest_datetime is None or datetime_obj > latest_datetime:
+                        latest_filename = blob_name
+                        latest_datetime = datetime_obj
+
+            return latest_filename
