@@ -39,15 +39,16 @@ class OrchestratorAPI:
 
     def product(self, request):
         try:
+            start_time = datetime.utcnow()
+
             products_files_per_site = self.storage_utils.get_latest_files('meta/', 'products.txt')
             for products_file_per_site in products_files_per_site:
                 site_id = products_file_per_site.split('_')[0]
                 site_id = site_id.replace("meta/", "")
                 site_info_file = self.storage_utils.get_latest_file('site/', site_id.strip())
                 site_info = self.storage_utils.read_data(site_info_file)
-
                 rate_limit = 1  # Number of requests per second
-                scheduled_time = datetime.utcnow()
+
                 if len(site_info) and len(site_info[0]):
                     scraper_code_loc = f"scraper_code{site_info[0][-1]}"
                     print(scraper_code_loc)
@@ -57,7 +58,7 @@ class OrchestratorAPI:
                         urls = self.storage_utils.read_data(products_file_per_site)
                         for url in urls:
                             url = url.replace("https://", "")
-                            scheduled_time += timedelta(seconds=rate_limit)
+                            scheduled_time = start_time + timedelta(seconds=rate_limit)
                             scheduled_timestamp = Timestamp()
                             scheduled_timestamp.FromDatetime(scheduled_time)
                             self.task_creator.create_task_product(url, scraper_code, self.target_url, scheduled_timestamp)
