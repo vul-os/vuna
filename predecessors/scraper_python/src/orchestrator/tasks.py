@@ -30,7 +30,7 @@ class TaskCreator:
         }
         self.create_task(task)
 
-    def create_task_product(self, url: str, scraper_code: str, target_url: str, scheduled_time: Timestamp):
+    def create_task_product(self, url: str, scraper_code: str, target_url: str, scheduled_time: Timestamp, proxy: str=None):
         task_url = f"{target_url}/scraper/product/{url}"
 
         payload = {

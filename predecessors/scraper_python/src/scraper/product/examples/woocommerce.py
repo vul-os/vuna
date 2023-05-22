@@ -4,7 +4,7 @@ from requests.sessions import Session
 from src.scraper.product.scraper import Scraper, ProductData
 from src.scraper.product.utils import price_to_float, max_qty_to_int
 
-
+import requests
 class TheScraper(Scraper):
     """
     A web scraper for WooCommerce stores.
@@ -27,12 +27,11 @@ class TheScraper(Scraper):
         """
         super().__init__()
         self.session = session or Session()
-
             
     def __call__(self, url):
         return self.scrape_product(url)
 
-    def scrape_product(self, product_url):
+    def scrape_product(self, product_url, timeout=None):
         """
         Scrape product information from a WooCommerce website.
 
@@ -42,7 +41,12 @@ class TheScraper(Scraper):
         Returns:
             List[ProductData]: A list of ProductData objects representing the scraped product data.
         """
-        response = self.session.get(product_url)
+        try:
+            response = self.session.get(product_url, timeout=timeout)
+        except Exception as exception:
+            print(f"Error occurred with {exception}", exception)
+            return e
+
         soup = BeautifulSoup(response.text, 'html.parser')
         product_name = soup.find('h1', {'class': 'product_title'}).text.strip()
         product_id_tag = soup.find('input', {'name': 'add-to-cart'}) or soup.find('button', {'name': 'add-to-cart'})

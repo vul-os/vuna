@@ -1,4 +1,5 @@
 import requests
+from requests import Session
 from flask import jsonify
 from src.scraper import MetaScraper, ScraperLoader, scrape_product_data, SiteScraper
 from src.storage.local import StorageUtilsLocal as StorageUtils
@@ -37,16 +38,22 @@ class ScraperAPI:
 
     def product(self, request, product_url):
         try:
-            proxies = request.json.get("proxies", [])
+            proxies = request.json.get("proxies", None)
             scraper_code = request.json.get("scraper_code", None)
-       
+
+            session = Session()    
+            if proxies:
+                session.proxies.update(proxies)
+
             product_url = f"https://{requests.utils.unquote(product_url)}"
             scraper_loader = ScraperLoader(scraper_code)
             product_data = scrape_product_data(scraper_loader=scraper_loader,
-                                        proxies=self.proxies,
+                                        session=session,
                                         storage_utils=self.data_storage_utils,
                                         product_url=product_url)
-            return jsonify(product_data), 200
+            if product_data:
+                return jsonify(product_data), 200
+            return "no product data"
 
         except Exception as ex:
             return str(ex), 500

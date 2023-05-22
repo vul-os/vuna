@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List
-
+from requests import Session
 from urllib.parse import urlparse
 
 from .loader import ScraperLoader
@@ -8,7 +8,9 @@ from src.scraper.product.scraper import ProductData
 from src.storage.storage import StorageUtils
 from src.scraper.encoder.encoder import encode_url
 
-def scrape_product_data(product_url: str, scraper_loader: ScraperLoader, proxies: [] = None, storage_utils: StorageUtils = None):
+def scrape_product_data(product_url: str, scraper_loader: ScraperLoader, session: Session = None, storage_utils: StorageUtils = None):
+    if not session:
+        session = Session()
     def get_site_url(url):
         parsed_url = urlparse(url)
         return f"{parsed_url.scheme}://{parsed_url.netloc}"
@@ -16,6 +18,8 @@ def scrape_product_data(product_url: str, scraper_loader: ScraperLoader, proxies
     print("URL:", product_url)
     scraper = scraper_loader()()
     product_data = scraper(product_url)
+    if not product_data:
+        return None
     # Get the current date and time
     current_datetime = datetime.now()
     # Format the date and time as a string
