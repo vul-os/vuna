@@ -1,4 +1,4 @@
-package crawl
+package site
 
 import (
 	"bufio"
