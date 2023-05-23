@@ -17,7 +17,7 @@ func main() {
 
 	url := "https://www.biltongandbudz.co.za/product/barneys-farm-runtz-fem-autoflower/"
 	proxylist := []string{""}
-	scraper := woocommerceScraper.New(proxylist, client)
+	scraper := woocommerceScraper.New(proxylist, client, nil)
 	data, err := scraper.ScrapeOne(product.ScrapeOneRequest{Url: url})
 	if err != nil {
 		fmt.Println("Error scraping product:", err)
@@ -30,14 +30,14 @@ func main() {
 	fmt.Println("Elapsed time product:", elapsed)
 
 	start = time.Now()
-	sscraper := siteScraper.New(&client) // woocommerceScraper.New(proxylist, client), siteScraper.New()
+	sscraper := siteScraper.New(&client, nil) // woocommerceScraper.New(proxylist, client), siteScraper.New()
 	datas := sscraper.ScrapeOne("https://pharaohscrypt.co.za/")
 	fmt.Println(datas)
 	elapsed = time.Since(start)
 	fmt.Println("Elapsed time site:", elapsed)
 
 	start = time.Now()
-	mscraper := metaScraper.New(&client) // woocommerceScraper.New(proxylist, client), siteScraper.New()
+	mscraper := metaScraper.New(&client, nil) // woocommerceScraper.New(proxylist, client), siteScraper.New()
 	_ = mscraper.ScrapeOne("https://pharaohscrypt.co.za/")
 	// fmt.Println(datam)
 	elapsed = time.Since(start)

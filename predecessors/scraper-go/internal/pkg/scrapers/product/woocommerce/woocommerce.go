@@ -6,23 +6,29 @@ import (
 	"io/ioutil"
 	"net/http"
 	"scraper-go/internal/pkg/scrapers/product"
-	"strings"
+	"scraper-go/internal/pkg/storage"
+	"scraper-go/internal/pkg/utils"
 
+	"strings"
+	"time"
 	"github.com/PuerkitoBio/goquery"
 )
 
 type scraper struct {
 	ProxyList []string
 	Client    http.Client
+	FileStorage storage.FileStorage
 }
 
 func New(
 	proxyList []string,
 	client http.Client,
+	fs storage.FileStorage,
 ) product.ProductScraper {
 	return &scraper{
 		ProxyList: proxyList,
 		Client:    client,
+		FileStorage: fs,
 	}
 }
 
@@ -63,6 +69,24 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 			return nil, err
 		}
 		productDataList = append(productDataList, productData)
+	}
+
+	if s.FileStorage != nil {
+		siteUrl, err := utils.GetBaseURL(request.Url)
+		if err != nil {
+			return nil, err
+		}
+		siteUrl = utils.RemoveURLPrefix(siteUrl)
+		encodedSite := utils.EncodeURL(siteUrl)
+
+		currentDatetime := time.Now()
+		formattedDatetime := currentDatetime.Format("2006-01-02-15-04-05")
+
+		fileName := fmt.Sprintf("site/%s_%s_site.csv", encodedSite, formattedDatetime)
+		err = s.FileStorage.WriteData(productDataList, fileName)
+		if err != nil {
+			fmt.Println("Error: ", err)
+		}
 	}
 
 	return &product.ScrapeOneResponse{Results: productDataList}, nil

@@ -10,17 +10,21 @@ import (
 	"scraper-go/internal/pkg/utils"
 
 	"github.com/PuerkitoBio/goquery"
+	"scraper-go/internal/pkg/storage"
 )
 
 type SiteScraper struct {
-	Client *http.Client
+	Client      *http.Client
+	FileStorage storage.FileStorage
 }
 
 func New(
-	client *http.Client,
+	client      *http.Client,
+	fs storage.FileStorage,
 ) *SiteScraper {
 	return &SiteScraper{
 		Client: client,
+		FileStorage: fs,
 	}
 }
 
@@ -30,10 +34,6 @@ func (s *SiteScraper) ScrapeOne(url string) interface{} {
 	name, image, technology := s.GetSiteInfo(url)
 	siteID := utils.EncodeURL(url)
 
-	currentDatetime := time.Now()
-	formattedDatetime := currentDatetime.Format("2006-01-02-15-04-05")
-
-	fileName := fmt.Sprintf("site/%s_%s_site.csv", siteID, formattedDatetime)
 	items := map[string]interface{}{
 		"id":         siteID,
 		"name":       strings.TrimSpace(name),
@@ -43,8 +43,20 @@ func (s *SiteScraper) ScrapeOne(url string) interface{} {
 		"rate_limit": "1/s",
 		"scraper":    technology,
 	}
-	fmt.Println(fileName, items)
 
+	if s.FileStorage != nil {
+		siteUrl := utils.RemoveURLPrefix(url)
+		encodedSite := utils.EncodeURL(siteUrl)
+
+		currentDatetime := time.Now()
+		formattedDatetime := currentDatetime.Format("2006-01-02-15-04-05")
+
+		fileName := fmt.Sprintf("site/%s_%s_site.csv", encodedSite, formattedDatetime)
+		err := s.FileStorage.WriteData(items, fileName)
+		if err != nil {
+			fmt.Println("Error: ", err)
+		}
+	}
 	return items
 }
 

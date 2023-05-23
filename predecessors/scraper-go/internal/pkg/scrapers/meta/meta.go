@@ -5,25 +5,24 @@ import (
 	"io/ioutil"
 	"net/http"
 	"regexp"
-	"strings"
+	"time"
+
+	storage "scraper-go/internal/pkg/storage"
+	"scraper-go/internal/pkg/utils"
 )
 
-func SliceInString(a string, list []string) bool {
-	for _, b := range list {
-		if strings.Contains(a, b) {
-			return true
-		}
-	}
-	return false
-}
-
 type MetaScraper struct {
-	Client *http.Client
+	Client      *http.Client
+	FileStorage storage.FileStorage
 }
 
-func New(client *http.Client) *MetaScraper {
+func New(
+	client *http.Client,
+	fs storage.FileStorage,
+) *MetaScraper {
 	return &MetaScraper{
-		Client: client,
+		Client:      client,
+		FileStorage: fs,
 	}
 }
 
@@ -50,7 +49,7 @@ func (s *MetaScraper) ScrapeOne(url string) interface{} {
 		}
 
 		for _, xmlURL := range xmlURLs {
-			if SliceInString(xmlURL, []string{"/product/", "/products/"}) {
+			if utils.SliceInString(xmlURL, []string{"/product/", "/products/"}) {
 				uniqueURLs[xmlURL] = true
 			}
 		}
@@ -59,6 +58,18 @@ func (s *MetaScraper) ScrapeOne(url string) interface{} {
 	result := make([]string, 0, len(uniqueURLs))
 	for url := range uniqueURLs {
 		result = append(result, url)
+	}
+
+	if s.FileStorage != nil {
+		siteUrl := utils.RemoveURLPrefix(url)
+		encodedSite := utils.EncodeURL(siteUrl)
+		currentDatetime := time.Now()
+		formattedDatetime := currentDatetime.Format("2006-01-02-15-04-05")
+		fileName := fmt.Sprintf("meta/%s_%s_products.txt", encodedSite, formattedDatetime)
+		err := s.FileStorage.WriteData(result, fileName)
+		if err != nil {
+			fmt.Println("Error: ", err)
+		}
 	}
 
 	return result
