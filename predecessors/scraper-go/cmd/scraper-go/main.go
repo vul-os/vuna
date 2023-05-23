@@ -93,7 +93,7 @@ func extractURLsFromXML(url string, allowRedirects bool) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error creating request for %s: %s", url, err)
 	}
-
+	// sss
 	// Send the request and get the response
 	resp, err := client.Do(req)
 	if err != nil {
