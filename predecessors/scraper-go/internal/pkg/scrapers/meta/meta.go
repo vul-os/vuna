@@ -1,4 +1,4 @@
-package main
+package meta
 
 import (
 	"fmt"
@@ -8,12 +8,9 @@ import (
 	"strings"
 )
 
-func main() {
-	// Specify the starting URL
-	startingURL := "https://biltongandbudz.co.za/"
-
+func MetaScrapeOne(url string) {
 	// Extract sitemap URL from robots.txt
-	sitemapURL, err := extractSitemapURL(startingURL)
+	sitemapURL, err := extractSitemapURL(url)
 	if err != nil {
 		fmt.Println("Error extracting sitemap URL:", err)
 		return
