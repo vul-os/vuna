@@ -2,74 +2,129 @@ package main
 
 import (
 	"fmt"
-	"github.com/rs/zerolog/log"
 	"io/ioutil"
 	"net/http"
-	"os"
-	"scraper-go/scrapers"
-	"scraper-go/utils"
-	"strconv"
-	"strings"
+	"regexp"
 )
 
 func main() {
-	log.Info().Msg("starting server...")
-	http.HandleFunc("/", handler)
-	utils.GenerateConnPool()
+	// Specify the starting URL
+	startingURL := "https://pharaohscrypt.co.za/"
 
-	// Determine port for HTTP service.
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-		log.Printf("defaulting to port %s", port)
-	}
-
-	// Start HTTP server.
-	log.Printf("listening on port %s", port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		log.Error().Err(err)
-	}
-}
-
-func handler(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
+	// Extract sitemap URL from robots.txt
+	sitemapURL, err := extractSitemapURL(startingURL)
 	if err != nil {
-		log.Printf("Error reading body: %v", err)
-		http.Error(w, "can't read body", http.StatusBadRequest)
+		fmt.Println("Error extracting sitemap URL:", err)
 		return
 	}
-	bodyStr := strings.TrimSpace(string(body))
-	bodyStrSplit := strings.Split(bodyStr, ",")
-	numConcurrency := 4
-	if len(bodyStrSplit) > 1 {
-		numConc, err := strconv.Atoi(bodyStrSplit[1])
-		if err != nil {
-			log.Error().Err(err).Msg("numConcurrency is Default {4}")
-		} else {
-			numConcurrency = numConc
-			bodyStr = bodyStrSplit[0]
-		}
-
+	// Extract URLs from the sitemap
+	urls, err := extractURLsFromXML(sitemapURL, true)
+	if err != nil {
+		fmt.Println("Error extracting URLs from sitemap:", err)
+		return
 	}
-	baseUrl := strings.TrimSpace(bodyStr)
-	storeNameRep := strings.NewReplacer(
-		".co.za", "",
-		".com", "",
-		"https://", "",
-		"http://", "",
-		"/", "",
-	)
-	urlRep := strings.NewReplacer(
-		"https://", "",
-		"http://", "",
-		"/", "",
-	)
-	urlReplaced := urlRep.Replace(baseUrl)
-	storeNameReplaced := storeNameRep.Replace(urlReplaced)
-	log.Info().Msg(fmt.Sprintf("Recieved Request for store: %s, with url: %s, numConcurrency: %d",
-		storeNameReplaced, urlReplaced, numConcurrency))
-	utils.UpsertStore(storeNameReplaced, urlReplaced)
-	scrapers.Scrape(fmt.Sprintf("https://%s", urlReplaced), numConcurrency)
+	// Store the unique URLs
+	uniqueURLs := make(map[string]bool)
+
+	// Process each URL
+	for _, url := range urls {
+		// Extract URLs from XML files
+		xmlURLs, err := extractURLsFromXML(url, true)
+		if err != nil {
+			fmt.Println("Error extracting URLs from", url, ":", err)
+			continue
+		}
+		// Add extracted URLs to the unique URLs map
+		for _, xmlURL := range xmlURLs {
+			uniqueURLs[xmlURL] = true
+		}
+	}
+
+	
 }
 
-// gcloud builds submit --tag gcr.io/spiderbyte-scapers/scraper-go
+func extractSitemapURL(url string) (string, error) {
+	// Create an HTTP client
+	client := &http.Client{}
+
+	// Create a new GET request for robots.txt
+	req, err := http.NewRequest("GET", url+"/robots.txt", nil)
+	if err != nil {
+		return "", fmt.Errorf("error creating request for robots.txt: %s", err)
+	}
+
+	// Send the request and get the response
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("error sending request for robots.txt: %s", err)
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("error reading response body for robots.txt: %s", err)
+	}
+	// Find the sitemap URL in robots.txt
+	pattern := `(?is)sitemap:\s*([^\s]+)`
+	regex := regexp.MustCompile(pattern)
+	match := regex.FindStringSubmatch(string(body))
+	if len(match) > 1 {
+		return match[1], nil
+	}
+	return "", nil
+}
+
+func extractURLsFromXML(url string, allowRedirects bool) ([]string, error) {
+	// Create an HTTP client
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			if !allowRedirects {
+				return http.ErrUseLastResponse
+			}
+			return nil
+		},
+	}
+
+	// Create a new GET request
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error creating request for %s: %s", url, err)
+	}
+
+	// Send the request and get the response
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error sending request for %s: %s", url, err)
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response body for %s: %s", url, err)
+	}
+	// Extract URLs from the XML response
+	urls := extractURLs(string(body))
+	fmt.Println(urls)
+	return urls, nil
+}
+
+func extractURLs(xmlData string) []string {
+	// Define the regular expression pattern to match URLs
+	pattern := `<loc>([^<]+)</loc>`
+
+	// Compile the regex pattern
+	regex := regexp.MustCompile(pattern)
+
+	// Find all matches in the XML data
+	matches := regex.FindAllStringSubmatch(xmlData, -1)
+
+	// Extract and return the URLs
+	urls := make([]string, len(matches))
+	for i, match := range matches {
+		urls[i] = match[1]
+	}
+
+	return urls
+}
