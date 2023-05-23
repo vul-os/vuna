@@ -6,10 +6,6 @@ import (
 	"scraper-go/internal/pkg/storage"
 	"strings"
 
-	"encoding/csv"
-	"io"
-	"path/filepath"
-
 	"google.golang.org/api/iterator"
 
 	cloudStorage "cloud.google.com/go/storage"
@@ -30,7 +26,7 @@ func New(
 	}
 }
 
-func (s *FileStorageGCS) WriteFile(data interface{}, filePath string) error {
+func (s *FileStorageGCS) WriteData(data interface{}, filePath string) error {
 	ctx := context.Background()
 	bucket := s.Client.Bucket(s.BucketName)
 	obj := bucket.Object(filePath)
