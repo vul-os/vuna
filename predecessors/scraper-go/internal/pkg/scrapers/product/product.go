@@ -2,17 +2,17 @@ package product
 
 // ProductData is a struct representing the product data
 type ProductData struct {
-	Name         string
-	ImageURLs    []string
+	Name      string
+	ImageURLs []string
 	// Attribute    string
 
-	URL          string
-	ProductID    string
-	VariationID  string
-	SKU          string
-	
-	Price        float64
-	MaxQty       int
+	URL         string
+	ProductID   string
+	VariationID string
+	SKU         string
+
+	Price  float64
+	MaxQty int
 }
 
 type ProductScraper interface {
@@ -21,7 +21,6 @@ type ProductScraper interface {
 
 type ScrapeOneRequest struct {
 	Url string
-	ProxyList []string
 }
 
 type ScrapeOneResponse struct {

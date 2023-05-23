@@ -8,18 +8,28 @@ import (
 	"strings"
 )
 
-func MetaScrapeOne(url string) {
+func SliceInString(a string, list []string) bool {
+	for _, b := range list {
+		if strings.Contains(a, b) {
+			return true
+		}
+	}
+	return false
+}
+
+func MetaScrapeOne(url string) []string {
 	// Extract sitemap URL from robots.txt
 	sitemapURL, err := extractSitemapURL(url)
 	if err != nil {
 		fmt.Println("Error extracting sitemap URL:", err)
-		return
+		return nil
 	}
+
 	// Extract URLs from the sitemap
 	urls, err := extractURLsFromXML(sitemapURL, true)
 	if err != nil {
 		fmt.Println("Error extracting URLs from sitemap:", err)
-		return
+		return nil
 	}
 	// Store the unique URLs
 	uniqueURLs := make(map[string]bool)
@@ -32,14 +42,23 @@ func MetaScrapeOne(url string) {
 			fmt.Println("Error extracting URLs from", url, ":", err)
 			continue
 		}
+
 		// Add extracted URLs to the unique URLs map
 		for _, xmlURL := range xmlURLs {
-			if strings.Contains(xmlURL, "/product/") {
+			fmt.Println(xmlURL, SliceInString(xmlURL, []string{"/products/", "/products/"}))
+			if SliceInString(xmlURL, []string{"/product/", "/products/"}) {
 				uniqueURLs[xmlURL] = true
 			}
 		}
 	}
-	fmt.Println("Unique: ", len(uniqueURLs))
+
+	// Convert unique URLs to a slice of strings
+	result := make([]string, 0, len(uniqueURLs))
+	for url := range uniqueURLs {
+		result = append(result, url)
+	}
+
+	return result
 }
 
 func extractSitemapURL(url string) (string, error) {
@@ -117,7 +136,6 @@ func extractURLs(xmlData string) []string {
 
 	// Find all matches in the XML data
 	matches := regex.FindAllStringSubmatch(xmlData, -1)
-
 	// Extract and return the URLs
 	urls := make([]string, len(matches))
 	for i, match := range matches {

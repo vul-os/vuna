@@ -1,30 +1,28 @@
-package main
+package woocommerce
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/PuerkitoBio/goquery"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"scraper-go/internal/pkg/scrapers/product"
+	"strings"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
 type scraper struct {
-	Url string
 	ProxyList []string
-	Client http.Client
+	Client    http.Client
 }
 
 func New(
-	url string,
 	proxyList []string,
 	client http.Client,
 ) product.ProductScraper {
 	return &scraper{
-		Url: url,
 		ProxyList: proxyList,
-		Client: client,
+		Client:    client,
 	}
 }
 
@@ -55,23 +53,36 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 	var productDataList []product.ProductData
 
 	if doc.Find("form.variations_form").Length() > 0 {
-		productDataList = scrapeProductWithVariations(request.Url, productID, productName, doc)
+		productDataList, err = scrapeProductWithVariations(request.Url, productID, productName, doc)
+		if err != nil {
+			return nil, err
+		}
 	} else {
-		productData := scrapeProductWithoutVariations(request.Url, productID, productName, doc)
+		productData, err := scrapeProductWithoutVariations(request.Url, productID, productName, doc)
+		if err != nil {
+			return nil, err
+		}
 		productDataList = append(productDataList, productData)
 	}
 
 	return &product.ScrapeOneResponse{Results: productDataList}, nil
 }
 
-func scrapeProductWithoutVariations(productURL, productID, productName string, doc *goquery.Document) product.ProductData {
+func scrapeProductWithoutVariations(productURL, productID, productName string, doc *goquery.Document) (product.ProductData, error) {
 	summaryDiv := doc.Find("div.summary")
 	price := summaryDiv.Find("span.woocommerce-Price-amount.amount").Text()
 	sku := summaryDiv.Find("span.sku").Text()
 	maxQty := summaryDiv.Find("p.stock").Text()
+	fmt.Println("here3")
 
-	priceFloat := priceToFloat(price)
-	maxQtyInt := maxQtyToInt(maxQty)
+	priceFloat, err := PriceToFloat(price)
+	if err != nil {
+		return product.ProductData{}, err
+	}
+	maxQtyInt, err := MaxQtyToInt(maxQty)
+	if err != nil {
+		return product.ProductData{}, err
+	}
 
 	imageURL, _ := doc.Find("div.woocommerce-product-gallery__image img").Attr("src")
 
@@ -86,27 +97,30 @@ func scrapeProductWithoutVariations(productURL, productID, productName string, d
 		MaxQty:      maxQtyInt,
 	}
 
-	return productData
+	return productData, nil
 }
 
-func scrapeProductWithVariations(productURL, productID, productName string, doc *goquery.Document) []product.ProductData {
+func scrapeProductWithVariations(productURL, productID, productName string, doc *goquery.Document) ([]product.ProductData, error) {
 	productDataList := []product.ProductData{}
 	productVariations := doc.Find("form.variations_form").AttrOr("data-product_variations", "")
 	variationsData := make([]map[string]interface{}, 0)
 	if err := json.Unmarshal([]byte(productVariations), &variationsData); err != nil {
 		fmt.Println("Error decoding variations data:", err)
-		return productDataList
+		return productDataList, err
 	}
 
 	for _, variation := range variationsData {
-		availabilityHTML := variation["availability_html"].(string)
-		displayPrice := variation["display_price"].(string)
-		imageURL := variation["image"].(map[string]interface{})["src"].(string)
-		sku := variation["sku"].(string)
-		variationID := variation["variation_id"].(float64)
+		availabilityHTML := variation["availability_html"]
+		displayPrice := variation["display_price"]
+		imageURL := variation["image"].(map[string]interface{})["src"]
+		sku := variation["sku"]
+		variationID := variation["variation_id"]
+		priceFloat, errp := PriceToFloat(displayPrice)
+		maxQtyInt, errq := MaxQtyToInt(availabilityHTML)
 
-		priceFloat := priceToFloat(displayPrice)
-		maxQtyInt := maxQtyToInt(availabilityHTML)
+		if errp != nil || errq != nil {
+			continue
+		}
 
 		attributes := variation["attributes"].(map[string]interface{})
 		firstValue := ""
@@ -118,8 +132,8 @@ func scrapeProductWithVariations(productURL, productID, productName string, doc 
 		productData := product.ProductData{
 			Name:        firstValue,
 			URL:         productURL,
-			ImageURLs:   []string{imageURL},
-			SKU:         sku,
+			ImageURLs:   []string{imageURL.(string)},
+			SKU:         sku.(string),
 			ProductID:   productID,
 			VariationID: fmt.Sprintf("%.0f", variationID),
 			Price:       priceFloat,
@@ -129,29 +143,5 @@ func scrapeProductWithVariations(productURL, productID, productName string, doc 
 		productDataList = append(productDataList, productData)
 	}
 
-	return productDataList
-}
-
-func priceToFloat(price string) float64 {
-	// Add code to convert price string to float
-	return 0.0
-}
-
-func maxQtyToInt(maxQty string) int {
-	// Add code to convert maxQty string to int
-	return 0
-}
-
-func main() {
-	scraper := Woo()
-	productURL := "https://example.com/product"
-	productData, err := scraper.ScrapeProduct(productURL)
-	if err != nil {
-		fmt.Println("Error scraping product:", err)
-		return
-	}
-
-	for _, data := range productData {
-		fmt.Println(data)
-	}
+	return productDataList, nil
 }
