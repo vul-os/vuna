@@ -1,0 +1,11 @@
+steps:
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  args:
+  - gcloud
+  - functions
+  - deploy
+  - function-1
+  - --region=us-central1
+  - --source=cmd/scraper-go
+  - --trigger-http
+  - --runtime=go120

@@ -17,7 +17,7 @@ func main() {
 	start := time.Now()
 	client := http.Client{}
 
-	url := "https://www.biltongandbudz.co.za/product/barneys-farm-runtz-fem-autoflower/"
+	url := "https://www.mytoy.co.za/collections/baby-toddler-toys/products/cooey-baby-rattle"
 	proxylist := []string{""}
 	scraper := woocommerceScraper.New(proxylist, client, nil)
 	data, err := scraper.ScrapeOne(product.ScrapeOneRequest{Url: url})

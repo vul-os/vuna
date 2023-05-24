@@ -11,12 +11,13 @@ import (
 
 	"strings"
 	"time"
+
 	"github.com/PuerkitoBio/goquery"
 )
 
 type scraper struct {
-	ProxyList []string
-	Client    http.Client
+	ProxyList   []string
+	Client      http.Client
 	FileStorage storage.FileStorage
 }
 
@@ -26,8 +27,8 @@ func New(
 	fs storage.FileStorage,
 ) product.ProductScraper {
 	return &scraper{
-		ProxyList: proxyList,
-		Client:    client,
+		ProxyList:   proxyList,
+		Client:      client,
 		FileStorage: fs,
 	}
 }
@@ -97,7 +98,7 @@ func scrapeProductWithoutVariations(productURL, productID, productName string, d
 	price := summaryDiv.Find("span.woocommerce-Price-amount.amount").Text()
 	sku := summaryDiv.Find("span.sku").Text()
 	maxQty := summaryDiv.Find("p.stock").Text()
-	fmt.Println("here3")
+	fmt.Println("here3", price, maxQty)
 
 	priceFloat, err := PriceToFloat(price)
 	if err != nil {

@@ -26,17 +26,15 @@ func New(
 	}
 }
 
-func (s *MetaScraper) ScrapeOne(url string) interface{} {
+func (s *MetaScraper) ScrapeOne(url string) ([]string, error) {
 	sitemapURL, err := s.extractSitemapURL(url)
 	if err != nil {
-		fmt.Println("Error extracting sitemap URL:", err)
-		return nil
+		return nil, err
 	}
 
 	urls, err := s.extractURLsFromXML(sitemapURL, true)
 	if err != nil {
-		fmt.Println("Error extracting URLs from sitemap:", err)
-		return nil
+		return nil, err
 	}
 
 	uniqueURLs := make(map[string]bool)
@@ -44,11 +42,10 @@ func (s *MetaScraper) ScrapeOne(url string) interface{} {
 	for _, url := range urls {
 		xmlURLs, err := s.extractURLsFromXML(url, true)
 		if err != nil {
-			fmt.Println("Error extracting URLs from", url, ":", err)
-			continue
+			return nil, err
 		}
-
 		for _, xmlURL := range xmlURLs {
+			// fmt.Println(xmlURL, utils.SliceInString(xmlURL, []string{"/product/", "/products/"}))
 			if utils.SliceInString(xmlURL, []string{"/product/", "/products/"}) {
 				uniqueURLs[xmlURL] = true
 			}
@@ -59,7 +56,6 @@ func (s *MetaScraper) ScrapeOne(url string) interface{} {
 	for url := range uniqueURLs {
 		result = append(result, url)
 	}
-
 	if s.FileStorage != nil {
 		siteUrl := utils.RemoveURLPrefix(url)
 		encodedSite := utils.EncodeURL(siteUrl)
@@ -68,11 +64,11 @@ func (s *MetaScraper) ScrapeOne(url string) interface{} {
 		fileName := fmt.Sprintf("meta/%s_%s_products.txt", encodedSite, formattedDatetime)
 		err := s.FileStorage.WriteData(result, fileName)
 		if err != nil {
-			fmt.Println("Error: ", err)
+			return nil, err
 		}
 	}
 
-	return result
+	return result, nil
 }
 
 func (s *MetaScraper) extractSitemapURL(url string) (string, error) {

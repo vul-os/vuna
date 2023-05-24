@@ -28,7 +28,7 @@ func New(
 	}
 }
 
-func (s *SiteScraper) ScrapeOne(url string) interface{} {
+func (s *SiteScraper) ScrapeOne(url string) (map[string]interface{}, error) {
 	currencyCode := "ZAR"
 
 	name, image, technology := s.GetSiteInfo(url)
@@ -54,10 +54,10 @@ func (s *SiteScraper) ScrapeOne(url string) interface{} {
 		fileName := fmt.Sprintf("site/%s_%s_site.csv", encodedSite, formattedDatetime)
 		err := s.FileStorage.WriteData(items, fileName)
 		if err != nil {
-			fmt.Println("Error: ", err)
+			return nil, err
 		}
 	}
-	return items
+	return items, nil
 }
 
 func (s *SiteScraper) GetSiteInfo(url string) (string, string, string) {

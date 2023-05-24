@@ -1,16 +1,18 @@
 package scrapers
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 
 	meta "scraper-go/internal/pkg/scrapers/meta"
 	site "scraper-go/internal/pkg/scrapers/site"
+
 	// product "scraper-go/internal/pkg/scrapers/product"
 
 	"scraper-go/internal/pkg/storage"
-
-	"github.com/gin-gonic/gin"
 )
 
 type ScraperAPI struct {
@@ -28,59 +30,107 @@ func New(
 	}
 }
 
-func (api *ScraperAPI) Meta(c *gin.Context, baseURL string) {
-	baseURL, err := url.QueryUnescape(baseURL)
+func extractUrlFromRequestURL(urlPath string) (string, error) {
+	baseURL, err := url.QueryUnescape(urlPath)
 	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return
+		return "", err
 	}
-	client := http.Client{}
-	scraper := meta.New(&client, api.FileStorage)
-	metaData := scraper.ScrapeOne(baseURL)
-
-	c.JSON(http.StatusOK, metaData)
+	splitPath := strings.Split(baseURL, "/")
+	if len(splitPath) > 3 {
+		return splitPath[3], nil
+	}
+	return "", fmt.Errorf("Invalid URL")
 }
 
-func (api *ScraperAPI) Site(c *gin.Context, baseURL string) {
-	baseURL, err := url.QueryUnescape(baseURL)
+func (api *ScraperAPI) Meta(w http.ResponseWriter, r *http.Request) {
+	baseURL, err := extractUrlFromRequestURL(r.URL.Path)
 	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	client := http.Client{}
+	scraper := meta.New(&client, api.FileStorage)
+	metaData, err := scraper.ScrapeOne(baseURL)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Convert the meta data to JSON
+	metaDataJSON, err := json.Marshal(metaData)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Set the response content type to application/json
+	w.Header().Set("Content-Type", "application/json")
+
+	// Write the JSON response
+	w.Write(metaDataJSON)
+}
+
+func (api *ScraperAPI) Site(w http.ResponseWriter, r *http.Request) {
+	baseURL, err := extractUrlFromRequestURL(r.URL.Path)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	client := http.Client{}
 	scraper := site.New(&client, api.FileStorage)
-	siteData := scraper.ScrapeOne(baseURL)
+	siteData, err := scraper.ScrapeOne(baseURL)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-	c.JSON(http.StatusOK, siteData)
+	// Convert the site data to JSON
+	siteDataJSON, err := json.Marshal(siteData)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Set the response content type to application/json
+	w.Header().Set("Content-Type", "application/json")
+
+	// Write the JSON response
+	w.Write(siteDataJSON)
 }
 
-// func (api *ScraperAPI) Product(c *gin.Context, productURL string) {
-// 	productURL, err := url.QueryUnescape(productURL)
+// func (api *ScraperAPI) Product(w http.ResponseWriter, r *http.Request) {
+// 	productURL, err := url.QueryUnescape(r.URL.Path)
 // 	if err != nil {
-// 		c.String(http.StatusInternalServerError, err.Error())
+// 		http.Error(w, err.Error(), http.StatusInternalServerError)
 // 		return
 // 	}
 
 // 	var proxies []string
-// 	if err := c.ShouldBindJSON(&proxies); err != nil {
-// 		c.String(http.StatusInternalServerError, err.Error())
-// 		return
-// 	}
+// 	// Extract the proxies from the request body or query parameters
 
 // 	var scraperCode string
-// 	if err := c.ShouldBindJSON(&scraperCode); err != nil {
-// 		c.String(http.StatusInternalServerError, err.Error())
-// 		return
-// 	}
+// 	// Extract the scraper code from the request body or query parameters
 
 // 	client := http.Client{}
 // 	scraper := product.New(&client, api.FileStorage)
-// 	siteData := scraper.ScrapeOne(baseURL)
+// 	productData := scraper.ScrapeOne(productURL)
 
 // 	if productData != nil {
-// 		c.JSON(http.StatusOK, productData)
+// 		// Convert the product data to JSON
+// 		productDataJSON, err := json.Marshal(productData)
+// 		if err != nil {
+// 			http.Error(w, err.Error(), http.StatusInternalServerError)
+// 			return
+// 		}
+
+// 		// Set the response content type to application/json
+// 		w.Header().Set("Content-Type", "application/json")
+
+// 		// Write the JSON response
+// 		w.Write(productDataJSON)
 // 	} else {
-// 		c.String(http.StatusNotFound, "No product data found")
+// 		http.Error(w, "No product data found", http.StatusNotFound)
 // 	}
 // }

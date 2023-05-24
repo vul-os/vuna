@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"scraper-go/internal/pkg/storage"
 	"scraper-go/internal/pkg/orchestrator/tasks"
-	"github.com/gin-gonic/gin"
-
 )
 
 type OrchestratorAPI struct {
@@ -16,18 +14,18 @@ type OrchestratorAPI struct {
 }
 
 func New(
-	taskCreator tasks.TaskCreator, 
+	taskCreator tasks.TaskCreator,
 	fs storage.FileStorage,
-	targetUrl string,
+	targetURL string,
 ) *OrchestratorAPI {
 	return &OrchestratorAPI{
 		TaskCreator:  taskCreator,
-		FileStorage: fs,
-		TargetURL: targetUrl,
+		FileStorage:  fs,
+		TargetURL:    targetURL,
 	}
 }
 
-func (o *OrchestratorAPI) Meta(c *gin.Context){
+func (o *OrchestratorAPI) Meta(w http.ResponseWriter, r *http.Request) {
 	latestFile, err := o.FileStorage.GetLatestFile("root/", "sites.txt")
 	if err != nil {
 		fmt.Println("file storage error")
@@ -39,7 +37,8 @@ func (o *OrchestratorAPI) Meta(c *gin.Context){
 	}
 	fmt.Println(urls)
 	if urlStringList, ok := urls.([]string); ok {
-		c.String(http.StatusInternalServerError, "url strings no string list")
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("url strings no string list"))
 		for _, url := range urlStringList {
 			err := o.TaskCreator.CreateTaskMeta(url)
 			if err != nil {
@@ -47,11 +46,12 @@ func (o *OrchestratorAPI) Meta(c *gin.Context){
 			}
 		}
 	} else {
-		c.String(http.StatusOK, "hopefully created meta tasks")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("hopefully created meta tasks"))
 	}
 }
 
-func (o *OrchestratorAPI) Site(c *gin.Context) {
+func (o *OrchestratorAPI) Site(w http.ResponseWriter, r *http.Request) {
 	latestFile, err := o.FileStorage.GetLatestFile("root/", "sites.txt")
 	if err != nil {
 		fmt.Println("file storage error")
@@ -70,11 +70,12 @@ func (o *OrchestratorAPI) Site(c *gin.Context) {
 			}
 		}
 	} else {
-		c.String(http.StatusOK, "hopefully created meta tasks")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("hopefully created meta tasks"))
 	}
 }
 
-// func (o *OrchestratorAPI) Product(c *gin.Context) {
+// func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 // 	startTime := time.Now().UTC()
 
 // 	proxyList := createProxyList()
