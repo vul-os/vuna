@@ -8,12 +8,12 @@ import (
 	// siteScraper "scraper-go/internal/pkg/scrapers/site"
 	// woocommerceScraper "scraper-go/internal/pkg/scrapers/product/woocommerce"
 	// "scraper-go/internal/pkg/scrapers/product"
-	orchestrator "scraper-go/internal/pkg/orchestrator"
-	scrapers "scraper-go/internal/pkg/scrapers"
+	orchestrator "github.com/imranparuk/scraper-go/internal/pkg/orchestrator"
+	scrapers "github.com/imranparuk/scraper-go/internal/pkg/scrapers"
 
-	gcsStorage "scraper-go/internal/pkg/storage/gcs"
+	gcsStorage "github.com/imranparuk/scraper-go/internal/pkg/storage/gcs"
 
-	tasks "scraper-go/internal/pkg/orchestrator/tasks"
+	tasks "github.com/imranparuk/scraper-go/internal/pkg/orchestrator/tasks"
 
 	"cloud.google.com/go/storage"
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"

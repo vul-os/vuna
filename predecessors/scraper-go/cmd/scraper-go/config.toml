@@ -1,8 +1,0 @@
-DatabaseName = "scrapedb"
-DatabasePassword = "happy789"
-DatabaseUser = "postgres"
-DatabaseHost = "localhost"
-DatabasePort = "5432"
-BQClientProjectID = "my-project-id"
-
-ServerPort = "8082"
