@@ -3,8 +3,9 @@ package storage
 import (
 	"context"
 	"fmt"
-	"scraper-go/internal/pkg/storage"
 	"strings"
+
+	"github.com/scraper-go/internal/pkg/storage"
 
 	"google.golang.org/api/iterator"
 

@@ -1,4 +1,4 @@
-module scraper-go
+module github.com/scraper-go
 
 go 1.14
 

@@ -7,12 +7,12 @@ import (
 	"net/url"
 	"strings"
 
-	meta "scraper-go/internal/pkg/scrapers/meta"
-	site "scraper-go/internal/pkg/scrapers/site"
+	meta "github.com/scraper-go/internal/pkg/scrapers/meta"
+	site "github.com/scraper-go/internal/pkg/scrapers/site"
 
 	// product "scraper-go/internal/pkg/scrapers/product"
 
-	"scraper-go/internal/pkg/storage"
+	"github.com/scraper-go/internal/pkg/storage"
 )
 
 type ScraperAPI struct {

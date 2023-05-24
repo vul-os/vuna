@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"scraper-go/internal/pkg/utils"
+	"github.com/scraper-go/internal/pkg/utils"
 
 	"github.com/PuerkitoBio/goquery"
-	"scraper-go/internal/pkg/storage"
+	"github.com/scraper-go/internal/pkg/storage"
 )
 
 type SiteScraper struct {

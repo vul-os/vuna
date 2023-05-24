@@ -3,8 +3,8 @@ package orchestrator
 import (
 	"fmt"
 	"net/http"
-	"scraper-go/internal/pkg/storage"
-	"scraper-go/internal/pkg/orchestrator/tasks"
+	"github.com/scraper-go/internal/pkg/storage"
+	"github.com/scraper-go/internal/pkg/orchestrator/tasks"
 )
 
 type OrchestratorAPI struct {
