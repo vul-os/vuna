@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"github.com/scraper-go/internal/pkg/scrapers/product"
-	"github.com/scraper-go/internal/pkg/storage"
-	"github.com/scraper-go/internal/pkg/utils"
+
+	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/product"
+	"github.com/imranparuk/scraper-go/internal/pkg/storage"
+	"github.com/imranparuk/scraper-go/internal/pkg/utils"
 
 	"strings"
 	"time"

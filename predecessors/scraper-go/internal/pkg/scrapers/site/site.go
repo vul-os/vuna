@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/scraper-go/internal/pkg/utils"
+	"github.com/imranparuk/scraper-go/internal/pkg/utils"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/scraper-go/internal/pkg/storage"
+	"github.com/imranparuk/scraper-go/internal/pkg/storage"
 )
 
 type SiteScraper struct {
@@ -19,11 +19,11 @@ type SiteScraper struct {
 }
 
 func New(
-	client      *http.Client,
+	client *http.Client,
 	fs storage.FileStorage,
 ) *SiteScraper {
 	return &SiteScraper{
-		Client: client,
+		Client:      client,
 		FileStorage: fs,
 	}
 }
@@ -95,4 +95,3 @@ func (s *SiteScraper) GetSiteInfo(url string) (string, string, string) {
 	// Return the name, image, and technology of the website
 	return name, image, technology
 }
-

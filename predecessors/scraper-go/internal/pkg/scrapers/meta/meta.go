@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"time"
 
-	storage "github.com/scraper-go/internal/pkg/storage"
-	"github.com/scraper-go/internal/pkg/utils"
+	storage "github.com/imranparuk/scraper-go/internal/pkg/storage"
+	"github.com/imranparuk/scraper-go/internal/pkg/utils"
 )
 
 type MetaScraper struct {

@@ -3,14 +3,15 @@ package orchestrator
 import (
 	"fmt"
 	"net/http"
-	"github.com/scraper-go/internal/pkg/storage"
-	"github.com/scraper-go/internal/pkg/orchestrator/tasks"
+
+	"github.com/imranparuk/scraper-go/internal/pkg/orchestrator/tasks"
+	"github.com/imranparuk/scraper-go/internal/pkg/storage"
 )
 
 type OrchestratorAPI struct {
-	TaskCreator   tasks.TaskCreator
-	FileStorage   storage.FileStorage
-	TargetURL     string
+	TaskCreator tasks.TaskCreator
+	FileStorage storage.FileStorage
+	TargetURL   string
 }
 
 func New(
@@ -19,9 +20,9 @@ func New(
 	targetURL string,
 ) *OrchestratorAPI {
 	return &OrchestratorAPI{
-		TaskCreator:  taskCreator,
-		FileStorage:  fs,
-		TargetURL:    targetURL,
+		TaskCreator: taskCreator,
+		FileStorage: fs,
+		TargetURL:   targetURL,
 	}
 }
 
