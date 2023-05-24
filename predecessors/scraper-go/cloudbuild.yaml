@@ -6,6 +6,6 @@ steps:
   - deploy
   - function-go
   - --region=us-central1
-  - --source=cmd/scraper-go
+  - --source=.
   - --trigger-http
   - --runtime=go120
