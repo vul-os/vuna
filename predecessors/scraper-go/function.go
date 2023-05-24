@@ -3,6 +3,7 @@ package function
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	// metaScraper "scraper-go/internal/pkg/scrapers/meta"
 	// siteScraper "scraper-go/internal/pkg/scrapers/site"
@@ -17,9 +18,21 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
+	"github.com/gorilla/mux"
 )
 
 func init() {
+	functions.HTTP("Router", router)
+}
+
+func init() {
+	functions.HTTP("HelloWorld", helloWorld)
+}
+
+// router sets up the mux router and handles the HTTP request.
+func router(w http.ResponseWriter, r *http.Request) {
+	rtr := mux.NewRouter()
+
 	bucketName := "exolution-scraper-data"
 	targetUrl := "https://function-go-gizrqdvcaq-uc.a.run.app"
 	projectId := "scraping-is-hard"
@@ -40,9 +53,18 @@ func init() {
 	s := scrapers.New(storage, []string{})
 	o := orchestrator.New(*taskCreator, storage, targetUrl)
 
-	functions.HTTP("scraper/meta", s.Meta)
-	functions.HTTP("scraper/site", s.Site)
+	rtr.HandleFunc("/", helloWorld).Methods(http.MethodGet)
 
-	functions.HTTP("orchestrator/meta", o.Meta)
-	functions.HTTP("orchestrator/site", o.Site)
+	rtr.HandleFunc("orchestrator/meta", o.Meta).Methods(http.MethodGet)
+	rtr.HandleFunc("orchestrator/site", o.Site).Methods(http.MethodGet)
+
+	rtr.HandleFunc("/scraper/meta/{input}", s.Meta).Methods(http.MethodGet)
+	rtr.HandleFunc("/scraper/site/{input}", s.Site).Methods(http.MethodGet)
+	// Pass the HTTP request to the router
+	rtr.ServeHTTP(w, r)
+}
+
+// helloWorld writes "Hello, World!" to the HTTP response.
+func helloWorld(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Hello, World!")
 }

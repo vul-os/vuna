@@ -2,16 +2,14 @@ package scrapers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"net/url"
-	"strings"
 
 	meta "github.com/imranparuk/scraper-go/internal/pkg/scrapers/meta"
 	site "github.com/imranparuk/scraper-go/internal/pkg/scrapers/site"
 
 	// product "scraper-go/internal/pkg/scrapers/product"
 
+	"github.com/gorilla/mux"
 	"github.com/imranparuk/scraper-go/internal/pkg/storage"
 )
 
@@ -30,24 +28,9 @@ func New(
 	}
 }
 
-func extractUrlFromRequestURL(urlPath string) (string, error) {
-	baseURL, err := url.QueryUnescape(urlPath)
-	if err != nil {
-		return "", err
-	}
-	splitPath := strings.Split(baseURL, "/")
-	if len(splitPath) > 3 {
-		return splitPath[3], nil
-	}
-	return "", fmt.Errorf("Invalid URL")
-}
-
 func (api *ScraperAPI) Meta(w http.ResponseWriter, r *http.Request) {
-	baseURL, err := extractUrlFromRequestURL(r.URL.Path)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	vars := mux.Vars(r)
+	baseURL := vars["url"]
 
 	client := http.Client{}
 	scraper := meta.New(&client, api.FileStorage)
@@ -72,11 +55,8 @@ func (api *ScraperAPI) Meta(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api *ScraperAPI) Site(w http.ResponseWriter, r *http.Request) {
-	baseURL, err := extractUrlFromRequestURL(r.URL.Path)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	vars := mux.Vars(r)
+	baseURL := vars["url"]
 
 	client := http.Client{}
 	scraper := site.New(&client, api.FileStorage)
