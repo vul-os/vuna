@@ -25,10 +25,6 @@ func init() {
 	functions.HTTP("Router", router)
 }
 
-func init() {
-	functions.HTTP("HelloWorld", helloWorld)
-}
-
 // router sets up the mux router and handles the HTTP request.
 func router(w http.ResponseWriter, r *http.Request) {
 	rtr := mux.NewRouter()
