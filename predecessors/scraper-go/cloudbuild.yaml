@@ -4,7 +4,7 @@ steps:
   - gcloud
   - functions
   - deploy
-  - function-1
+  - function-go
   - --region=us-central1
   - --source=cmd/scraper-go
   - --trigger-http
