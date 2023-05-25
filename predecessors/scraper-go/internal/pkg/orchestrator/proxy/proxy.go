@@ -1,4 +1,4 @@
-package orchestrator
+package proxy
 
 import (
 	"io/ioutil"
@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func createProxyList() ([]string, error) {
+func CreateProxyList() ([]string, error) {
 	url := "https://github.com/officialputuid/KangProxy/blob/KangProxy/socks5/socks5.txt"
 	response, err := http.Get(url)
 	if err != nil {

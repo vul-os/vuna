@@ -11,6 +11,9 @@ import (
 )
 
 func FetchWithProxyList(url string, proxyList []string) ([]byte, error) {
+	if !strings.HasPrefix(url, "http") {
+		url = "https://" + url
+	}
 	if len(proxyList) == 0 {
 		response, err := http.Get(url)
 		if err != nil {

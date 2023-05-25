@@ -13,6 +13,32 @@ import (
 	"github.com/imranparuk/scraper-go/internal/pkg/storage"
 )
 
+// // SiteData is a struct representing the site data
+// type SiteData struct {
+// 	ID      string	`json:"id"`
+// 	Name 	string 	`json:"name"`
+// 	Image   string	`json:"image"`
+
+// 	Currency string	`json:"currency"`
+
+// 	Technology string	`json:"technology"`
+// 	Scraper 	string	`json:"scraper"`
+
+// 	RateLimit string	`json:"rate_limit"`
+// }
+
+// func StructToMap(s SiteData) map[string]string {
+// 	return map[string]string{
+// 		"id":         s.ID,
+// 		"name":       s.Name,
+// 		"image":      s.Image,
+// 		"currency":   s.Currency,
+// 		"technology": s.Technology,
+// 		"scraper":    s.Scraper,
+// 		"rate_limit": s.RateLimit,
+// 	}
+// }
+
 type SiteScraper struct {
 	Client      *http.Client
 	FileStorage storage.FileStorage

@@ -74,11 +74,13 @@ func (t *TaskCreator) CreateTaskMeta(url string) error {
 	return t.CreateTask(task)
 }
 
-func (t *TaskCreator) CreateTaskProduct(url, scraperCode, scheduledTime time.Time, proxy string) error {
-	taskURL := fmt.Sprintf("%s/scraper/product/%s", t.TargetURL, url)
+func (t *TaskCreator) CreateTaskProduct(url, scraper, proxyList []string, scheduledTime time.Time) error {
+	taskURL := fmt.Sprintf("%s/scraper/product/", t.TargetURL)
 
 	payload := map[string]interface{}{
-		// "scraper_code": scraperCode,
+		"url": url,
+		"proxy_list": proxyList,
+		"scraper": scraper,
 	}
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
