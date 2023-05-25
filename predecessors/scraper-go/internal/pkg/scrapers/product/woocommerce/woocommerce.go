@@ -3,9 +3,7 @@ package woocommerce
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
-	"net/url"
 	"time"
 
 	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/product"
@@ -34,31 +32,7 @@ func New(
 }
 
 func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOneResponse, error) {
-	var err error
-	var body []byte
-	var response *http.Response
-
-	for _, proxy := range request.ProxyList {
-		proxyURL, err := url.Parse(proxy)
-		if err != nil {
-			fmt.Println("Invalid proxy URL:", proxy)
-			continue
-		}
-
-		s.Client.Transport = &http.Transport{
-			Proxy: http.ProxyURL(proxyURL),
-		}
-
-		response, err = s.Client.Get(request.Url)
-		if err == nil {
-			defer response.Body.Close()
-			body, err = ioutil.ReadAll(response.Body)
-			if err == nil {
-				break
-			}
-		}
-	}
-
+	body, err := utils.FetchWithProxyList(request.Url, request.ProxyList)
 	if err != nil {
 		return nil, err
 	}
