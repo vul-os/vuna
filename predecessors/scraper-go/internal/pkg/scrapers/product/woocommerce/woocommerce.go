@@ -82,6 +82,7 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 		if err != nil {
 			fmt.Println("Error: ", err)
 		}
+		// HI
 	}
 
 	return &product.ScrapeOneResponse{Results: productDataList}, nil
