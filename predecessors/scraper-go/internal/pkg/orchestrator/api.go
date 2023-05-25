@@ -110,7 +110,7 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		fmt.Println(siteInfoRaw)
-		siteInfo, ok := siteInfoRaw.(site.SiteData)
+		siteInfo, ok := siteInfoRaw.([]site.SiteData)
 		if !ok {
 			http.Error(w, "Failed to type cast site info", http.StatusInternalServerError)
 			return
@@ -129,7 +129,7 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 
 		for _, url := range urls {
 			scheduledTime := startTime.Add(time.Second * time.Duration(rateLimit))
-			err := o.TaskCreator.CreateTaskProduct(url, siteInfo.Scraper, scheduledTime)
+			err := o.TaskCreator.CreateTaskProduct(url, siteInfo[0].Scraper, scheduledTime)
 			if err != nil {
 				http.Error(w, "Failed to create product task", http.StatusInternalServerError)
 				return
