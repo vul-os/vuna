@@ -41,7 +41,7 @@ func (o *OrchestratorAPI) Meta(w http.ResponseWriter, r *http.Request) {
 		for _, url := range urlStringList {
 			err := o.TaskCreator.CreateTaskMeta(url)
 			if err != nil {
-				fmt.Println("file storage error")
+				fmt.Println("file storage error: ", err)
 			}
 		}
 	} else {
@@ -65,7 +65,7 @@ func (o *OrchestratorAPI) Site(w http.ResponseWriter, r *http.Request) {
 		for _, url := range urlStringList {
 			err := o.TaskCreator.CreateTaskSite(url)
 			if err != nil {
-				fmt.Println("file storage error")
+				fmt.Println("file storage error: ", err)
 			}
 		}
 	} else {
