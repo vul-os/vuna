@@ -1,6 +1,7 @@
 package scrapers
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -105,7 +106,7 @@ func (api *ScraperAPI) Product(w http.ResponseWriter, r *http.Request) {
 		Url: productURL,
 	})
 	if err != nil {
-		http.Error(w, "scrape one error", http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("scrape one error: %s", err), http.StatusBadRequest)
 		return
 	}
 	if productData != nil {

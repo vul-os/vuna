@@ -37,7 +37,6 @@ func ToMap(p []ProductData) ([]map[string]string, error) {
 	var retData []map[string]string
 	for _, pd := range p {
 		data := make(map[string]string)
-		fmt.Println(pd, reflect.ValueOf(pd))
 		v := reflect.ValueOf(pd) // Get the value of the struct
 		t := v.Type()             // Get the type of the struct
 
