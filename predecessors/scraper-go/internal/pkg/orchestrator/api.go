@@ -29,14 +29,14 @@ func New(
 func (o *OrchestratorAPI) Meta(w http.ResponseWriter, r *http.Request) {
 	latestFile, err := o.FileStorage.GetLatestFile("root/", "sites.txt")
 	if err != nil {
-		fmt.Println("file storage error")
+		fmt.Println("file storage error -> GetLatestFile")
 	}
-	fmt.Println(latestFile)
+	fmt.Println("GetLatestFile: ", latestFile)
 	urls, err := o.FileStorage.ReadData(latestFile)
 	if err != nil {
-		fmt.Println("file storage error")
+		fmt.Println("file storage error -> ReadData")
 	}
-	fmt.Println(urls)
+	fmt.Println("Urls: ", urls)
 	if urlStringList, ok := urls.([]string); ok {
 		for _, url := range urlStringList {
 			err := o.TaskCreator.CreateTaskMeta(url)
@@ -53,12 +53,12 @@ func (o *OrchestratorAPI) Meta(w http.ResponseWriter, r *http.Request) {
 func (o *OrchestratorAPI) Site(w http.ResponseWriter, r *http.Request) {
 	latestFile, err := o.FileStorage.GetLatestFile("root/", "sites.txt")
 	if err != nil {
-		fmt.Println("file storage error")
+		fmt.Println("file storage error -> GetLatestFile")
 	}
 	fmt.Println(latestFile)
 	urls, err := o.FileStorage.ReadData(latestFile)
 	if err != nil {
-		fmt.Println("file storage error")
+		fmt.Println("file storage error -> ReadData")
 	}
 	fmt.Println(urls)
 	if urlStringList, ok := urls.([]string); ok {
