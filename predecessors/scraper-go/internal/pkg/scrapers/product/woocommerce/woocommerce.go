@@ -66,26 +66,27 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 		productDataList = append(productDataList, productData)
 	}
 
+	siteUrl, err := utils.GetBaseURL(request.Url)
+	if err != nil {
+		return nil, err
+	}
+	siteUrl = utils.RemoveURLPrefix(siteUrl)
+	encodedSite := utils.EncodeURL(siteUrl)
+
+	currentDatetime := time.Now()
+	formattedDatetime := currentDatetime.Format("2006-01-02-15-04-05")
+
+	fileName := fmt.Sprintf("product/%s_%s_product.csv", encodedSite, formattedDatetime)
+	pdl, err := product.ToMap(productDataList)
+	if err != nil {
+		return &product.ScrapeOneResponse{Results: nil}, err
+	}
+
 	if s.FileStorage != nil {
-		siteUrl, err := utils.GetBaseURL(request.Url)
-		if err != nil {
-			return nil, err
-		}
-		siteUrl = utils.RemoveURLPrefix(siteUrl)
-		encodedSite := utils.EncodeURL(siteUrl)
-
-		currentDatetime := time.Now()
-		formattedDatetime := currentDatetime.Format("2006-01-02-15-04-05")
-
-		fileName := fmt.Sprintf("product/%s_%s_product.csv", encodedSite, formattedDatetime)
-		pdl := product.ToMap(productDataList)
-		fmt.Println("Here!: ", fileName, pdl)
-
 		err = s.FileStorage.WriteData(pdl, fileName)
 		if err != nil {
-			fmt.Println("Error: ", err)
+			return &product.ScrapeOneResponse{Results: nil}, err
 		}
-		// HI
 	}
 
 	return &product.ScrapeOneResponse{Results: productDataList}, nil

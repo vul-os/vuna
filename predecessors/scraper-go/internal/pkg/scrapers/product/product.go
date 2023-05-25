@@ -1,6 +1,7 @@
 package product
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 )
@@ -32,31 +33,38 @@ type ScrapeOneResponse struct {
 	Results []ProductData
 }
 
-func ToMap(p []ProductData) []map[string]string {
+func ToMap(p []ProductData) ([]map[string]string, error) {
 	var retData []map[string]string
 	for _, pd := range p {
 		data := make(map[string]string)
-
-		v := reflect.ValueOf(pd).Elem() // Get the value of the struct
-		t := v.Type()                   // Get the type of the struct
+		fmt.Println(pd, reflect.ValueOf(pd))
+		v := reflect.ValueOf(pd) // Get the value of the struct
+		t := v.Type()             // Get the type of the struct
 
 		for i := 0; i < v.NumField(); i++ {
 			field := v.Field(i)
 			fieldName := t.Field(i).Name
 
-			switch field.Interface().(type) {
-			case string:
+			switch field.Kind() {
+			case reflect.String:
 				data[fieldName] = field.String()
-			// case []string:
-			// 	data[fieldName] = strings.Join(field.Interface().([]string), ",")
-			case float64:
+			case reflect.Slice:
+				// Check if the slice contains only strings.
+				if field.Type().Elem().Kind() == reflect.String {
+					data[fieldName] = ""
+				} else {
+					return nil, errors.New(fmt.Sprintf("Unsupported field type (slice of non-strings): %s", fieldName))
+				}
+			case reflect.Float64:
 				data[fieldName] = fmt.Sprintf("%.2f", field.Float())
-			case int:
+			case reflect.Int:
 				data[fieldName] = fmt.Sprintf("%d", field.Int())
+			default:
+				return nil, errors.New(fmt.Sprintf("Unsupported field type: %s", fieldName))
 			}
 		}
 		retData = append(retData, data)
 	}
 
-	return retData
+	return retData, nil
 }

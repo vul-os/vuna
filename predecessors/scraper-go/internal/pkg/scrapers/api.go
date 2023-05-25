@@ -1,6 +1,7 @@
 package scrapers
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -68,12 +69,12 @@ func (api *ScraperAPI) Site(w http.ResponseWriter, r *http.Request) {
 
 func (api *ScraperAPI) Product(w http.ResponseWriter, r *http.Request) {
 	type jsonData struct {
-		Url       string   `json:"url"`
-		Scraper   string   `json:"scraper"`
+		Url     string `json:"url"`
+		Scraper string `json:"scraper"`
 	}
 
 	proxyConfig := utils.ProxyConfig{
-		Address: "p.webshare.io:80",
+		Address:  "p.webshare.io:80",
 		Username: "qnfhspsk-rotate",
 		Password: "t62qs3cx4b6c",
 	}
@@ -100,8 +101,9 @@ func (api *ScraperAPI) Product(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "scraper type not implimented", http.StatusBadRequest)
 		return
 	}
+
 	productData, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
-		Url:       productURL,
+		Url: productURL,
 	})
 	if err != nil {
 		http.Error(w, "scrape one error", http.StatusBadRequest)
