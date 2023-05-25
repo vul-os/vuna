@@ -25,34 +25,38 @@ type ProductScraper interface {
 }
 
 type ScrapeOneRequest struct {
-	Url       string
+	Url string
 }
 
 type ScrapeOneResponse struct {
 	Results []ProductData
 }
 
-func (p *ProductData) ToMap() map[string]string {
-	data := make(map[string]string)
+func ToMap(p []ProductData) []map[string]string {
+	var retData []map[string]string
+	for _, pd := range p {
+		data := make(map[string]string)
 
-	v := reflect.ValueOf(p).Elem() // Get the value of the struct
-	t := v.Type()                  // Get the type of the struct
+		v := reflect.ValueOf(pd).Elem() // Get the value of the struct
+		t := v.Type()                   // Get the type of the struct
 
-	for i := 0; i < v.NumField(); i++ {
-		field := v.Field(i)
-		fieldName := t.Field(i).Name
+		for i := 0; i < v.NumField(); i++ {
+			field := v.Field(i)
+			fieldName := t.Field(i).Name
 
-		switch field.Interface().(type) {
-		case string:
-			data[fieldName] = field.String()
-		// case []string:
-		// 	data[fieldName] = strings.Join(field.Interface().([]string), ",")
-		case float64:
-			data[fieldName] = fmt.Sprintf("%.2f", field.Float())
-		case int:
-			data[fieldName] = fmt.Sprintf("%d", field.Int())
+			switch field.Interface().(type) {
+			case string:
+				data[fieldName] = field.String()
+			// case []string:
+			// 	data[fieldName] = strings.Join(field.Interface().([]string), ",")
+			case float64:
+				data[fieldName] = fmt.Sprintf("%.2f", field.Float())
+			case int:
+				data[fieldName] = fmt.Sprintf("%d", field.Int())
+			}
 		}
+		retData = append(retData, data)
 	}
 
-	return data
+	return retData
 }
