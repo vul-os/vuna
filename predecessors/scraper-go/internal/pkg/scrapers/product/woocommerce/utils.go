@@ -10,11 +10,25 @@ import (
 func PriceToFloat(price interface{}) (float64, error) {
 	switch v := price.(type) {
 	case string:
-		if strings.Contains(v, "-") {
+		if strings.Contains(v, "R") {
+			priceRange := strings.Split(v, "R")
+			var lowerValue float64
+			for _, p := range priceRange {
+				price, err := stringToFloat(p)
+				if err != nil {
+					return 0, err
+				}
+				if lowerValue == 0 || price < lowerValue {
+					lowerValue = price
+				}
+			}
+			return lowerValue, nil
+		} else if strings.Contains(v, "-") {
+			// Handle existing range case
 			priceRange := strings.Split(v, "-")
 			var sum float64
 			for _, p := range priceRange {
-				price, err := stringToFloat(p)
+				price, err := strconv.ParseFloat(p, 64)
 				if err != nil {
 					return 0, err
 				}
@@ -22,6 +36,7 @@ func PriceToFloat(price interface{}) (float64, error) {
 			}
 			return sum / float64(len(priceRange)), nil
 		} else {
+			// Handle single value case
 			return stringToFloat(v)
 		}
 	case float64:
@@ -31,6 +46,7 @@ func PriceToFloat(price interface{}) (float64, error) {
 	}
 	return 0, fmt.Errorf("unsupported type: %T", price)
 }
+
 
 func MaxQtyToInt(maxQty interface{}) (int, error) {
 	switch v := maxQty.(type) {
