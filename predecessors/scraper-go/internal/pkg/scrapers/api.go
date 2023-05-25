@@ -31,7 +31,7 @@ func New(
 func (api *ScraperAPI) Meta(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	vUrl := vars["url"]
-	baseURL := "https://"+ vUrl
+	baseURL := "https://" + vUrl
 
 	client := http.Client{}
 	scraper := meta.New(&client, api.FileStorage)
@@ -42,7 +42,7 @@ func (api *ScraperAPI) Meta(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Convert the meta data to JSON
-	metaDataJSON, err := json.Marshal(metaData)
+	metaDataJSON, err := json.Marshal(len(metaData))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
