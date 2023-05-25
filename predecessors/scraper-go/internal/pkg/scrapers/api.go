@@ -69,7 +69,6 @@ func (api *ScraperAPI) Site(w http.ResponseWriter, r *http.Request) {
 func (api *ScraperAPI) Product(w http.ResponseWriter, r *http.Request) {
 	type jsonData struct {
 		Url       string   `json:"url"`
-		Proxy     string   `json:"proxy"`
 		Scraper   string   `json:"scraper"`
 	}
 
