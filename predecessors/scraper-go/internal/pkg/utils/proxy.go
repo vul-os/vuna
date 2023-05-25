@@ -1,98 +1,50 @@
 package utils
 
 import (
-	"context"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
-	"time"
-
-	"golang.org/x/net/proxy"
+	"net/url"
 )
 
-const (
-	timeout = 3 * time.Second
-)
-
-func FetchWithProxy(url string, proxyAddress string) ([]byte, error) {
-	if !strings.HasPrefix(url, "http") {
-		url = "https://" + url
-	}
-	
-	if proxyAddress == "" {
-		response, err := customHTTPGet(url)
-		if err != nil {
-			return nil, err
-		}
-		defer response.Body.Close()
-
-		return ioutil.ReadAll(response.Body)
-	}
-	
-	if !strings.HasPrefix(proxyAddress, "socks5://") {
-		proxyAddress = "socks5://" + proxyAddress
-	}
-
-	tbDialer, err := proxy.SOCKS5("tcp", strings.TrimPrefix(proxyAddress, "socks5://"), nil, proxy.Direct)
-	if err != nil {
-		return nil, fmt.Errorf("Error creating SOCKS5 dialer: %w", err)
-	}
-
-	httpTransport := &http.Transport{
-		Dial: tbDialer.Dial,
-	}
-	httpClient := &http.Client{
-		Transport: httpTransport,
-		Timeout:   timeout,
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
-	request, err := http.NewRequestWithContext(ctx, "GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	response, err := httpClient.Do(request)
-	if err != nil {
-		if ctx.Err() == context.DeadlineExceeded {
-			fmt.Println("Request timed out for proxy:", proxyAddress)
-		} else if err.Error() == "EOF" {
-			fmt.Println("EOF error for proxy:", proxyAddress)
-		} 
-		return nil, err
-	}
-
-	if response != nil {
-		defer response.Body.Close()
-		body, err := ioutil.ReadAll(response.Body)
-		if err == nil && response.StatusCode >= 200 && response.StatusCode < 300 {
-			return body, nil
-		} else if err != nil {
-			return nil, err
-		}
-	}
-
-	return nil, errors.New("Failed to fetch data with proxy")
+type ProxyConfig struct {
+	Address  string
+	Username string
+	Password string
 }
 
-func customHTTPGet(url string) (*http.Response, error) {
-	client := &http.Client{
-		Timeout: timeout,
-	}
-
-	request, err := http.NewRequest("GET", url, nil)
+func FetchWithProxy(proxyConfig ProxyConfig, targetURL string) ([]byte, error) {
+	// Create a proxy URL with authentication credentials
+	proxyURL, err := url.Parse("http://" + proxyConfig.Username + ":" + proxyConfig.Password + "@" + proxyConfig.Address)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error parsing proxy URL: %w", err)
 	}
 
+	// Create a new HTTP client with the proxy settings
+	client := &http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyURL(proxyURL),
+		},
+	}
+
+	// Create a new HTTP request
+	request, err := http.NewRequest("GET", targetURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error creating request: %w", err)
+	}
+
+	// Perform the HTTP request
 	response, err := client.Do(request)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error performing request: %w", err)
+	}
+	defer response.Body.Close()
+
+	// Read the response body
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response body: %w", err)
 	}
 
-	return response, nil
+	return body, nil
 }

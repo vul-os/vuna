@@ -72,6 +72,12 @@ func (api *ScraperAPI) Product(w http.ResponseWriter, r *http.Request) {
 		Proxy     string   `json:"proxy"`
 		Scraper   string   `json:"scraper"`
 	}
+
+	proxyConfig := utils.ProxyConfig{
+		Address: "p.webshare.io:80",
+		Username: "qnfhspsk-rotate",
+		Password: "t62qs3cx4b6c",
+	}
 	// Extract the proxies from the request body or query parameters
 	var d jsonData
 	err := json.NewDecoder(r.Body).Decode(&d)
@@ -90,14 +96,13 @@ func (api *ScraperAPI) Product(w http.ResponseWriter, r *http.Request) {
 
 	switch d.Scraper {
 	case "woocommerce":
-		productScraper = woocommerce.New(client, api.FileStorage)
+		productScraper = woocommerce.New(proxyConfig, client, api.FileStorage)
 	default:
 		http.Error(w, "scraper type not implimented", http.StatusBadRequest)
 		return
 	}
 	productData, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
 		Url:       productURL,
-		Proxy: d.Proxy,
 	})
 	if err != nil {
 		http.Error(w, "scrape one error", http.StatusBadRequest)

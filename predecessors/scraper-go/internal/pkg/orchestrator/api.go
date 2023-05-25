@@ -6,10 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/imranparuk/scraper-go/internal/pkg/orchestrator/proxy"
 	"github.com/imranparuk/scraper-go/internal/pkg/orchestrator/tasks"
 	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/site"
-	"github.com/imranparuk/scraper-go/internal/pkg/utils"
 
 	"github.com/imranparuk/scraper-go/internal/pkg/storage"
 )
@@ -90,17 +88,7 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 	startTime = startTime.Add(time.Second * time.Duration(120))
 	rateLimit := 1 // Number of requests per second
 
-	proxyListRaw, err := proxy.CreateProxyList()
-	if err != nil {
-		http.Error(w, "Failed to get proxy list", http.StatusInternalServerError)
-		return
-	}
-	proxyList := utils.TestProxies("http://silvercoolfreshjoke.neverssl.com/online/", proxyListRaw, time.Second*3)
-	if len(proxyList) == 0 {
-		http.Error(w, "Failed to get working proxys", http.StatusInternalServerError)
-		return
-	}
-	productsFilesPerSite, err := o.FileStorage.GetLatestFiles("meta/", "products.txt")
+	productsFilesPerSite, _ := o.FileStorage.GetLatestFiles("meta/", "products.txt")
 	for _, productsFilePerSite := range productsFilesPerSite {
 		splitString := strings.Split(productsFilePerSite, "_")
 		if len(splitString) == 0 {
@@ -140,8 +128,7 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 
 		for _, url := range urls {
 			scheduledTime := startTime.Add(time.Second * time.Duration(rateLimit))
-			proxy := utils.RandomSample(proxyList, 1)[0]
-			err := o.TaskCreator.CreateTaskProduct(url, siteInfo.Scraper, proxy, scheduledTime)
+			err := o.TaskCreator.CreateTaskProduct(url, siteInfo.Scraper, scheduledTime)
 			if err != nil {
 				http.Error(w, "Failed to create product task", http.StatusInternalServerError)
 				return

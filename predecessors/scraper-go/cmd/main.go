@@ -1,52 +1,54 @@
 package main
 
 import (
-	// "log"
-	// "os"
-
-	// // Blank-import the function package so the init() runs
-	// _ "github.com/imranparuk/scraper-go"
-	// "github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
 	"fmt"
+	"io/ioutil"
 	"net/http"
-	"time"
-
-	"github.com/imranparuk/scraper-go/internal/pkg/orchestrator/proxy"
-	"github.com/imranparuk/scraper-go/internal/pkg/utils"
-
-	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/product"
-	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/product/woocommerce"
-	"github.com/imranparuk/scraper-go/internal/pkg/storage"
+	"net/url"
 )
 
 func main() {
-	// // Use PORT environment variable, or default to 8080.
-	// port := "8080"
-	// if envPort := os.Getenv("PORT"); envPort != "" {
-	// 	port = envPort
-	// }
-	// if err := funcframework.Start(port); err != nil {
-	// 	log.Fatalf("funcframework.Start: %v\n", err)
-	// }
-	proxyListRaw, err := proxy.CreateProxyList()
+	proxyAddress := "p.webshare.io:80"
+	proxyUsername := "qnfhspsk-rotate"
+	proxyPassword := "t62qs3cx4b6c"
+	targetURL := "https://biltongandbudz.co.za/"
+
+	// Create a proxy URL with authentication credentials
+	proxyURL, err := url.Parse("http://" + proxyUsername + ":" + proxyPassword + "@" + proxyAddress)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("Error parsing proxy URL:", err)
+		return
 	}
-	proxyList := utils.TestProxies("biltongandbudz.co.za", proxyListRaw, time.Second*5)
-	if len(proxyList) == 0 {
-		fmt.Println("no list")
+
+	// Create a new HTTP client with the proxy settings
+	client := &http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyURL(proxyURL),
+		},
 	}
-	fmt.Println(proxyList)
-	return
-	client := http.Client{}
-	var st storage.FileStorage
-	productScraper := woocommerce.New(client, st)
-	results, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
-		Url:   "http://www.biltongandbudz.co.za/product/barneys-farm-runtz-fem-autoflower/",
-		Proxy: "198.211.115.186:56365",
-	})
+
+	// Create a new HTTP request
+	request, err := http.NewRequest("GET", targetURL, nil)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("Error creating request:", err)
+		return
 	}
-	fmt.Println("results: ", results)
+
+	// Perform the HTTP request
+	response, err := client.Do(request)
+	if err != nil {
+		fmt.Println("Error performing request:", err)
+		return
+	}
+	defer response.Body.Close()
+
+	// Read the response body
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		fmt.Println("Error reading response body:", err)
+		return
+	}
+
+	// Print the response body
+	fmt.Println(string(body))
 }

@@ -16,23 +16,25 @@ import (
 )
 
 type scraper struct {
-	ProxyList   []string
+	ProxyConfig   utils.ProxyConfig
 	Client      http.Client
 	FileStorage storage.FileStorage
 }
 
 func New(
+	pc   utils.ProxyConfig,
 	client http.Client,
 	fs storage.FileStorage,
 ) product.ProductScraper {
 	return &scraper{
+		ProxyConfig: pc,
 		Client:      client,
 		FileStorage: fs,
 	}
 }
 
 func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOneResponse, error) {
-	body, err := utils.FetchWithProxy(request.Url, request.Proxy)
+	body, err := utils.FetchWithProxy(s.ProxyConfig, request.Url)
 	if err != nil {
 		return nil, err
 	}
