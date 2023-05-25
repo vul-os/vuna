@@ -43,13 +43,13 @@ func TestProxies(targetUrl string, proxyList []string, timeout time.Duration) []
 
 			request, err := http.NewRequestWithContext(ctx, "GET", targetUrl, nil)
 			if err != nil {
-				fmt.Println("Failed to create request for proxy:", proxyAddress)
+				// fmt.Println("Failed to create request for proxy:", proxyAddress)
 				return
 			}
 
 			response, err := httpClient.Do(request)
 			if err != nil {
-				fmt.Println("Request failed for proxy:", proxyAddress)
+				// fmt.Println("Request failed for proxy:", proxyAddress)
 				fmt.Println(err)
 				return
 			}

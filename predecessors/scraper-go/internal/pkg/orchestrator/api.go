@@ -95,15 +95,20 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to get proxy list", http.StatusInternalServerError)
 		return
 	}
-	proxyList := utils.TestProxies("http://silvercoolfreshjoke.neverssl.com/online/", proxyListRaw, time.Second * 3)
+	proxyList := utils.TestProxies("http://silvercoolfreshjoke.neverssl.com/online/", proxyListRaw, time.Second*3)
 	if len(proxyList) == 0 {
 		http.Error(w, "Failed to get working proxys", http.StatusInternalServerError)
 		return
 	}
 	productsFilesPerSite, err := o.FileStorage.GetLatestFiles("meta/", "products.txt")
 	for _, productsFilePerSite := range productsFilesPerSite {
-		siteID := strings.Replace(productsFilePerSite, "meta/", "", 1)
-		siteID = strings.TrimSpace(siteID)
+		splitString := strings.Split(productsFilePerSite, "_")
+		if len(splitString) == 0 {
+			http.Error(w, "Failed to get split string productsFilePerSite", http.StatusInternalServerError)
+			return
+		}
+		siteID := splitString[0]
+		siteID = strings.Replace(siteID, "meta/", "", -1)
 
 		siteInfoFile, err := o.FileStorage.GetLatestFile("site/", siteID)
 		if err != nil {
