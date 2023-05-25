@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/product"
 	"github.com/imranparuk/scraper-go/internal/pkg/storage"
 	"github.com/imranparuk/scraper-go/internal/pkg/utils"
 
 	"strings"
-	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -35,13 +35,25 @@ func New(
 }
 
 func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOneResponse, error) {
-	response, err := s.Client.Get(request.Url)
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
+	var err error
+	var body []byte
+	var response *http.Response
 
-	body, err := ioutil.ReadAll(response.Body)
+	for _, proxy := range s.ProxyList {
+		s.Client.Transport = &http.Transport{
+			Proxy: http.ProxyURL(proxy),
+		}
+
+		response, err = s.Client.Get(request.Url)
+		if err == nil {
+			defer response.Body.Close()
+			body, err = ioutil.ReadAll(response.Body)
+			if err == nil {
+				break
+			}
+		}
+	}
+
 	if err != nil {
 		return nil, err
 	}
