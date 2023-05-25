@@ -72,7 +72,7 @@ func (s *MetaScraper) ScrapeOne(url string) ([]string, error) {
 }
 
 func (s *MetaScraper) extractSitemapURL(url string) (string, error) {
-	req, err := http.NewRequest("GET", url+"/robots.txt", nil)
+	req, err := http.NewRequest("GET", url + "/robots.txt", nil)
 	if err != nil {
 		return "", fmt.Errorf("error creating request for robots.txt: %s", err)
 	}
