@@ -39,7 +39,7 @@ func (s *FileStorageGCS) WriteData(data interface{}, filePath string) error {
 		if err != nil {
 			return fmt.Errorf("error writing text file: %v", err)
 		}
-	case []map[string]string:
+	case []map[string]interface{}:
 		err := WriteCSVFile(writer, d)
 		if err != nil {
 			return fmt.Errorf("error writing CSV file: %v", err)

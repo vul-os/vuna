@@ -20,7 +20,7 @@ func WriteTextFile(writer io.Writer, data []string) error {
 	return nil
 }
 
-func WriteCSVFile(writer io.Writer, data []map[string]string) error {
+func WriteCSVFile(writer io.Writer, data []map[string]interface{}) error {
 	csvWriter := csv.NewWriter(writer)
 
 	// Write CSV header
@@ -34,7 +34,8 @@ func WriteCSVFile(writer io.Writer, data []map[string]string) error {
 	for _, row := range data {
 		record := make([]string, 0)
 		for _, value := range row {
-			record = append(record, value)
+			v := fmt.Sprintf("%v", value)
+			record = append(record, v)
 		}
 		csvWriter.Write(record)
 	}
