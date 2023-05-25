@@ -8,6 +8,8 @@ import (
 
 	"github.com/imranparuk/scraper-go/internal/pkg/orchestrator/proxy"
 	"github.com/imranparuk/scraper-go/internal/pkg/orchestrator/tasks"
+	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/site"
+	"github.com/imranparuk/scraper-go/internal/pkg/utils"
 
 	"github.com/imranparuk/scraper-go/internal/pkg/storage"
 )
@@ -84,10 +86,15 @@ func (o *OrchestratorAPI) Site(w http.ResponseWriter, r *http.Request) {
 
 func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 	startTime := time.Now().UTC()
+	// 2 mins to load queue
+	startTime = startTime.Add(time.Second * time.Duration(120))
+	rateLimit := 1 // Number of requests per second
 
 	proxyList, err := proxy.CreateProxyList()
-	utils.ShuffleProxyList(proxyList)
-	proxyIterator := utils.Iter(proxyList)
+	if err != nil {
+		http.Error(w, "Failed to get proxy list", http.StatusInternalServerError)
+		return
+	}
 
 	productsFilesPerSite, err := o.FileStorage.GetLatestFiles("meta/", "products.txt")
 	for _, productsFilePerSite := range productsFilesPerSite {
@@ -100,43 +107,35 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		siteInfo, err := o.FileStorage.ReadData(siteInfoFile)
+		siteInfoRaw, err := o.FileStorage.ReadData(siteInfoFile)
 		if err != nil {
 			http.Error(w, "Failed to read site info", http.StatusInternalServerError)
 			return
 		}
+		siteInfo, ok := siteInfoRaw.(site.SiteData)
+		if !ok {
+			http.Error(w, "Failed to type cast site info", http.StatusInternalServerError)
+			return
+		}
 
-		rateLimit := 1 // Number of requests per second
+		urlsRaw, err := o.FileStorage.ReadData(productsFilePerSite)
+		if err != nil {
+			http.Error(w, "Failed to read product URLs", http.StatusInternalServerError)
+			return
+		}
+		urls, ok := urlsRaw.([]string)
+		if err != nil {
+			http.Error(w, "Failed to type cast product URLs", http.StatusInternalServerError)
+			return
+		}
 
-		if len(siteInfo) > 0 {
-			scraperCodeLoc := fmt.Sprintf("scraper_code%s", string(siteInfo[0][len(siteInfo[0])-1]))
-			blob := o.StorageUtils.Bucket.Blob(scraperCodeLoc)
-			scraperCode, err := blob.DownloadAsText()
+		for _, url := range urls {
+			scheduledTime := startTime.Add(time.Second * time.Duration(rateLimit))
+			proxies := utils.RandomSample(proxyList, 5)
+			err := o.TaskCreator.CreateTaskProduct(url, siteInfo.Scraper, proxies, scheduledTime)
 			if err != nil {
-				http.Error(w, "Failed to download scraper code", http.StatusInternalServerError)
+				http.Error(w, "Failed to create product task", http.StatusInternalServerError)
 				return
-			}
-
-			urls, err := o.StorageUtils.ReadData(productsFilePerSite)
-			if err != nil {
-				http.Error(w, "Failed to read product URLs", http.StatusInternalServerError)
-				return
-			}
-
-			for _, url := range urls {
-				url = strings.Replace(url, "https://", "", 1)
-
-				proxies := map[string]string{"http": fmt.Sprintf("socks5://%s", utils.Next(proxyIterator))}
-
-				scheduledTime := startTime.Add(time.Second * time.Duration(rateLimit))
-				scheduledTimestamp := Timestamp{}
-				scheduledTimestamp.FromDatetime(scheduledTime)
-
-				err := o.TaskCreator.CreateTaskProduct(url, scraperCode, o.TargetURL, &scheduledTimestamp, proxies)
-				if err != nil {
-					http.Error(w, "Failed to create product task", http.StatusInternalServerError)
-					return
-				}
 			}
 		}
 	}

@@ -5,6 +5,7 @@ import (
 	"strings"
 	"net/url"
 	"fmt"
+	"math/rand"
 )
 
 func GetBaseURL(rawURL string) (string, error) {
@@ -31,4 +32,31 @@ func SliceInString(a string, list []string) bool {
 		}
 	}
 	return false
+}
+
+
+// RandomSample returns a random sample of strings from a given list
+func RandomSample(stringList []string, sampleSize int) []string {
+	n := len(stringList)
+	if sampleSize >= n {
+		// Return the entire list if the sample size is equal to or larger than the list size
+		return stringList
+	}
+
+	// Create a slice to store the sampled strings
+	sampledStrings := make([]string, sampleSize)
+
+	// Generate random indices without replacement
+	for i := 0; i < sampleSize; i++ {
+		// Generate a random index between 0 and n-i-1
+		randomIndex := rand.Intn(n - i)
+
+		// Move the selected element to the end of the list
+		stringList[n-i-1], stringList[randomIndex] = stringList[randomIndex], stringList[n-i-1]
+
+		// Add the selected string to the sampled list
+		sampledStrings[i] = stringList[n-i-1]
+	}
+
+	return sampledStrings
 }
