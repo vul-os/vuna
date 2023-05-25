@@ -109,6 +109,7 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Failed to read site info", http.StatusInternalServerError)
 			return
 		}
+		fmt.Println(siteInfoRaw)
 		siteInfo, ok := siteInfoRaw.(site.SiteData)
 		if !ok {
 			http.Error(w, "Failed to type cast site info", http.StatusInternalServerError)
