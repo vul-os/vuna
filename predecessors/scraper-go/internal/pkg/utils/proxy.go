@@ -1,13 +1,19 @@
 package utils
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 
 	"golang.org/x/net/proxy"
+)
+
+const (
+	timeout = 3 * time.Second
 )
 
 func FetchWithProxyList(url string, proxyList []string) ([]byte, error) {
@@ -40,18 +46,35 @@ func FetchWithProxyList(url string, proxyList []string) ([]byte, error) {
 		}
 		httpClient := &http.Client{
 			Transport: httpTransport,
+			Timeout:   timeout,
 		}
 
-		response, err := customHTTPGetWithClient(url, httpClient)
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		request, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 		if err != nil {
-			fmt.Println("Error requesting URL with proxy:", err)
+			return nil, err
+		}
+
+		response, err := httpClient.Do(request)
+		if err != nil {
+			if ctx.Err() == context.DeadlineExceeded {
+				fmt.Println("Request timed out for proxy:", proxyAddress)
+			} else if err.Error() == "EOF" {
+				fmt.Println("EOF error for proxy:", proxyAddress)
+			} 
 			continue
 		}
-		defer response.Body.Close()
 
-		body, err := ioutil.ReadAll(response.Body)
-		if err == nil {
-			return body, nil
+		if response != nil {
+			defer response.Body.Close()
+			body, err := ioutil.ReadAll(response.Body)
+			if err == nil && response.StatusCode >= 200 && response.StatusCode < 300 {
+				return body, nil
+			} else if err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -59,21 +82,10 @@ func FetchWithProxyList(url string, proxyList []string) ([]byte, error) {
 }
 
 func customHTTPGet(url string) (*http.Response, error) {
-	request, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
+	client := &http.Client{
+		Timeout: timeout,
 	}
 
-	client := &http.Client{}
-	response, err := client.Do(request)
-	if err != nil {
-		return nil, err
-	}
-
-	return response, nil
-}
-
-func customHTTPGetWithClient(url string, client *http.Client) (*http.Response, error) {
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
