@@ -56,6 +56,8 @@ func router(w http.ResponseWriter, r *http.Request) {
 
 	rtr.HandleFunc("/scraper/meta/{url}", s.Meta).Methods(http.MethodGet)
 	rtr.HandleFunc("/scraper/site/{url}", s.Site).Methods(http.MethodGet)
+	rtr.HandleFunc("/scraper/product/{url}", s.Product).Methods(http.MethodPost)
+
 	// Pass the HTTP request to the router
 	rtr.ServeHTTP(w, r)
 }

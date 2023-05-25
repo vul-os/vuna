@@ -71,7 +71,7 @@ func (o *OrchestratorAPI) Site(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("hopefully created meta tasks"))
+		w.Write([]byte("hopefully created site tasks"))
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("string list not ok"))
