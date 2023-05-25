@@ -15,7 +15,7 @@ func FetchWithProxyList(url string, proxyList []string) ([]byte, error) {
 		url = "https://" + url
 	}
 	if len(proxyList) == 0 {
-		response, err := http.Get(url)
+		response, err := customHTTPGet(url)
 		if err != nil {
 			return nil, err
 		}
@@ -35,11 +35,14 @@ func FetchWithProxyList(url string, proxyList []string) ([]byte, error) {
 			continue
 		}
 
-		httpTransport := &http.Transport{}
-		httpClient := &http.Client{Transport: httpTransport}
-		httpTransport.Dial = tbDialer.Dial
+		httpTransport := &http.Transport{
+			Dial: tbDialer.Dial,
+		}
+		httpClient := &http.Client{
+			Transport: httpTransport,
+		}
 
-		response, err := httpClient.Get(url)
+		response, err := customHTTPGetWithClient(url, httpClient)
 		if err != nil {
 			fmt.Println("Error requesting URL with proxy:", err)
 			continue
@@ -53,4 +56,33 @@ func FetchWithProxyList(url string, proxyList []string) ([]byte, error) {
 	}
 
 	return nil, errors.New("Failed to fetch data with any proxies")
+}
+
+func customHTTPGet(url string) (*http.Response, error) {
+	request, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
+func customHTTPGetWithClient(url string, client *http.Client) (*http.Response, error) {
+	request, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	response, err := client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
 }
