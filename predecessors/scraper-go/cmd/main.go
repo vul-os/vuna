@@ -9,6 +9,10 @@ import (
 	// "github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
 	"fmt"
 	"net/http"
+	"time"
+
+	"github.com/imranparuk/scraper-go/internal/pkg/orchestrator/proxy"
+	"github.com/imranparuk/scraper-go/internal/pkg/utils"
 
 	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/product"
 	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/product/woocommerce"
@@ -24,15 +28,25 @@ func main() {
 	// if err := funcframework.Start(port); err != nil {
 	// 	log.Fatalf("funcframework.Start: %v\n", err)
 	// }
+	proxyListRaw, err := proxy.CreateProxyList()
+	if err != nil {
+		fmt.Println(err)
+	}
+	proxyList := utils.TestProxies("biltongandbudz.co.za", proxyListRaw, time.Second*5)
+	if len(proxyList) == 0 {
+		fmt.Println("no list")
+	}
+	fmt.Println(proxyList)
+	return
 	client := http.Client{}
 	var st storage.FileStorage
 	productScraper := woocommerce.New(client, st)
 	results, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
-		Url:       "http://www.biltongandbudz.co.za/product/barneys-farm-runtz-fem-autoflower/",
+		Url:   "http://www.biltongandbudz.co.za/product/barneys-farm-runtz-fem-autoflower/",
 		Proxy: "198.211.115.186:56365",
 	})
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(results)
+	fmt.Println("results: ", results)
 }

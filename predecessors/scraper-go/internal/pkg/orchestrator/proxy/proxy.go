@@ -7,7 +7,7 @@ import (
 )
 
 func CreateProxyList() ([]string, error) {
-	url := "https://github.com/officialputuid/KangProxy/blob/KangProxy/socks5/socks5.txt"
+	url := "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/http.txt"
 	response, err := http.Get(url)
 	if err != nil {
 		return nil, err
