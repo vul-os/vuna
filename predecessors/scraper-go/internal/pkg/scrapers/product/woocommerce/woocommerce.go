@@ -16,13 +16,13 @@ import (
 )
 
 type scraper struct {
-	ProxyConfig   utils.ProxyConfig
+	ProxyConfig utils.ProxyConfig
 	Client      http.Client
 	FileStorage storage.FileStorage
 }
 
 func New(
-	pc   utils.ProxyConfig,
+	pc utils.ProxyConfig,
 	client http.Client,
 	fs storage.FileStorage,
 ) product.ProductScraper {
@@ -77,7 +77,7 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 		currentDatetime := time.Now()
 		formattedDatetime := currentDatetime.Format("2006-01-02-15-04-05")
 
-		fileName := fmt.Sprintf("site/%s_%s_site.csv", encodedSite, formattedDatetime)
+		fileName := fmt.Sprintf("product/%s_%s_product.csv", encodedSite, formattedDatetime)
 		err = s.FileStorage.WriteData(productDataList, fileName)
 		if err != nil {
 			fmt.Println("Error: ", err)
