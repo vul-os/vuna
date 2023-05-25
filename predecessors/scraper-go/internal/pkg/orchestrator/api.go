@@ -95,7 +95,7 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to get proxy list", http.StatusInternalServerError)
 		return
 	}
-	proxyList := utils.TestProxies("http://biltongandbudz.co.za", proxyListRaw, time.Second * 3)
+	proxyList := utils.TestProxies("http://silvercoolfreshjoke.neverssl.com/online/", proxyListRaw, time.Second * 3)
 	if len(proxyList) == 0 {
 		http.Error(w, "Failed to get working proxys", http.StatusInternalServerError)
 		return
