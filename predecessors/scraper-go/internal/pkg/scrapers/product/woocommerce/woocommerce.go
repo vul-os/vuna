@@ -78,6 +78,7 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 		formattedDatetime := currentDatetime.Format("2006-01-02-15-04-05")
 
 		fileName := fmt.Sprintf("product/%s_%s_product.csv", encodedSite, formattedDatetime)
+		fmt.Println("Here!: ", fileName, productDataList)
 		err = s.FileStorage.WriteData(productDataList, fileName)
 		if err != nil {
 			fmt.Println("Error: ", err)
