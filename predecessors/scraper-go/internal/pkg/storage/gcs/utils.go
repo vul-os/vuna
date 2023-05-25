@@ -20,7 +20,7 @@ func WriteTextFile(writer io.Writer, data []string) error {
 	return nil
 }
 
-func WriteCSVFile(writer io.Writer, data []map[string]interface{}) error {
+func WriteCSVFile(writer io.Writer, data []map[string]string) error {
 	csvWriter := csv.NewWriter(writer)
 
 	// Write CSV header
