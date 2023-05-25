@@ -22,7 +22,7 @@ import (
 )
 
 func init() {
-	functions.HTTP("Router", router)
+	functions.HTTP("Router", helloWorld)
 }
 
 // router sets up the mux router and handles the HTTP request.
