@@ -24,12 +24,10 @@ type scraper struct {
 }
 
 func New(
-	proxyList []string,
 	client http.Client,
 	fs storage.FileStorage,
 ) product.ProductScraper {
 	return &scraper{
-		ProxyList:   proxyList,
 		Client:      client,
 		FileStorage: fs,
 	}
@@ -40,7 +38,7 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 	var body []byte
 	var response *http.Response
 
-	for _, proxy := range s.ProxyList {
+	for _, proxy := range request.ProxyList {
 		proxyURL, err := url.Parse(proxy)
 		if err != nil {
 			fmt.Println("Invalid proxy URL:", proxy)

@@ -1,11 +1,17 @@
 package scrapers
 
 import (
-	"encoding/json"
 	"net/http"
+	"net/url"
+
+	"encoding/json"
 
 	meta "github.com/imranparuk/scraper-go/internal/pkg/scrapers/meta"
 	site "github.com/imranparuk/scraper-go/internal/pkg/scrapers/site"
+	product "github.com/imranparuk/scraper-go/internal/pkg/scrapers/product"
+	woocommerce "github.com/imranparuk/scraper-go/internal/pkg/scrapers/product/woocommerce"
+
+	utils "github.com/imranparuk/scraper-go/internal/pkg/utils"
 
 	// product "scraper-go/internal/pkg/scrapers/product"
 
@@ -41,18 +47,7 @@ func (api *ScraperAPI) Meta(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Convert the meta data to JSON
-	metaDataJSON, err := json.Marshal(len(metaData))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Set the response content type to application/json
-	w.Header().Set("Content-Type", "application/json")
-
-	// Write the JSON response
-	w.Write(metaDataJSON)
+	utils.DataToJson(len(metaData), w, http.StatusOK)
 }
 
 func (api *ScraperAPI) Site(w http.ResponseWriter, r *http.Request) {
@@ -68,51 +63,62 @@ func (api *ScraperAPI) Site(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Convert the site data to JSON
-	siteDataJSON, err := json.Marshal(siteData)
+	utils.DataToJson(siteData, w, http.StatusOK)
+}
+
+func (api *ScraperAPI) Product(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	vUrl := vars["url"]
+	scraper := vars["scraper"]
+
+	baseURL := "https://" + vUrl
+
+	productURL, err := url.QueryUnescape(baseURL)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Set the response content type to application/json
-	w.Header().Set("Content-Type", "application/json")
+	// Extract the proxies from the request body or query parameters
+	var proxies []string
+	err = json.NewDecoder(r.Body).Decode(&proxies)
+	if err != nil {
+		http.Error(w, "Error decoding proxies", http.StatusBadRequest)
+		return
+	}
 
-	// Write the JSON response
-	w.Write(siteDataJSON)
+	client := http.Client{}
+	var productScraper product.ProductScraper
+
+    switch scraper {
+    case "woocommerce":
+        productScraper = woocommerce.New(client, api.FileStorage)
+    default:
+		http.Error(w, "scraper type not implimented", http.StatusBadRequest)
+		return
+    }
+	productData, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
+		Url: productURL,
+		ProxyList: proxies,
+	})
+	if err != nil {
+		http.Error(w, "scrape one error", http.StatusBadRequest)
+		return
+	}
+	if productData != nil {
+		// Convert the product data to JSON
+		productDataJSON, err := json.Marshal(productData)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Set the response content type to application/json
+		w.Header().Set("Content-Type", "application/json")
+
+		// Write the JSON response
+		w.Write(productDataJSON)
+	} else {
+		http.Error(w, "No product data found", http.StatusNotFound)
+	}
 }
-
-// func (api *ScraperAPI) Product(w http.ResponseWriter, r *http.Request) {
-// 	productURL, err := url.QueryUnescape(r.URL.Path)
-// 	if err != nil {
-// 		http.Error(w, err.Error(), http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	var proxies []string
-// 	// Extract the proxies from the request body or query parameters
-
-// 	var scraperCode string
-// 	// Extract the scraper code from the request body or query parameters
-
-// 	client := http.Client{}
-// 	scraper := product.New(&client, api.FileStorage)
-// 	productData := scraper.ScrapeOne(productURL)
-
-// 	if productData != nil {
-// 		// Convert the product data to JSON
-// 		productDataJSON, err := json.Marshal(productData)
-// 		if err != nil {
-// 			http.Error(w, err.Error(), http.StatusInternalServerError)
-// 			return
-// 		}
-
-// 		// Set the response content type to application/json
-// 		w.Header().Set("Content-Type", "application/json")
-
-// 		// Write the JSON response
-// 		w.Write(productDataJSON)
-// 	} else {
-// 		http.Error(w, "No product data found", http.StatusNotFound)
-// 	}
-// }

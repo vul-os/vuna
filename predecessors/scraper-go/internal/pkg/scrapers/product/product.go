@@ -25,7 +25,8 @@ type ProductScraper interface {
 }
 
 type ScrapeOneRequest struct {
-	Url string
+	Url       string
+	ProxyList []string
 }
 
 type ScrapeOneResponse struct {
