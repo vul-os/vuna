@@ -7,9 +7,9 @@ import (
 	"encoding/json"
 
 	meta "github.com/imranparuk/scraper-go/internal/pkg/scrapers/meta"
-	site "github.com/imranparuk/scraper-go/internal/pkg/scrapers/site"
 	product "github.com/imranparuk/scraper-go/internal/pkg/scrapers/product"
 	woocommerce "github.com/imranparuk/scraper-go/internal/pkg/scrapers/product/woocommerce"
+	site "github.com/imranparuk/scraper-go/internal/pkg/scrapers/site"
 
 	utils "github.com/imranparuk/scraper-go/internal/pkg/utils"
 
@@ -67,39 +67,37 @@ func (api *ScraperAPI) Site(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api *ScraperAPI) Product(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	vUrl := vars["url"]
-	scraper := vars["scraper"]
-
-	baseURL := "https://" + vUrl
-
-	productURL, err := url.QueryUnescape(baseURL)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	type jsonData struct {
+		Url       string   `json:"url"`
+		ProxyList []string `json:"proxy_list"`
+		Scraper   string   `json:"scraper"`
 	}
-
 	// Extract the proxies from the request body or query parameters
-	var proxies []string
-	err = json.NewDecoder(r.Body).Decode(&proxies)
+	var d jsonData
+	err := json.NewDecoder(r.Body).Decode(&d)
 	if err != nil {
 		http.Error(w, "Error decoding proxies", http.StatusBadRequest)
+		return
+	}
+	productURL, err := url.QueryUnescape(d.Url)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	client := http.Client{}
 	var productScraper product.ProductScraper
 
-    switch scraper {
-    case "woocommerce":
-        productScraper = woocommerce.New(client, api.FileStorage)
-    default:
+	switch d.Scraper {
+	case "woocommerce":
+		productScraper = woocommerce.New(client, api.FileStorage)
+	default:
 		http.Error(w, "scraper type not implimented", http.StatusBadRequest)
 		return
-    }
+	}
 	productData, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
-		Url: productURL,
-		ProxyList: proxies,
+		Url:       productURL,
+		ProxyList: d.ProxyList,
 	})
 	if err != nil {
 		http.Error(w, "scrape one error", http.StatusBadRequest)
