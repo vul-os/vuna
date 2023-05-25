@@ -82,8 +82,8 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 		return &product.ScrapeOneResponse{Results: nil}, err
 	}
 
-	if s.FileStorage != nil {
-		err = s.FileStorage.WriteData(pdl, fileName)
+	if s.FileStorage != nil && len(pdl) > 0 {
+		err = s.FileStorage.WriteData(pdl[0], fileName)
 		if err != nil {
 			return &product.ScrapeOneResponse{Results: nil}, err
 		}
