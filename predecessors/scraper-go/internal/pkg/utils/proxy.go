@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	netUrl "net/url"
+	"strings"
+
+	"golang.org/x/net/proxy"
 )
 
 func FetchWithProxyList(url string, proxyList []string) ([]byte, error) {
-	if proxyList == nil {
+	if len(proxyList) == 0 {
 		response, err := http.Get(url)
 		if err != nil {
 			return nil, err
@@ -19,20 +21,22 @@ func FetchWithProxyList(url string, proxyList []string) ([]byte, error) {
 		return ioutil.ReadAll(response.Body)
 	}
 
-	for _, proxy := range proxyList {
-		proxyURL, err := netUrl.Parse(proxy)
+	for _, proxyAddress := range proxyList {
+		if !strings.HasPrefix(proxyAddress, "socks5://") {
+			proxyAddress = "socks5://" + proxyAddress
+		}
+
+		tbDialer, err := proxy.SOCKS5("tcp", strings.TrimPrefix(proxyAddress, "socks5://"), nil, proxy.Direct)
 		if err != nil {
-			fmt.Println("Invalid proxy URL:", proxy)
+			fmt.Println("Error creating SOCKS5 dialer:", err)
 			continue
 		}
 
-		transport := &http.Transport{
-			Proxy: http.ProxyURL(proxyURL),
-		}
+		httpTransport := &http.Transport{}
+		httpClient := &http.Client{Transport: httpTransport}
+		httpTransport.Dial = tbDialer.Dial
 
-		client := &http.Client{Transport: transport}
-
-		response, err := client.Get(url)
+		response, err := httpClient.Get(url)
 		if err != nil {
 			fmt.Println("Error requesting URL with proxy:", err)
 			continue
