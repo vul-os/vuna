@@ -54,8 +54,8 @@ func router(w http.ResponseWriter, r *http.Request) {
 	rtr.HandleFunc("/orchestrator/meta", o.Meta).Methods(http.MethodGet)
 	rtr.HandleFunc("/orchestrator/site", o.Site).Methods(http.MethodGet)
 
-	rtr.HandleFunc("/scraper/meta/{input}", s.Meta).Methods(http.MethodGet)
-	rtr.HandleFunc("/scraper/site/{input}", s.Site).Methods(http.MethodGet)
+	rtr.HandleFunc("/scraper/meta/{url}", s.Meta).Methods(http.MethodGet)
+	rtr.HandleFunc("/scraper/site/{url}", s.Site).Methods(http.MethodGet)
 	// Pass the HTTP request to the router
 	rtr.ServeHTTP(w, r)
 }

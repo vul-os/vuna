@@ -31,7 +31,7 @@ func New(
 func (api *ScraperAPI) Meta(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	vUrl := vars["url"]
-	baseURL := "https://" + vUrl
+	baseURL := "https://"+ vUrl
 
 	client := http.Client{}
 	scraper := meta.New(&client, api.FileStorage)
