@@ -52,7 +52,7 @@ func (s *SiteScraper) ScrapeOne(url string) (map[string]interface{}, error) {
 		formattedDatetime := currentDatetime.Format("2006-01-02-15-04-05")
 
 		fileName := fmt.Sprintf("site/%s_%s_site.csv", encodedSite, formattedDatetime)
-		err := s.FileStorage.WriteData(items, fileName)
+		err := s.FileStorage.WriteData([]map[string]interface{}{items}, fileName)
 		if err != nil {
 			return nil, err
 		}
