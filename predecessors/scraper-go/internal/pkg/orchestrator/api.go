@@ -109,21 +109,33 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Failed to read site info", http.StatusInternalServerError)
 			return
 		}
-		fmt.Println(siteInfoRaw)
-		siteInfo, ok := siteInfoRaw.([]site.SiteData)
+		siteInfoRawT, ok := siteInfoRaw.([]map[string]string)
 		if !ok {
-			http.Error(w, "Failed to type cast site info", http.StatusInternalServerError)
+			http.Error(w, "Failed to type assert site info raw", http.StatusInternalServerError)
 			return
 		}
-
+		// todo: do better than this
+		var siteInfo []site.SiteData
+		for _, siteMap := range siteInfoRawT {
+			site := site.SiteData{
+				Currency:   siteMap["currency"],
+				ID:         siteMap["id"],
+				Image:      siteMap["image"],
+				Name:       siteMap["name"],
+				RateLimit:  siteMap["rate_limit"],
+				Scraper:    siteMap["scraper"],
+				Technology: siteMap["technology"],
+			}
+			siteInfo = append(siteInfo, site)
+		}
 		urlsRaw, err := o.FileStorage.ReadData(productsFilePerSite)
 		if err != nil {
 			http.Error(w, "Failed to read product URLs", http.StatusInternalServerError)
 			return
 		}
 		urls, ok := urlsRaw.([]string)
-		if err != nil {
-			http.Error(w, "Failed to type cast product URLs", http.StatusInternalServerError)
+		if !ok {
+			http.Error(w, "Failed to type assert site urls raw", http.StatusInternalServerError)
 			return
 		}
 
