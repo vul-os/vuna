@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/product"
@@ -40,8 +41,14 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 	var response *http.Response
 
 	for _, proxy := range s.ProxyList {
+		proxyURL, err := url.Parse(proxy)
+		if err != nil {
+			fmt.Println("Invalid proxy URL:", proxy)
+			continue
+		}
+
 		s.Client.Transport = &http.Transport{
-			Proxy: http.ProxyURL(proxy),
+			Proxy: http.ProxyURL(proxyURL),
 		}
 
 		response, err = s.Client.Get(request.Url)
