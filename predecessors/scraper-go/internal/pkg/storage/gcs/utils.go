@@ -24,7 +24,11 @@ func WriteCSVFile(writer io.Writer, data []map[string]interface{}) error {
 	csvWriter := csv.NewWriter(writer)
 
 	// Write CSV header
-	header := make([]string, 0)
+	if len(data) == 0 {
+		return nil // No data to write
+	}
+
+	header := make([]string, 0, len(data[0]))
 	for key := range data[0] {
 		header = append(header, key)
 	}
@@ -32,8 +36,9 @@ func WriteCSVFile(writer io.Writer, data []map[string]interface{}) error {
 
 	// Write CSV data rows
 	for _, row := range data {
-		record := make([]string, 0)
-		for _, value := range row {
+		record := make([]string, 0, len(header))
+		for _, key := range header {
+			value := row[key]
 			v := fmt.Sprintf("%v", value)
 			record = append(record, v)
 		}
@@ -43,7 +48,7 @@ func WriteCSVFile(writer io.Writer, data []map[string]interface{}) error {
 	csvWriter.Flush()
 
 	if err := csvWriter.Error(); err != nil {
-		return fmt.Errorf("error writing data to GCS: %v", err)
+		return fmt.Errorf("error writing data to CSV: %v", err)
 	}
 
 	return nil
