@@ -69,7 +69,7 @@ func (api *ScraperAPI) Site(w http.ResponseWriter, r *http.Request) {
 func (api *ScraperAPI) Product(w http.ResponseWriter, r *http.Request) {
 	type jsonData struct {
 		Url       string   `json:"url"`
-		ProxyList []string `json:"proxy_list"`
+		Proxy     string   `json:"proxy"`
 		Scraper   string   `json:"scraper"`
 	}
 	// Extract the proxies from the request body or query parameters
@@ -97,7 +97,7 @@ func (api *ScraperAPI) Product(w http.ResponseWriter, r *http.Request) {
 	}
 	productData, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
 		Url:       productURL,
-		ProxyList: d.ProxyList,
+		Proxy: d.Proxy,
 	})
 	if err != nil {
 		http.Error(w, "scrape one error", http.StatusBadRequest)

@@ -32,7 +32,7 @@ func New(
 }
 
 func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOneResponse, error) {
-	body, err := utils.FetchWithProxyList(request.Url, request.ProxyList)
+	body, err := utils.FetchWithProxy(request.Url, request.Proxy)
 	if err != nil {
 		return nil, err
 	}

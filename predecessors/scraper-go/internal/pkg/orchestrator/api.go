@@ -90,12 +90,16 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 	startTime = startTime.Add(time.Second * time.Duration(120))
 	rateLimit := 1 // Number of requests per second
 
-	proxyList, err := proxy.CreateProxyList()
+	proxyListRaw, err := proxy.CreateProxyList()
 	if err != nil {
 		http.Error(w, "Failed to get proxy list", http.StatusInternalServerError)
 		return
 	}
-
+	proxyList := utils.TestProxies("http://biltongandbudz.co.za", proxyListRaw, time.Second * 3)
+	if len(proxyList) == 0 {
+		http.Error(w, "Failed to get working proxys", http.StatusInternalServerError)
+		return
+	}
 	productsFilesPerSite, err := o.FileStorage.GetLatestFiles("meta/", "products.txt")
 	for _, productsFilePerSite := range productsFilesPerSite {
 		siteID := strings.Replace(productsFilePerSite, "meta/", "", 1)

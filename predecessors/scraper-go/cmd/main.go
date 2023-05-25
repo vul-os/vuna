@@ -29,7 +29,7 @@ func main() {
 	productScraper := woocommerce.New(client, st)
 	results, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
 		Url:       "http://www.biltongandbudz.co.za/product/barneys-farm-runtz-fem-autoflower/",
-		ProxyList: []string{"198.211.115.186:56365"},
+		Proxy: "198.211.115.186:56365",
 	})
 	if err != nil {
 		fmt.Println(err)
