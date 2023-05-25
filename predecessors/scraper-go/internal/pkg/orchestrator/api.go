@@ -38,8 +38,6 @@ func (o *OrchestratorAPI) Meta(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println(urls)
 	if urlStringList, ok := urls.([]string); ok {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("url strings no string list"))
 		for _, url := range urlStringList {
 			err := o.TaskCreator.CreateTaskMeta(url)
 			if err != nil {
