@@ -135,8 +135,8 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 
 		for _, url := range urls {
 			scheduledTime := startTime.Add(time.Second * time.Duration(rateLimit))
-			proxies := utils.RandomSample(proxyList, 5)
-			err := o.TaskCreator.CreateTaskProduct(url, siteInfo.Scraper, proxies, scheduledTime)
+			proxy := utils.RandomSample(proxyList, 1)[0]
+			err := o.TaskCreator.CreateTaskProduct(url, siteInfo.Scraper, proxy, scheduledTime)
 			if err != nil {
 				http.Error(w, "Failed to create product task", http.StatusInternalServerError)
 				return
