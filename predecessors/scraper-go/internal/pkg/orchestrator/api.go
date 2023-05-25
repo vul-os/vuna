@@ -44,9 +44,11 @@ func (o *OrchestratorAPI) Meta(w http.ResponseWriter, r *http.Request) {
 				fmt.Println("file storage error: ", err)
 			}
 		}
-	} else {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("hopefully created meta tasks"))
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("string list not ok"))
 	}
 }
 
@@ -68,9 +70,11 @@ func (o *OrchestratorAPI) Site(w http.ResponseWriter, r *http.Request) {
 				fmt.Println("file storage error: ", err)
 			}
 		}
-	} else {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("hopefully created meta tasks"))
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("string list not ok"))
 	}
 }
 
