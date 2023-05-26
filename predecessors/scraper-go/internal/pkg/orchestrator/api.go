@@ -165,6 +165,7 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 		scheduledTime := startTime.Add(time.Second * time.Duration(rateLimit))
 		err := o.TaskCreator.CreateTaskScrapeProduct(url, siteInfo[0].Scraper, scheduledTime)
 		if err != nil {
+			fmt.Println(err)
 			http.Error(w, "Failed to create product task", http.StatusInternalServerError)
 			return
 		}
