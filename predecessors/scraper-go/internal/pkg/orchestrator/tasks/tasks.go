@@ -74,12 +74,12 @@ func (t *TaskCreator) CreateTaskScrapeMeta(url string) error {
 	return t.CreateTask(task)
 }
 
-func (t *TaskCreator) CreateTaskOrchestrateProduct(url string, scraper string, scheduledTime time.Time) error {
+func (t *TaskCreator) CreateTaskOrchestrateProduct(file string) error {
 	task := &cloudtaskspb.Task{
 		MessageType: &cloudtaskspb.Task_HttpRequest{
 			HttpRequest: &cloudtaskspb.HttpRequest{
 				HttpMethod: cloudtaskspb.HttpMethod_GET,
-				Url:        fmt.Sprintf("%s/orchestrator/product/%s", t.TargetURL, url),
+				Url:        fmt.Sprintf("%s/orchestrator/product/%s", t.TargetURL, file),
 			},
 		},
 	}

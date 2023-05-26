@@ -85,69 +85,16 @@ func (o *OrchestratorAPI) Site(w http.ResponseWriter, r *http.Request) {
 }
 
 func (o *OrchestratorAPI) AllProducts(w http.ResponseWriter, r *http.Request) {
-	startTime := time.Now().UTC()
-	// 2 mins to load queue
-	startTime = startTime.Add(time.Second * time.Duration(120))
-	rateLimit := 1 // Number of requests per second
-
-	productsFilesPerSite, _ := o.FileStorage.GetLatestFiles("meta/", "products.txt")
+	productsFilesPerSite, err := o.FileStorage.GetLatestFiles("meta/", "products.txt")
+	if err != nil {
+		http.Error(w, "Failed to get products.txt", http.StatusInternalServerError)
+		return
+	}
 	for _, productsFilePerSite := range productsFilesPerSite {
-		splitString := strings.Split(productsFilePerSite, "_")
-		if len(splitString) == 0 {
-			http.Error(w, "Failed to get split string productsFilePerSite", http.StatusInternalServerError)
-			return
-		}
-		siteID := splitString[0]
-		siteID = strings.Replace(siteID, "meta/", "", -1)
-
-		siteInfoFile, err := o.FileStorage.GetLatestFile("site/", siteID)
+		err := o.TaskCreator.CreateTaskOrchestrateProduct(productsFilePerSite)
 		if err != nil {
-			http.Error(w, "Failed to get latest file", http.StatusInternalServerError)
+			http.Error(w, "Failed to create product task", http.StatusInternalServerError)
 			return
-		}
-
-		siteInfoRaw, err := o.FileStorage.ReadData(siteInfoFile)
-		if err != nil {
-			http.Error(w, "Failed to read site info", http.StatusInternalServerError)
-			return
-		}
-		siteInfoRawT, ok := siteInfoRaw.([]map[string]string)
-		if !ok {
-			http.Error(w, "Failed to type assert site info raw", http.StatusInternalServerError)
-			return
-		}
-		// todo: do better than this
-		var siteInfo []site.SiteData
-		for _, siteMap := range siteInfoRawT {
-			site := site.SiteData{
-				Currency:   siteMap["currency"],
-				ID:         siteMap["id"],
-				Image:      siteMap["image"],
-				Name:       siteMap["name"],
-				RateLimit:  siteMap["rate_limit"],
-				Scraper:    siteMap["scraper"],
-				Technology: siteMap["technology"],
-			}
-			siteInfo = append(siteInfo, site)
-		}
-		urlsRaw, err := o.FileStorage.ReadData(productsFilePerSite)
-		if err != nil {
-			http.Error(w, "Failed to read product URLs", http.StatusInternalServerError)
-			return
-		}
-		urls, ok := urlsRaw.([]string)
-		if !ok {
-			http.Error(w, "Failed to type assert site urls raw", http.StatusInternalServerError)
-			return
-		}
-
-		for _, url := range urls {
-			scheduledTime := startTime.Add(time.Second * time.Duration(rateLimit))
-			err := o.TaskCreator.CreateTaskOrchestrateProduct(url, siteInfo[0].Scraper, scheduledTime)
-			if err != nil {
-				http.Error(w, "Failed to create product task", http.StatusInternalServerError)
-				return
-			}
 		}
 	}
 	w.Write([]byte("hopefully created orchestrate scrape product"))
