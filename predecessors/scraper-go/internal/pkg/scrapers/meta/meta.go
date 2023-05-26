@@ -1,6 +1,7 @@
 package meta
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -29,14 +30,32 @@ func New(
 func (s *MetaScraper) ScrapeOne(url string) ([]string, error) {
 	sitemapURL, err := s.extractSitemapURL(url)
 	if err != nil {
-		return nil, err
+		fmt.Println("no sitemap in robots.txt")
 	}
 
-	urls, err := s.extractURLsFromXML(sitemapURL, true)
-	if err != nil {
-		return nil, err
+	sitemapUrls := []string{
+		fmt.Sprintf("%s/sitemap_index.xml", url),
+		fmt.Sprintf("%s/sitemap.xml", url),
+		fmt.Sprintf("%s/wp_sitemap.xml", url),
+		sitemapURL,
 	}
 
+	var urls []string
+	for _, sitemapUrl := range sitemapUrls {
+		fmt.Println(sitemapUrl)
+		tUrls, err := s.extractURLsFromXML(sitemapUrl, true)
+		if err != nil {
+			fmt.Println("sitemap error: ", err)
+			continue
+		}
+		if len(tUrls) > 0 {
+			urls = append(urls, tUrls...)
+		}
+
+	}
+	if len(urls) == 0 {
+		return nil, errors.New("no urls found in all sitemaps")
+	}
 	uniqueURLs := make(map[string]bool)
 
 	for _, url := range urls {

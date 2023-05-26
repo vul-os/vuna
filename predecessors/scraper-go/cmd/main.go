@@ -16,6 +16,7 @@ import (
 	// "github.com/imranparuk/scraper-go/internal/pkg/utils"
 	utils "github.com/imranparuk/scraper-go/internal/pkg/utils"
 
+	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/meta"
 	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/product"
 	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/product/woocommerce"
 	"github.com/imranparuk/scraper-go/internal/pkg/storage"
@@ -47,12 +48,18 @@ func main() {
 		Password: "t62qs3cx4b6c",
 	}
 	var st storage.FileStorage
-	productScraper := woocommerce.New(proxyConfig, client, st, )
+	productScraper := woocommerce.New(proxyConfig, client, st)
 	results, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
-		Url: "http://www.biltongandbudz.co.za/product/barneys-farm-runtz-fem-autoflower/",
+		Url: "https://www.biltongandbudz.co.za/product/sour-tropicanna-regular-12-seeds/",
 	})
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println("results: ", results)
+
+	meta := meta.New(&client, st)
+	data, err := meta.ScrapeOne("https://toykingdom.co.za")
+	fmt.Println(len(data))
+	fmt.Println(err)
+
 }
