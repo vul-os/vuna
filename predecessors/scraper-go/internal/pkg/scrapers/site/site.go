@@ -116,7 +116,7 @@ func (s *SiteScraper) GetSiteInfo(url string) (string, string, string) {
 		image, _ = selection.Attr("content")
 	})
 
-	technology := Detect(document)
+	technology := Detect(response, body)
 
 	// Return the name, image, and technology of the website
 	return name, image, technology

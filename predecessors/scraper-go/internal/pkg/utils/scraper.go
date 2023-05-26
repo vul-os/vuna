@@ -1,44 +1,39 @@
-package woocommerce
+package utils
 
 import (
 	"fmt"
 	"regexp"
 	"strconv"
-	"strings"
 )
+
+func ExtractCurrencyNumbers(str string) []string {
+	// Define the regular expression pattern
+	pattern := `(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2}))`
+
+	// Compile the regular expression
+	regex := regexp.MustCompile(pattern)
+
+	// Find all matches in the string
+	matches := regex.FindAllString(str, -1)
+
+	return matches
+}
 
 func PriceToFloat(price interface{}) (float64, error) {
 	switch v := price.(type) {
 	case string:
-		if strings.Contains(v, "R") {
-			priceRange := strings.Split(v, "R")
-			var lowerValue float64
-			for _, p := range priceRange {
-				price, err := stringToFloat(p)
-				if err != nil {
-					return 0, err
-				}
-				if lowerValue == 0 || price < lowerValue {
-					lowerValue = price
-				}
+		priceRange := ExtractCurrencyNumbers(v)
+		var lowerValue float64
+		for _, p := range priceRange {
+			price, err := stringToFloat(p)
+			if err != nil {
+				return 0, err
 			}
-			return lowerValue, nil
-		} else if strings.Contains(v, "-") {
-			// Handle existing range case
-			priceRange := strings.Split(v, "-")
-			var sum float64
-			for _, p := range priceRange {
-				price, err := strconv.ParseFloat(p, 64)
-				if err != nil {
-					return 0, err
-				}
-				sum += price
+			if lowerValue == 0 || price < lowerValue {
+				lowerValue = price
 			}
-			return sum / float64(len(priceRange)), nil
-		} else {
-			// Handle single value case
-			return stringToFloat(v)
 		}
+		return lowerValue, nil
 	case float64:
 		return v, nil
 	case int:
@@ -46,7 +41,6 @@ func PriceToFloat(price interface{}) (float64, error) {
 	}
 	return 0, fmt.Errorf("unsupported type: %T", price)
 }
-
 
 func MaxQtyToInt(maxQty interface{}) (int, error) {
 	switch v := maxQty.(type) {

@@ -18,7 +18,11 @@ import (
 
 	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/meta"
 	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/product"
-	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/product/woocommerce"
+	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/site"
+
+	// "github.com/imranparuk/scraper-go/internal/pkg/scrapers/product/woocommerce"
+	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/product/shopify"
+
 	"github.com/imranparuk/scraper-go/internal/pkg/storage"
 )
 
@@ -48,9 +52,9 @@ func main() {
 		Password: "t62qs3cx4b6c",
 	}
 	var st storage.FileStorage
-	productScraper := woocommerce.New(proxyConfig, client, st)
+	productScraper := shopify.New(proxyConfig, client, st)
 	results, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
-		Url: "https://www.biltongandbudz.co.za/product/sour-tropicanna-regular-12-seeds/",
+		Url: "https://www.mytoy.co.za/collections/infant-and-toddler-toys/products/melissa-doug-old-macdonalds-farm-sound-puzzle",
 	})
 	if err != nil {
 		fmt.Println(err)
@@ -58,8 +62,10 @@ func main() {
 	fmt.Println("results: ", results)
 
 	meta := meta.New(&client, st)
-	data, err := meta.ScrapeOne("https://toykingdom.co.za")
+	data, err := meta.ScrapeOne("https://www.mytoy.co.za")
 	fmt.Println(len(data))
 	fmt.Println(err)
-
+	sc := site.New(&client, st)
+	a, err := sc.ScrapeOne("https://www.mytoy.co.za")
+	fmt.Println(a)
 }

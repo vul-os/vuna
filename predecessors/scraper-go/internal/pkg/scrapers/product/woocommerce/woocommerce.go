@@ -97,15 +97,19 @@ func scrapeProductWithoutVariations(productURL, productID, productName string, d
 	price := summaryDiv.Find("span.woocommerce-Price-amount.amount").Text()
 	sku := summaryDiv.Find("span.sku").Text()
 	maxQty := summaryDiv.Find("p.stock").Text()
-	fmt.Println("here3", price, maxQty)
 
-	priceFloat, err := PriceToFloat(price)
+	priceFloat, err := utils.PriceToFloat(price)
 	if err != nil {
 		return product.ProductData{}, err
 	}
-	maxQtyInt, err := MaxQtyToInt(maxQty)
+	maxQtyInt, err := utils.MaxQtyToInt(maxQty)
 	if err != nil {
-		return product.ProductData{}, err
+		inputField := doc.Find("input[name=quantity]")
+		maxAttr := inputField.AttrOr("max", "0")
+		maxQtyInt, err = utils.MaxQtyToInt(maxAttr)
+		if err != nil {
+			return product.ProductData{}, err
+		}
 	}
 
 	imageURL, _ := doc.Find("div.woocommerce-product-gallery__image img").Attr("src")
@@ -139,8 +143,8 @@ func scrapeProductWithVariations(productURL, productID, productName string, doc 
 		imageURL := variation["image"].(map[string]interface{})["src"]
 		sku := variation["sku"]
 		variationID := variation["variation_id"]
-		priceFloat, errp := PriceToFloat(displayPrice)
-		maxQtyInt, errq := MaxQtyToInt(availabilityHTML)
+		priceFloat, errp := utils.PriceToFloat(displayPrice)
+		maxQtyInt, errq := utils.MaxQtyToInt(availabilityHTML)
 
 		if errp != nil || errq != nil {
 			continue

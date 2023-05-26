@@ -42,10 +42,9 @@ func (s *MetaScraper) ScrapeOne(url string) ([]string, error) {
 
 	var urls []string
 	for _, sitemapUrl := range sitemapUrls {
-		fmt.Println(sitemapUrl)
 		tUrls, err := s.extractURLsFromXML(sitemapUrl, true)
 		if err != nil {
-			fmt.Println("sitemap error: ", err)
+			fmt.Println("sitemap error: ", sitemapUrl, err)
 			continue
 		}
 		if len(tUrls) > 0 {

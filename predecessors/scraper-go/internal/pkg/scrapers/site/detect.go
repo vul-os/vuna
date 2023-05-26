@@ -1,43 +1,45 @@
 package site
 
 import (
+	"fmt"
+	"net/http"
 	"strings"
 
-	"github.com/PuerkitoBio/goquery"
+	wappalyzer "github.com/projectdiscovery/wappalyzergo"
 )
 
-func Detect(soup *goquery.Document) string {
-	keywords := map[string]string{
-		"Shopify.theme":       "shopify",
-		"prestashop.com":      "prestashop",
-		"cdn3.bigcommerce.com": "bigcommerce",
-		"varien/js.js":        "magento",
-		"woocommerce":         "woocommerce",
+func Detect(resp *http.Response, body []byte) string {
+	wappalyzerClient, err := wappalyzer.New()
+	if err != nil {
+		fmt.Println(err)
+		return ""
 	}
 
-	var technology string
+	fingerprints := wappalyzerClient.Fingerprint(resp.Header, body)
 
-	// Check <script> tags
-	soup.Find("script").Each(func(i int, script *goquery.Selection) {
-		scriptContent := script.Text()
-		for keyword, tech := range keywords {
-			if strings.Contains(scriptContent, keyword) {
-				technology = tech
-				break
+	ecommerceKeywords := map[string]string{
+		"Shopify":         "Shopify",
+		"WooCommerce":     "WooCommerce",
+		"BigCommerce":     "BigCommerce",
+		"PrestaShop":      "PrestaShop",
+		"Magento":         "Magento",
+		"OpenCart":        "OpenCart",
+		"Volusion":        "Volusion",
+		"SquareSpace":     "SquareSpace",
+		"Weebly":          "Weebly",
+		"Wix":             "Wix",
+		"CustomPlatform":  "Custom Platform",
+		// Add more e-commerce technologies as needed
+	}
+
+	for _, k := range Keys(fingerprints) {
+		for keyword, tech := range ecommerceKeywords {
+			if strings.Contains(k, keyword) {
+				fmt.Println(k)
+				return strings.ToLower(tech)
 			}
 		}
-	})
+	}
 
-	// Check <link> tags
-	soup.Find("link").Each(func(i int, link *goquery.Selection) {
-		linkContent := link.Text()
-		for keyword, tech := range keywords {
-			if strings.Contains(linkContent, keyword) {
-				technology = tech
-				break
-			}
-		}
-	})
-
-	return technology
+	return ""
 }
