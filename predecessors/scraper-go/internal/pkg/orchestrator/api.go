@@ -88,12 +88,14 @@ func (o *OrchestratorAPI) AllProducts(w http.ResponseWriter, r *http.Request) {
 	productsFilesPerSite, err := o.FileStorage.GetLatestFiles("meta/", "products.txt")
 	if err != nil {
 		http.Error(w, "Failed to get products.txt", http.StatusInternalServerError)
+		fmt.Println("Error Allproducts: ", err)
 		return
 	}
 	for _, productsFilePerSite := range productsFilesPerSite {
 		err := o.TaskCreator.CreateTaskOrchestrateProduct(productsFilePerSite)
 		if err != nil {
 			http.Error(w, "Failed to create product task", http.StatusInternalServerError)
+			fmt.Println("Error Allproducts: ", err)
 			return
 		}
 	}
@@ -103,6 +105,7 @@ func (o *OrchestratorAPI) AllProducts(w http.ResponseWriter, r *http.Request) {
 func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	file := vars["file"]
+	fmt.Println(file)
 
 	startTime := time.Now().UTC()
 	// 2 mins to load queue
@@ -115,8 +118,6 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	siteID := splitString[0]
-	siteID = strings.Replace(siteID, "meta/", "", -1)
-
 	siteInfoFile, err := o.FileStorage.GetLatestFile("site/", siteID)
 	if err != nil {
 		http.Error(w, "Failed to get latest file", http.StatusInternalServerError)
@@ -147,7 +148,7 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 		}
 		siteInfo = append(siteInfo, site)
 	}
-	urlsRaw, err := o.FileStorage.ReadData(file)
+	urlsRaw, err := o.FileStorage.ReadData("/meta/" + file)
 	if err != nil {
 		http.Error(w, "Failed to read product URLs", http.StatusInternalServerError)
 		return
