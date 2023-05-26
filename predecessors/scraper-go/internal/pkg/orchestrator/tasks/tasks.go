@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	cloudtasks "cloud.google.com/go/cloudtasks/apiv2"
@@ -87,7 +88,8 @@ func (t *TaskCreator) CreateTaskOrchestrateProduct(file string) error {
 }
 
 func (t *TaskCreator) CreateTaskScrapeProduct(url string, scraper string, scheduledTime time.Time) error {
-	taskURL := fmt.Sprintf("%s/scraper/product/", t.TargetURL)
+	tUrl := strings.ReplaceAll(t.TargetURL, "https://", "")
+	taskURL := fmt.Sprintf("%s/scraper/product/", tUrl)
 
 	payload := map[string]interface{}{
 		"url":     url,
