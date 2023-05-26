@@ -160,9 +160,10 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to type assert site urls raw", http.StatusInternalServerError)
 		return
 	}
+	scheduledTime := startTime
 	for _, url := range urls {
 		fmt.Println("Scrape Product Task: ", siteInfo[0].Scraper, url)
-		scheduledTime := startTime.Add(time.Second * time.Duration(rateLimit))
+		scheduledTime = scheduledTime.Add(time.Second * time.Duration(rateLimit))
 		err := o.TaskCreator.CreateTaskScrapeProduct(url, siteInfo[0].Scraper, scheduledTime)
 		if err != nil {
 			fmt.Println(err)
