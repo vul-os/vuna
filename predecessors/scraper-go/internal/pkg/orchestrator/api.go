@@ -92,7 +92,9 @@ func (o *OrchestratorAPI) AllProducts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for _, productsFilePerSite := range productsFilesPerSite {
-		err := o.TaskCreator.CreateTaskOrchestrateProduct(productsFilePerSite)
+		pFile := strings.ReplaceAll(productsFilePerSite, "meta", "")
+		pFile = strings.ReplaceAll(pFile, "/", "")
+		err := o.TaskCreator.CreateTaskOrchestrateProduct(pFile)
 		if err != nil {
 			http.Error(w, "Failed to create product task", http.StatusInternalServerError)
 			fmt.Println("Error Allproducts: ", err)
@@ -148,7 +150,7 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 		}
 		siteInfo = append(siteInfo, site)
 	}
-	urlsRaw, err := o.FileStorage.ReadData("/meta/" + file)
+	urlsRaw, err := o.FileStorage.ReadData("meta/" + file)
 	if err != nil {
 		http.Error(w, "Failed to read product URLs", http.StatusInternalServerError)
 		return
