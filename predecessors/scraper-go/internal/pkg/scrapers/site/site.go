@@ -54,13 +54,13 @@ func New(
 	}
 }
 
-func (s *SiteScraper) ScrapeOne(url string) (map[string]interface{}, error) {
+func (s *SiteScraper) ScrapeOne(url string) (map[string]string, error) {
 	currencyCode := "ZAR"
 
 	name, image, technology := s.GetSiteInfo(url)
 	siteID := utils.EncodeURL(url)
 
-	items := map[string]interface{}{
+	items := []map[string]string{{
 		"id":         siteID,
 		"name":       strings.TrimSpace(name),
 		"image":      strings.TrimSpace(image),
@@ -68,7 +68,7 @@ func (s *SiteScraper) ScrapeOne(url string) (map[string]interface{}, error) {
 		"technology": technology,
 		"rate_limit": "1/s",
 		"scraper":    technology,
-	}
+	}}
 
 	if s.FileStorage != nil {
 		siteUrl := utils.RemoveURLPrefix(url)
@@ -78,12 +78,12 @@ func (s *SiteScraper) ScrapeOne(url string) (map[string]interface{}, error) {
 		formattedDatetime := currentDatetime.Format("2006-01-02-15-04-05")
 
 		fileName := fmt.Sprintf("site/%s_%s_site.csv", encodedSite, formattedDatetime)
-		err := s.FileStorage.WriteData([]map[string]interface{}{items}, fileName)
+		err := s.FileStorage.WriteData(items, fileName)
 		if err != nil {
 			return nil, err
 		}
 	}
-	return items, nil
+	return items[0], nil
 }
 
 func (s *SiteScraper) GetSiteInfo(url string) (string, string, string) {
