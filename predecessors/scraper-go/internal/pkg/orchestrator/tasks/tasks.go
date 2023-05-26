@@ -89,7 +89,7 @@ func (t *TaskCreator) CreateTaskOrchestrateProduct(file string) error {
 func (t *TaskCreator) CreateTaskScrapeProduct(url string, scraper string, scheduledTime time.Time) error {
 	taskURL := fmt.Sprintf("%s/scraper/product", t.TargetURL)
 
-	payload := map[string]interface{}{
+	payload := map[string]string{
 		"url":     url,
 		"scraper": scraper,
 	}

@@ -9,7 +9,9 @@ import (
 
 	meta "github.com/imranparuk/scraper-go/internal/pkg/scrapers/meta"
 	product "github.com/imranparuk/scraper-go/internal/pkg/scrapers/product"
+	shopify "github.com/imranparuk/scraper-go/internal/pkg/scrapers/product/shopify"
 	woocommerce "github.com/imranparuk/scraper-go/internal/pkg/scrapers/product/woocommerce"
+
 	site "github.com/imranparuk/scraper-go/internal/pkg/scrapers/site"
 
 	utils "github.com/imranparuk/scraper-go/internal/pkg/utils"
@@ -82,11 +84,13 @@ func (api *ScraperAPI) Product(w http.ResponseWriter, r *http.Request) {
 	var d jsonData
 	err := json.NewDecoder(r.Body).Decode(&d)
 	if err != nil {
+		fmt.Println("error in json")
 		http.Error(w, "Error decoding proxies", http.StatusBadRequest)
 		return
 	}
 	productURL, err := url.QueryUnescape(d.Url)
 	if err != nil {
+		fmt.Println("error in producturl")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -97,11 +101,13 @@ func (api *ScraperAPI) Product(w http.ResponseWriter, r *http.Request) {
 	switch d.Scraper {
 	case "woocommerce":
 		productScraper = woocommerce.New(proxyConfig, client, api.FileStorage)
+	case "shopify":
+		productScraper = shopify.New(proxyConfig, client, api.FileStorage)
 	default:
+		fmt.Println("Scraper not implimented")
 		http.Error(w, "scraper type not implimented", http.StatusBadRequest)
 		return
 	}
-
 	productData, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
 		Url: productURL,
 	})
