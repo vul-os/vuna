@@ -53,7 +53,8 @@ func router(w http.ResponseWriter, r *http.Request) {
 
 	rtr.HandleFunc("/orchestrator/meta", o.Meta).Methods(http.MethodGet)
 	rtr.HandleFunc("/orchestrator/site", o.Site).Methods(http.MethodGet)
-	rtr.HandleFunc("/orchestrator/product", o.Product).Methods(http.MethodGet)
+	rtr.HandleFunc("/orchestrator/product", o.AllProducts).Methods(http.MethodGet)
+	rtr.HandleFunc("/orchestrator/product/{file}", o.Product).Methods(http.MethodGet)
 
 	rtr.HandleFunc("/scraper/meta/{url}", s.Meta).Methods(http.MethodGet)
 	rtr.HandleFunc("/scraper/site/{url}", s.Site).Methods(http.MethodGet)
