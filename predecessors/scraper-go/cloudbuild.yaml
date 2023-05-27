@@ -1,11 +1,17 @@
 steps:
-- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-  args:
-  - gcloud
-  - functions
-  - deploy
-  - function-go
-  - --region=us-central1
-  - --source=.
-  - --trigger-http
-  - --runtime=go120
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gcloud functions deploy function-go \
+          --region=us-central1 \
+          --source=. \
+          --trigger-http \
+          --runtime=go120 &
+        gcloud functions deploy function-go-big \
+          --region=us-central1 \
+          --source=. \
+          --trigger-http \
+          --runtime=go120 &
+        wait

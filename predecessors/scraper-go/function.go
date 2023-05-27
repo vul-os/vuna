@@ -16,6 +16,7 @@ import (
 
 	tasks "github.com/imranparuk/scraper-go/internal/pkg/orchestrator/tasks"
 
+
 	"cloud.google.com/go/storage"
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
 	"github.com/gorilla/mux"
@@ -28,12 +29,40 @@ func init() {
 // router sets up the mux router and handles the HTTP request.
 func router(w http.ResponseWriter, r *http.Request) {
 	rtr := mux.NewRouter()
-
 	bucketName := "exolution-scraper-data"
-	targetUrl := "https://function-go-gizrqdvcaq-uc.a.run.app"
 	projectId := "scraping-is-hard"
 	location := "us-central1"
-	queueId := "scraper"
+	noRepeatQueue := "orchestrator"
+	repeastQueue := "scraper"
+	bigInstanceTargetUrl := "https://function-go-big-gizrqdvcaq-uc.a.run.app"
+	smallInstanceTargetUrl := "https://function-go-gizrqdvcaq-uc.a.run.app"
+	
+	detailsMap := map[string]tasks.TaskCreatorDetails{
+		"site": {
+			TargetUrl :  bigInstanceTargetUrl,
+			ProjectID : projectId,
+			Location : location,
+			QueueID : repeastQueue,
+		},
+		"meta": {
+			TargetUrl : bigInstanceTargetUrl,
+			ProjectID : projectId,
+			Location : location,
+			QueueID : repeastQueue,
+		},
+		"product": {
+			TargetUrl: smallInstanceTargetUrl,
+			ProjectID: projectId,
+			Location:  location,
+			QueueID:   repeastQueue,
+		},
+		"orchestrateProduct": {
+			TargetUrl :  bigInstanceTargetUrl,
+			ProjectID : projectId,
+			Location : location,
+			QueueID:   noRepeatQueue,
+		},
+	}
 
 	client, err := storage.NewClient(context.Background())
 	if err != nil {
@@ -41,13 +70,13 @@ func router(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	storage := gcsStorage.New(bucketName, *client)
-	taskCreator, err := tasks.New(projectId, location, queueId)
+	taskCreator, err := tasks.New(detailsMap)
 	if err != nil {
 		fmt.Println("Error creating tack creator")
 		return
 	}
-	s := scrapers.New(storage, []string{})
-	o := orchestrator.New(*taskCreator, storage, targetUrl)
+	s := scrapers.New(storage)
+	o := orchestrator.New(*taskCreator, storage)
 
 	rtr.HandleFunc("/", helloWorld).Methods(http.MethodGet)
 

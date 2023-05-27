@@ -17,18 +17,18 @@ import (
 type OrchestratorAPI struct {
 	TaskCreator tasks.TaskCreator
 	FileStorage storage.FileStorage
-	TargetUrl   string
+
+
 }
 
 func New(
 	taskCreator tasks.TaskCreator,
 	fs storage.FileStorage,
-	targetUrl string,
 ) *OrchestratorAPI {
+
 	return &OrchestratorAPI{
 		TaskCreator: taskCreator,
 		FileStorage: fs,
-		TargetUrl: targetUrl,
 	}
 }
 
@@ -45,7 +45,7 @@ func (o *OrchestratorAPI) Meta(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Urls: ", urls)
 	if urlStringList, ok := urls.([]string); ok {
 		for _, url := range urlStringList {
-			err := o.TaskCreator.CreateTaskScrapeMeta(o.TargetUrl, url)
+			err := o.TaskCreator.CreateTaskScrapeMeta(url)
 			if err != nil {
 				fmt.Println("file storage error: ", err)
 			}
@@ -71,7 +71,7 @@ func (o *OrchestratorAPI) Site(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(urls)
 	if urlStringList, ok := urls.([]string); ok {
 		for _, url := range urlStringList {
-			err := o.TaskCreator.CreateTaskScrapeSite(o.TargetUrl, url)
+			err := o.TaskCreator.CreateTaskScrapeSite(url)
 			if err != nil {
 				fmt.Println("file storage error: ", err)
 			}
@@ -94,7 +94,7 @@ func (o *OrchestratorAPI) AllProducts(w http.ResponseWriter, r *http.Request) {
 	for _, productsFilePerSite := range productsFilesPerSite {
 		pFile := strings.ReplaceAll(productsFilePerSite, "meta", "")
 		pFile = strings.ReplaceAll(pFile, "/", "")
-		err := o.TaskCreator.CreateTaskOrchestrateProduct(o.TargetUrl, pFile)
+		err := o.TaskCreator.CreateTaskOrchestrateProduct(pFile)
 		if err != nil {
 			http.Error(w, "Failed to create product task", http.StatusInternalServerError)
 			fmt.Println("Error Allproducts: ", err)
@@ -164,7 +164,7 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 	for _, url := range urls {
 		fmt.Println("Scrape Product Task: ", siteInfo[0].Scraper, url)
 		scheduledTime = scheduledTime.Add(time.Second * time.Duration(rateLimit))
-		err := o.TaskCreator.CreateTaskScrapeProduct(o.TargetUrl, url, siteInfo[0].Scraper, scheduledTime)
+		err := o.TaskCreator.CreateTaskScrapeProduct(url, siteInfo[0].Scraper, scheduledTime)
 		if err != nil {
 			fmt.Println(err)
 			http.Error(w, "Failed to create product task", http.StatusInternalServerError)

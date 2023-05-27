@@ -24,16 +24,13 @@ import (
 
 type ScraperAPI struct {
 	FileStorage storage.FileStorage
-	Proxies     []string
 }
 
 func New(
 	fs storage.FileStorage,
-	p []string,
 ) *ScraperAPI {
 	return &ScraperAPI{
 		FileStorage: fs,
-		Proxies:     p,
 	}
 }
 

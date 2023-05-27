@@ -11,81 +11,73 @@ import (
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
-type TaskCreator struct {
-	Client    *cloudtasks.Client
-	Parent    string
-	TargetURL string
+type TaskCreatorDetails struct {
+	TargetUrl string
+	ProjectID string
+	Location  string
+	QueueID   string
 }
 
-func New(
-	projectID string,
-	location string,
-	queueID string,
-) (*TaskCreator, error) {
+type TaskCreator struct {
+	Client    *cloudtasks.Client
+	DetailsMap map[string]TaskCreatorDetails
+}
+
+func New(detailsMap map[string]TaskCreatorDetails) (*TaskCreator, error) {
 	ctx := context.Background()
 	client, err := cloudtasks.NewClient(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create Cloud Tasks client: %v", err)
+		return nil, fmt.Errorf("failed to create Cloud Tasks client: %w", err)
 	}
-	parent := fmt.Sprintf("projects/%s/locations/%s/queues/%s", projectID, location, queueID)
+
 	return &TaskCreator{
 		Client:    client,
-		Parent:    parent,
+		DetailsMap: detailsMap,
 	}, nil
 }
 
-func (t *TaskCreator) CreateTask(task *cloudtaskspb.Task) error {
-	ctx := context.Background()
+func (t *TaskCreator) createTask(url string, key string) error {
+	details := t.DetailsMap[key]
+
+	parent := fmt.Sprintf("projects/%s/locations/%s/queues/%s",
+		details.ProjectID, details.Location, details.QueueID)
+
+	task := &cloudtaskspb.Task{
+		MessageType: &cloudtaskspb.Task_HttpRequest{
+			HttpRequest: &cloudtaskspb.HttpRequest{
+				HttpMethod: cloudtaskspb.HttpMethod_GET,
+				Url:        url,
+			},
+		},
+	}
+
 	req := &cloudtaskspb.CreateTaskRequest{
-		Parent: t.Parent,
+		Parent: parent,
 		Task:   task,
 	}
-	_, err := t.Client.CreateTask(ctx, req)
-	if err != nil {
-		return fmt.Errorf("failed to create task: %v", err)
+
+	if _, err := t.Client.CreateTask(context.Background(), req); err != nil {
+		return fmt.Errorf("failed to create task: %w", err)
 	}
+
 	fmt.Println("Task created")
 	return nil
 }
 
-func (t *TaskCreator) CreateTaskScrapeSite(targetUrl string, url string) error {
-	task := &cloudtaskspb.Task{
-		MessageType: &cloudtaskspb.Task_HttpRequest{
-			HttpRequest: &cloudtaskspb.HttpRequest{
-				HttpMethod: cloudtaskspb.HttpMethod_GET,
-				Url:        fmt.Sprintf("%s/scraper/site/%s", targetUrl, url),
-			},
-		},
-	}
-	return t.CreateTask(task)
+func (t *TaskCreator) CreateTaskScrapeSite(url string) error {
+	return t.createTask(fmt.Sprintf("%s/scraper/site/%s", t.DetailsMap["site"].TargetUrl, url), "site")
 }
 
-func (t *TaskCreator) CreateTaskScrapeMeta(targetUrl string, url string) error {
-	task := &cloudtaskspb.Task{
-		MessageType: &cloudtaskspb.Task_HttpRequest{
-			HttpRequest: &cloudtaskspb.HttpRequest{
-				HttpMethod: cloudtaskspb.HttpMethod_GET,
-				Url:        fmt.Sprintf("%s/scraper/meta/%s", targetUrl, url),
-			},
-		},
-	}
-	return t.CreateTask(task)
+func (t *TaskCreator) CreateTaskScrapeMeta(url string) error {
+	return t.createTask(fmt.Sprintf("%s/scraper/meta/%s", t.DetailsMap["meta"].TargetUrl, url), "meta")
 }
 
-func (t *TaskCreator) CreateTaskOrchestrateProduct(targetUrl string, file string) error {
-	task := &cloudtaskspb.Task{
-		MessageType: &cloudtaskspb.Task_HttpRequest{
-			HttpRequest: &cloudtaskspb.HttpRequest{
-				HttpMethod: cloudtaskspb.HttpMethod_GET,
-				Url:        fmt.Sprintf("%s/orchestrator/product/%s", targetUrl, file),
-			},
-		},
-	}
-	return t.CreateTask(task)
+func (t *TaskCreator) CreateTaskOrchestrateProduct(file string) error {
+	return t.createTask(fmt.Sprintf("%s/orchestrator/product/%s", t.DetailsMap["orchestrateProduct"].TargetUrl, file), "orchestrateProduct")
 }
 
-func (t *TaskCreator) CreateTaskScrapeProduct(targetUrl string, url string, scraper string, scheduledTime time.Time) error {
-	taskURL := fmt.Sprintf("%s/scraper/product", targetUrl)
+func (t *TaskCreator) CreateTaskScrapeProduct(url string, scraper string, scheduledTime time.Time) error {
+	taskURL := fmt.Sprintf("%s/scraper/product", t.DetailsMap["product"].TargetUrl)
 
 	payload := map[string]string{
 		"url":     url,
@@ -93,8 +85,13 @@ func (t *TaskCreator) CreateTaskScrapeProduct(targetUrl string, url string, scra
 	}
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
-		return fmt.Errorf("failed to marshal payload: %v", err)
+		return fmt.Errorf("failed to marshal payload: %w", err)
 	}
+
+	details := t.DetailsMap["product"]
+
+	parent := fmt.Sprintf("projects/%s/locations/%s/queues/%s",
+		details.ProjectID, details.Location, details.QueueID)
 
 	task := &cloudtaskspb.Task{
 		MessageType: &cloudtaskspb.Task_HttpRequest{
@@ -108,5 +105,15 @@ func (t *TaskCreator) CreateTaskScrapeProduct(targetUrl string, url string, scra
 		ScheduleTime: timestamppb.New(scheduledTime),
 	}
 
-	return t.CreateTask(task)
+	req := &cloudtaskspb.CreateTaskRequest{
+		Parent: parent,
+		Task:   task,
+	}
+
+	if _, err := t.Client.CreateTask(context.Background(), req); err != nil {
+		return fmt.Errorf("failed to create task: %w", err)
+	}
+
+	fmt.Println("Task created")
+	return nil
 }
