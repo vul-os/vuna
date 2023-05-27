@@ -80,9 +80,9 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 		}
 
 		productData := product.ProductData{
-			Name:        strings.TrimSpace(response.Product.Title),
-			URL:         strings.TrimSpace(request.Url),
-			SKU:         strings.TrimSpace(variant.SKU),
+			Name:        utils.CleanString(response.Product.Title),
+			URL:         utils.CleanString(request.Url),
+			SKU:         utils.CleanString(variant.SKU),
 			ProductID:   fmt.Sprintf("%d", response.Product.ID),
 			VariationID: fmt.Sprintf("%d", variant.ID),
 			Price:       priceFloat,

@@ -60,3 +60,14 @@ func RandomSample(stringList []string, sampleSize int) []string {
 
 	return sampledStrings
 }
+
+// CleanString removes leading and trailing white spaces,
+// newline characters, tab characters, spaces, single and double quotes from the input string
+func CleanString(input string) string {
+	cleanStr := strings.ReplaceAll(input, "\n", "")
+	cleanStr = strings.ReplaceAll(cleanStr, "\t", "")
+	cleanStr = strings.TrimSpace(cleanStr)
+	cleanStr = strings.ReplaceAll(cleanStr, "\"", "")
+	cleanStr = strings.ReplaceAll(cleanStr, "'", "")
+	return cleanStr
+}
