@@ -156,13 +156,12 @@ func scrapeProductWithVariations(productURL, productID, productName string, doc 
 			firstValue = value.(string)
 			break
 		}
-
 		productData := product.ProductData{
-			Name:        firstValue,
-			URL:         productURL,
+			Name:        strings.TrimSpace(firstValue),
+			URL:         strings.TrimSpace(productURL),
 			ImageURLs:   []string{imageURL.(string)},
-			SKU:         sku.(string),
-			ProductID:   productID,
+			SKU:         strings.TrimSpace(sku.(string)),
+			ProductID:   strings.TrimSpace(productID),
 			VariationID: fmt.Sprintf("%.0f", variationID),
 			Price:       priceFloat,
 			MaxQty:      maxQtyInt,
