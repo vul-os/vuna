@@ -21,7 +21,6 @@ func New(
 	projectID string,
 	location string,
 	queueID string,
-	targetUrl string,
 ) (*TaskCreator, error) {
 	ctx := context.Background()
 	client, err := cloudtasks.NewClient(ctx)
@@ -32,7 +31,6 @@ func New(
 	return &TaskCreator{
 		Client:    client,
 		Parent:    parent,
-		TargetURL: targetUrl,
 	}, nil
 }
 
@@ -50,44 +48,44 @@ func (t *TaskCreator) CreateTask(task *cloudtaskspb.Task) error {
 	return nil
 }
 
-func (t *TaskCreator) CreateTaskScrapeSite(url string) error {
+func (t *TaskCreator) CreateTaskScrapeSite(targetUrl string, url string) error {
 	task := &cloudtaskspb.Task{
 		MessageType: &cloudtaskspb.Task_HttpRequest{
 			HttpRequest: &cloudtaskspb.HttpRequest{
 				HttpMethod: cloudtaskspb.HttpMethod_GET,
-				Url:        fmt.Sprintf("%s/scraper/site/%s", t.TargetURL, url),
+				Url:        fmt.Sprintf("%s/scraper/site/%s", targetUrl, url),
 			},
 		},
 	}
 	return t.CreateTask(task)
 }
 
-func (t *TaskCreator) CreateTaskScrapeMeta(url string) error {
+func (t *TaskCreator) CreateTaskScrapeMeta(targetUrl string, url string) error {
 	task := &cloudtaskspb.Task{
 		MessageType: &cloudtaskspb.Task_HttpRequest{
 			HttpRequest: &cloudtaskspb.HttpRequest{
 				HttpMethod: cloudtaskspb.HttpMethod_GET,
-				Url:        fmt.Sprintf("%s/scraper/meta/%s", t.TargetURL, url),
+				Url:        fmt.Sprintf("%s/scraper/meta/%s", targetUrl, url),
 			},
 		},
 	}
 	return t.CreateTask(task)
 }
 
-func (t *TaskCreator) CreateTaskOrchestrateProduct(file string) error {
+func (t *TaskCreator) CreateTaskOrchestrateProduct(targetUrl string, file string) error {
 	task := &cloudtaskspb.Task{
 		MessageType: &cloudtaskspb.Task_HttpRequest{
 			HttpRequest: &cloudtaskspb.HttpRequest{
 				HttpMethod: cloudtaskspb.HttpMethod_GET,
-				Url:        fmt.Sprintf("%s/orchestrator/product/%s", t.TargetURL, file),
+				Url:        fmt.Sprintf("%s/orchestrator/product/%s", targetUrl, file),
 			},
 		},
 	}
 	return t.CreateTask(task)
 }
 
-func (t *TaskCreator) CreateTaskScrapeProduct(url string, scraper string, scheduledTime time.Time) error {
-	taskURL := fmt.Sprintf("%s/scraper/product", t.TargetURL)
+func (t *TaskCreator) CreateTaskScrapeProduct(targetUrl string, url string, scraper string, scheduledTime time.Time) error {
+	taskURL := fmt.Sprintf("%s/scraper/product", targetUrl)
 
 	payload := map[string]string{
 		"url":     url,
