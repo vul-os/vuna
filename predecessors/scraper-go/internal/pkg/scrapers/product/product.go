@@ -8,8 +8,8 @@ import (
 
 // ProductData is a struct representing the product data
 type ProductData struct {
-	Name      string
-	ImageURLs []string
+	Name string
+	// ImageURLs []string
 	// Attribute    string
 
 	URL         string
@@ -38,7 +38,7 @@ func ToMap(p []ProductData) ([]map[string]string, error) {
 	for _, pd := range p {
 		data := make(map[string]string)
 		v := reflect.ValueOf(pd) // Get the value of the struct
-		t := v.Type()             // Get the type of the struct
+		t := v.Type()            // Get the type of the struct
 
 		for i := 0; i < v.NumField(); i++ {
 			field := v.Field(i)
