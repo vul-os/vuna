@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -32,6 +33,9 @@ func WriteCSVFile(writer io.Writer, data []map[string]string) error {
 	for key := range data[0] {
 		header = append(header, key)
 	}
+
+	// Sort the header keys
+	sort.Strings(header)
 	csvWriter.Write(header)
 
 	// Write CSV data rows
