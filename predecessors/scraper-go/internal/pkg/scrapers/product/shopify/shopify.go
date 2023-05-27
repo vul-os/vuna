@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/product"
@@ -79,14 +80,14 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 		}
 
 		productData := product.ProductData{
-			Name:      response.Product.Title,
-			URL:       request.Url,
-			SKU:       variant.SKU,
-			ProductID: fmt.Sprintf("%d", response.Product.ID),
-			Price:     priceFloat,
-			MaxQty:    maxQtyInt,
+			Name:        strings.TrimSpace(response.Product.Title),
+			URL:         strings.TrimSpace(request.Url),
+			SKU:         strings.TrimSpace(variant.SKU),
+			ProductID:   fmt.Sprintf("%d", response.Product.ID),
+			VariationID: fmt.Sprintf("%d", variant.ID),
+			Price:       priceFloat,
+			MaxQty:      maxQtyInt,
 		}
-
 		productDataList = append(productDataList, productData)
 	}
 
