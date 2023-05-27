@@ -112,12 +112,12 @@ func scrapeProductWithoutVariations(productURL, productID, productName string, d
 		}
 	}
 
-	imageURL, _ := doc.Find("div.woocommerce-product-gallery__image img").Attr("src")
+	// imageURL, _ := doc.Find("div.woocommerce-product-gallery__image img").Attr("src")
 
 	productData := product.ProductData{
 		Name:        productName,
 		URL:         productURL,
-		ImageURLs:   []string{imageURL},
+		// ImageURLs:   []string{imageURL},
 		SKU:         sku,
 		ProductID:   productID,
 		VariationID: "",
@@ -140,7 +140,7 @@ func scrapeProductWithVariations(productURL, productID, productName string, doc 
 	for _, variation := range variationsData {
 		availabilityHTML := variation["availability_html"]
 		displayPrice := variation["display_price"]
-		imageURL := variation["image"].(map[string]interface{})["src"]
+		// imageURL := variation["image"].(map[string]interface{})["src"]
 		sku := variation["sku"]
 		variationID := variation["variation_id"]
 		priceFloat, errp := utils.PriceToFloat(displayPrice)

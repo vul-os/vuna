@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
+	// "strings"
 	"time"
 
 	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/product"
