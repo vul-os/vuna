@@ -66,6 +66,6 @@ func main() {
 	fmt.Println(len(data))
 	fmt.Println(err)
 	sc := site.New(&client, st)
-	a, err := sc.ScrapeOne("https://www.mytoy.co.za")
+	a, err := sc.ScrapeOne("https://toykingdom.co.za")
 	fmt.Println(a)
 }

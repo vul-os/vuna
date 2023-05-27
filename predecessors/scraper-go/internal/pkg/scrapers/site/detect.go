@@ -16,26 +16,25 @@ func Detect(resp *http.Response, body []byte) string {
 	}
 
 	fingerprints := wappalyzerClient.Fingerprint(resp.Header, body)
-
 	ecommerceKeywords := map[string]string{
-		"Shopify":         "Shopify",
-		"WooCommerce":     "WooCommerce",
-		"BigCommerce":     "BigCommerce",
-		"PrestaShop":      "PrestaShop",
-		"Magento":         "Magento",
-		"OpenCart":        "OpenCart",
-		"Volusion":        "Volusion",
-		"SquareSpace":     "SquareSpace",
-		"Weebly":          "Weebly",
-		"Wix":             "Wix",
-		"CustomPlatform":  "Custom Platform",
+		"Shopify":        "Shopify",
+		"WooCommerce":    "WooCommerce",
+		"WordPress":      "WooCommerce",
+		"BigCommerce":    "BigCommerce",
+		"PrestaShop":     "PrestaShop",
+		"Magento":        "Magento",
+		"OpenCart":       "OpenCart",
+		"Volusion":       "Volusion",
+		"SquareSpace":    "SquareSpace",
+		"Weebly":         "Weebly",
+		"Wix":            "Wix",
+		"CustomPlatform": "Custom Platform",
 		// Add more e-commerce technologies as needed
 	}
 
 	for _, k := range Keys(fingerprints) {
 		for keyword, tech := range ecommerceKeywords {
 			if strings.Contains(k, keyword) {
-				fmt.Println(k)
 				return strings.ToLower(tech)
 			}
 		}

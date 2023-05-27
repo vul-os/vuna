@@ -117,7 +117,6 @@ func (s *SiteScraper) GetSiteInfo(url string) (string, string, string) {
 	})
 
 	technology := Detect(response, body)
-
 	// Return the name, image, and technology of the website
 	return name, image, technology
 }
