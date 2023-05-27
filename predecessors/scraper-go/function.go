@@ -41,7 +41,7 @@ func router(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	storage := gcsStorage.New(bucketName, *client)
-	taskCreator, err := tasks.New(projectId, location, queueId, targetUrl)
+	taskCreator, err := tasks.New(projectId, location, queueId)
 	if err != nil {
 		fmt.Println("Error creating tack creator")
 		return
