@@ -20,8 +20,8 @@ import (
 	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/product"
 	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/site"
 
-	// "github.com/imranparuk/scraper-go/internal/pkg/scrapers/product/woocommerce"
-	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/product/shopify"
+	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/product/woocommerce"
+	// "github.com/imranparuk/scraper-go/internal/pkg/scrapers/product/shopify"
 
 	"github.com/imranparuk/scraper-go/internal/pkg/storage"
 )
@@ -52,9 +52,9 @@ func main() {
 		Password: "t62qs3cx4b6c",
 	}
 	var st storage.FileStorage
-	productScraper := shopify.New(proxyConfig, client, st)
+	productScraper := woocommerce.New(proxyConfig, client, st)
 	results, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
-		Url: "https://www.mytoy.co.za/collections/infant-and-toddler-toys/products/melissa-doug-old-macdonalds-farm-sound-puzzle",
+		Url: "https://toykingdom.co.za/product/sophie-la-girafe-musical-phone/",
 	})
 	if err != nil {
 		fmt.Println(err)
