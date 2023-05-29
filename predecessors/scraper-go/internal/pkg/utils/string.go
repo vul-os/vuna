@@ -71,3 +71,11 @@ func CleanString(input string) string {
 	cleanStr = strings.ReplaceAll(cleanStr, "'", "")
 	return cleanStr
 }
+
+func CleanStringCSV(value string) string {
+	value = CleanString(value)
+	if len(strings.TrimSpace(value)) == 0 {
+		value = "\\N"
+	}
+	return value
+}

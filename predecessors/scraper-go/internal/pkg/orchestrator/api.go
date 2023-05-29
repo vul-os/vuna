@@ -8,17 +8,15 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/imranparuk/scraper-go/internal/pkg/orchestrator/tasks"
-	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/site"
+	"github.com/exolutiontech/scraper-go/internal/pkg/orchestrator/tasks"
+	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/site"
 
-	"github.com/imranparuk/scraper-go/internal/pkg/storage"
+	"github.com/exolutiontech/scraper-go/internal/pkg/storage"
 )
 
 type OrchestratorAPI struct {
 	TaskCreator tasks.TaskCreator
 	FileStorage storage.FileStorage
-
-
 }
 
 func New(

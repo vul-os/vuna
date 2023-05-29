@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/imranparuk/scraper-go/internal/pkg/utils"
+	"github.com/exolutiontech/scraper-go/internal/pkg/utils"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/imranparuk/scraper-go/internal/pkg/storage"
+	"github.com/exolutiontech/scraper-go/internal/pkg/storage"
 )
 
 // SiteData is a struct representing the site data

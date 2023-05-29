@@ -5,25 +5,25 @@ import (
 	// "os"
 
 	// // Blank-import the function package so the init() runs
-	// _ "github.com/imranparuk/scraper-go"
+	// _ "github.com/exolutiontech/scraper-go"
 	// "github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
 	"fmt"
 	"net/http"
 
 	// "time"
 
-	// "github.com/imranparuk/scraper-go/internal/pkg/orchestrator/proxy"
-	// "github.com/imranparuk/scraper-go/internal/pkg/utils"
-	utils "github.com/imranparuk/scraper-go/internal/pkg/utils"
+	// "github.com/exolutiontech/scraper-go/internal/pkg/orchestrator/proxy"
+	// "github.com/exolutiontech/scraper-go/internal/pkg/utils"
+	utils "github.com/exolutiontech/scraper-go/internal/pkg/utils"
 
-	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/meta"
-	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/product"
-	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/site"
+	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/meta"
+	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product"
+	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/site"
 
-	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/product/woocommerce"
-	// "github.com/imranparuk/scraper-go/internal/pkg/scrapers/product/shopify"
+	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product/woocommerce"
+	// "github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product/shopify"
 
-	"github.com/imranparuk/scraper-go/internal/pkg/storage"
+	"github.com/exolutiontech/scraper-go/internal/pkg/storage"
 )
 
 func main() {
@@ -54,7 +54,8 @@ func main() {
 	var st storage.FileStorage
 	productScraper := woocommerce.New(proxyConfig, client, st)
 	results, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
-		Url: "https://toykingdom.co.za/product/sophie-la-girafe-musical-phone/",
+		Url:        "https://toykingdom.co.za/product/sophie-la-girafe-musical-phone/",
+		FullScrape: true,
 	})
 	if err != nil {
 		fmt.Println(err)

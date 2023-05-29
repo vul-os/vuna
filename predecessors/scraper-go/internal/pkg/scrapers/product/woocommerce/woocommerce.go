@@ -4,11 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
-	"github.com/imranparuk/scraper-go/internal/pkg/scrapers/product"
-	"github.com/imranparuk/scraper-go/internal/pkg/storage"
-	"github.com/imranparuk/scraper-go/internal/pkg/utils"
+	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product"
+	"github.com/exolutiontech/scraper-go/internal/pkg/storage"
+	"github.com/exolutiontech/scraper-go/internal/pkg/utils"
 
 	"strings"
 
@@ -33,7 +32,8 @@ func New(
 	}
 }
 
-func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOneResponse, error) {
+func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOneResponse,
+	error) {
 	body, err := utils.FetchWithProxy(s.ProxyConfig, request.Url)
 	if err != nil {
 		return nil, err
@@ -52,47 +52,33 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 	}
 
 	var productDataList []product.ProductData
+	var dataPointList []product.DataPoint
 
 	if doc.Find("form.variations_form").Length() > 0 {
-		productDataList, err = scrapeProductWithVariations(request.Url, productID, productName, doc)
+		productDataList, dataPointList, err = scrapeProductWithVariations(request.Url,
+			productID, productName, doc)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		productData, err := scrapeProductWithoutVariations(request.Url, productID, productName, doc)
+		productData, dataPoint, err := scrapeProductWithoutVariations(request.Url,
+			productID, productName, doc)
 		if err != nil {
 			return nil, err
 		}
 		productDataList = append(productDataList, productData)
+		dataPointList = append(dataPointList, dataPoint)
 	}
 
-	siteUrl, err := utils.GetBaseURL(request.Url)
+	err = product.Save(dataPointList, productDataList, s.FileStorage, request.Url, request.FullScrape)
 	if err != nil {
 		return nil, err
 	}
-	siteUrl = utils.RemoveURLPrefix(siteUrl)
-	encodedSite := utils.EncodeURL(siteUrl)
-
-	currentDatetime := time.Now()
-	formattedDatetime := currentDatetime.Format("2006-01-02-15-04-05")
-
-	fileName := fmt.Sprintf("product/%s_%s_product.csv", encodedSite, formattedDatetime)
-	pdl, err := product.ToMap(productDataList)
-	if err != nil {
-		return &product.ScrapeOneResponse{Results: nil}, err
-	}
-
-	if s.FileStorage != nil && len(pdl) > 0 {
-		err = s.FileStorage.WriteData(pdl, fileName)
-		if err != nil {
-			return &product.ScrapeOneResponse{Results: nil}, err
-		}
-	}
-
-	return &product.ScrapeOneResponse{Results: productDataList}, nil
+	return &product.ScrapeOneResponse{DataPoint: dataPointList,
+		ProductData: productDataList}, nil
 }
 
-func scrapeProductWithoutVariations(productURL, productID, productName string, 
+func scrapeProductWithoutVariations(productURL, productID, productName string,
 	doc *goquery.Document) (product.ProductData, product.DataPoint, error) {
 
 	summaryDiv := doc.Find("div.summary")
@@ -114,11 +100,12 @@ func scrapeProductWithoutVariations(productURL, productID, productName string,
 		}
 	}
 
-	imageURL, _ := doc.Find("div.woocommerce-product-gallery__image img").Attr("src")
+	imageURL, _ := doc.
+		Find("div.woocommerce-product-gallery__image img").Attr("src")
 
 	productData := product.ProductData{
 		Name:        productName,
-		Description: ,
+		Description: "",
 		ImageURLs:   []string{imageURL},
 		Attributes:  []string{},
 
@@ -132,28 +119,31 @@ func scrapeProductWithoutVariations(productURL, productID, productName string,
 		SKU:         sku,
 		ProductID:   productID,
 		VariationID: "",
-		Price:       priceFloat,
-		MaxQty:      maxQtyInt,
+
+		Price:  priceFloat,
+		MaxQty: maxQtyInt,
 	}
 
-	return productData, nil
+	return productData, dataPoint, nil
 }
 
-func scrapeProductWithVariations(productURL, productID, productName string, 
-	doc *goquery.Document) ([]product.ProductData, error) {
-		
+func scrapeProductWithVariations(productURL, productID, productName string,
+	doc *goquery.Document) ([]product.ProductData, []product.DataPoint, error) {
+
 	productDataList := []product.ProductData{}
-	productVariations := doc.Find("form.variations_form").AttrOr("data-product_variations", "")
+	dataPointList := []product.DataPoint{}
+
+	productVariations := doc.Find("form.variations_form").
+		AttrOr("data-product_variations", "")
 	variationsData := make([]map[string]interface{}, 0)
 	if err := json.Unmarshal([]byte(productVariations), &variationsData); err != nil {
 		fmt.Println("Error decoding variations data:", err)
-		return productDataList, err
+		return productDataList, dataPointList, err
 	}
 
 	for _, variation := range variationsData {
 		availabilityHTML := variation["availability_html"]
 		displayPrice := variation["display_price"]
-		// imageURL := variation["image"].(map[string]interface{})["src"]
 		sku := variation["sku"]
 		variationID := variation["variation_id"]
 		priceFloat, errp := utils.PriceToFloat(displayPrice)
@@ -163,6 +153,7 @@ func scrapeProductWithVariations(productURL, productID, productName string,
 			continue
 		}
 
+		imageURL := variation["image"].(map[string]interface{})["src"]
 		attributes := variation["attributes"].(map[string]interface{})
 		firstValue := ""
 		for _, value := range attributes {
@@ -172,11 +163,11 @@ func scrapeProductWithVariations(productURL, productID, productName string,
 
 		productData := product.ProductData{
 			Name:        firstValue,
-			Description: ,
+			Description: "",
 
-			ImageURLs:   []string{imageURL},
-			Attributes:  []string{},
-	
+			ImageURLs:  []string{imageURL.(string)},
+			Attributes: []string{},
+
 			URL:         productURL,
 			SKU:         sku.(string),
 			ProductID:   productID,
@@ -184,16 +175,18 @@ func scrapeProductWithVariations(productURL, productID, productName string,
 		}
 
 		dataPoint := product.DataPoint{
+			SiteID:      "", //fix here
 			SKU:         sku.(string),
 			ProductID:   productID,
 			VariationID: variationID.(string),
 
-			Price:       priceFloat,
-			MaxQty:      maxQtyInt,
+			Price:  priceFloat,
+			MaxQty: maxQtyInt,
 		}
 
+		dataPointList = append(dataPointList, dataPoint)
 		productDataList = append(productDataList, productData)
 	}
 
-	return productDataList, nil
+	return productDataList, dataPointList, nil
 }

@@ -8,8 +8,6 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-
-	"github.com/imranparuk/scraper-go/internal/pkg/utils"
 )
 
 func WriteTextFile(writer io.Writer, data []string) error {
@@ -44,13 +42,7 @@ func WriteCSVFile(writer io.Writer, data []map[string]string) error {
 	for _, row := range data {
 		record := make([]string, 0, len(header))
 		for _, key := range header {
-			value := row[key]
-			value = fmt.Sprintf("%v", value)
-			value = utils.CleanString(value)
-			if len(strings.TrimSpace(value)) == 0 {
-				value = "\\N"
-			}
-			record = append(record, value)
+			record = append(record, row[key])
 		}
 		csvWriter.Write(record)
 	}

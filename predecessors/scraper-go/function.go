@@ -9,13 +9,12 @@ import (
 	// siteScraper "scraper-go/internal/pkg/scrapers/site"
 	// woocommerceScraper "scraper-go/internal/pkg/scrapers/product/woocommerce"
 	// "scraper-go/internal/pkg/scrapers/product"
-	orchestrator "github.com/imranparuk/scraper-go/internal/pkg/orchestrator"
-	scrapers "github.com/imranparuk/scraper-go/internal/pkg/scrapers"
+	orchestrator "github.com/exolutiontech/scraper-go/internal/pkg/orchestrator"
+	scrapers "github.com/exolutiontech/scraper-go/internal/pkg/scrapers"
 
-	gcsStorage "github.com/imranparuk/scraper-go/internal/pkg/storage/gcs"
+	gcsStorage "github.com/exolutiontech/scraper-go/internal/pkg/storage/gcs"
 
-	tasks "github.com/imranparuk/scraper-go/internal/pkg/orchestrator/tasks"
-
+	tasks "github.com/exolutiontech/scraper-go/internal/pkg/orchestrator/tasks"
 
 	"cloud.google.com/go/storage"
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
@@ -36,19 +35,19 @@ func router(w http.ResponseWriter, r *http.Request) {
 	repeastQueue := "scraper"
 	bigInstanceTargetUrl := "https://function-go-big-gizrqdvcaq-uc.a.run.app"
 	smallInstanceTargetUrl := "https://function-go-gizrqdvcaq-uc.a.run.app"
-	
+
 	detailsMap := map[string]tasks.TaskCreatorDetails{
 		"site": {
-			TargetUrl :  bigInstanceTargetUrl,
-			ProjectID : projectId,
-			Location : location,
-			QueueID : repeastQueue,
+			TargetUrl: bigInstanceTargetUrl,
+			ProjectID: projectId,
+			Location:  location,
+			QueueID:   repeastQueue,
 		},
 		"meta": {
-			TargetUrl : bigInstanceTargetUrl,
-			ProjectID : projectId,
-			Location : location,
-			QueueID : repeastQueue,
+			TargetUrl: bigInstanceTargetUrl,
+			ProjectID: projectId,
+			Location:  location,
+			QueueID:   repeastQueue,
 		},
 		"product": {
 			TargetUrl: smallInstanceTargetUrl,
@@ -57,9 +56,9 @@ func router(w http.ResponseWriter, r *http.Request) {
 			QueueID:   repeastQueue,
 		},
 		"orchestrateProduct": {
-			TargetUrl :  bigInstanceTargetUrl,
-			ProjectID : projectId,
-			Location : location,
+			TargetUrl: bigInstanceTargetUrl,
+			ProjectID: projectId,
+			Location:  location,
 			QueueID:   noRepeatQueue,
 		},
 	}

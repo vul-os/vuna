@@ -1,4 +1,4 @@
-module github.com/imranparuk/scraper-go
+module github.com/exolutiontech/scraper-go
 
 go 1.19
 

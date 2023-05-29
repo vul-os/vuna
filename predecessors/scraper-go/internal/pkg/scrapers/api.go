@@ -7,19 +7,19 @@ import (
 
 	"encoding/json"
 
-	meta "github.com/imranparuk/scraper-go/internal/pkg/scrapers/meta"
-	product "github.com/imranparuk/scraper-go/internal/pkg/scrapers/product"
-	shopify "github.com/imranparuk/scraper-go/internal/pkg/scrapers/product/shopify"
-	woocommerce "github.com/imranparuk/scraper-go/internal/pkg/scrapers/product/woocommerce"
+	meta "github.com/exolutiontech/scraper-go/internal/pkg/scrapers/meta"
+	product "github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product"
+	shopify "github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product/shopify"
+	woocommerce "github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product/woocommerce"
 
-	site "github.com/imranparuk/scraper-go/internal/pkg/scrapers/site"
+	site "github.com/exolutiontech/scraper-go/internal/pkg/scrapers/site"
 
-	utils "github.com/imranparuk/scraper-go/internal/pkg/utils"
+	utils "github.com/exolutiontech/scraper-go/internal/pkg/utils"
 
 	// product "scraper-go/internal/pkg/scrapers/product"
 
+	"github.com/exolutiontech/scraper-go/internal/pkg/storage"
 	"github.com/gorilla/mux"
-	"github.com/imranparuk/scraper-go/internal/pkg/storage"
 )
 
 type ScraperAPI struct {
@@ -105,27 +105,23 @@ func (api *ScraperAPI) Product(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "scraper type not implimented", http.StatusBadRequest)
 		return
 	}
-	productData, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
+	scrapeOneResponse, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
 		Url: productURL,
 	})
 	if err != nil {
 		http.Error(w, fmt.Sprintf("scrape one error: %s", err), http.StatusBadRequest)
 		return
 	}
-	if productData != nil {
-		// Convert the product data to JSON
-		productDataJSON, err := json.Marshal(productData)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		// Set the response content type to application/json
-		w.Header().Set("Content-Type", "application/json")
-
-		// Write the JSON response
-		w.Write(productDataJSON)
-	} else {
-		http.Error(w, "No product data found", http.StatusNotFound)
+	// Convert the product data to JSON
+	resultJson, err := json.Marshal(scrapeOneResponse)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
+
+	// Set the response content type to application/json
+	w.Header().Set("Content-Type", "application/json")
+
+	// Write the JSON response
+	w.Write(resultJson)
 }

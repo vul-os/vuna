@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/imranparuk/scraper-go/internal/pkg/storage"
+	"github.com/exolutiontech/scraper-go/internal/pkg/storage"
 
 	"google.golang.org/api/iterator"
 
