@@ -21,6 +21,21 @@ type ProductData struct {
 	MaxQty int
 }
 
+// // ProductData is a struct representing the product data
+// type ProductData struct {
+// 	Name         string
+// 	Description  string
+
+// 	ImageURLs    []string
+// 	Attributes   []string
+// 	Categories   []string
+
+// 	URL          string
+// 	ProductID    string
+// 	VariationID  string
+// 	SKU          string
+// }
+
 type ProductScraper interface {
 	ScrapeOne(ScrapeOneRequest) (*ScrapeOneResponse, error)
 }
