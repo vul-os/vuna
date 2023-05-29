@@ -4,37 +4,52 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"time"
 )
+
+// // ProductData is a struct representing the product data
+// type ProductData struct {
+// 	Name string
+// 	// ImageURLs []string
+// 	// Attribute    string
+
+// 	URL         string
+// 	ProductID   string
+// 	VariationID string
+// 	SKU         string
+
+// 	Price  float64
+// 	MaxQty int
+// }
 
 // ProductData is a struct representing the product data
 type ProductData struct {
-	Name string
-	// ImageURLs []string
-	// Attribute    string
+	Name         string
+	Description  string
 
-	URL         string
+	ImageURLs    []string
+	Attributes   []string
+	Categories   []string
+	Tags		 []string
+
+	URL          string
+	ProductID    string
+	VariationID  string
+	SKU          string
+}
+
+type DataPoint struct {
+	SiteID		string
+
 	ProductID   string
 	VariationID string
 	SKU         string
 
 	Price  float64
 	MaxQty int
+
+	DateCreated time.Time
 }
-
-// // ProductData is a struct representing the product data
-// type ProductData struct {
-// 	Name         string
-// 	Description  string
-
-// 	ImageURLs    []string
-// 	Attributes   []string
-// 	Categories   []string
-
-// 	URL          string
-// 	ProductID    string
-// 	VariationID  string
-// 	SKU          string
-// }
 
 type ProductScraper interface {
 	ScrapeOne(ScrapeOneRequest) (*ScrapeOneResponse, error)
