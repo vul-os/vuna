@@ -55,7 +55,7 @@ func main() {
 	var st storage.FileStorage
 	productScraper := woocommerce.New(proxyConfig, client, st)
 	results, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
-		Url:        "https://toykingdom.co.za/product/sophie-la-girafe-musical-phone/",
+		Url:        "https://3dprintingstore.co.za/products/stepper-motor-nema-17-x-40mm-1-8-deg-step",
 		FullScrape: true,
 	})
 	if err != nil {
@@ -64,10 +64,10 @@ func main() {
 	fmt.Println("results: ", results)
 
 	meta := meta.New(&client, st)
-	data, err := meta.ScrapeOne("https://www.mytoy.co.za")
+	data, err := meta.ScrapeOne("https://3dprintingstore.co.za/")
 	fmt.Println(len(data))
 	fmt.Println(err)
 	sc := site.New(&client, st)
-	a, err := sc.ScrapeOne("https://toykingdom.co.za")
+	a, err := sc.ScrapeOne("https://3dprintingstore.co.za/")
 	fmt.Println(a)
 }

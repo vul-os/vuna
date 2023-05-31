@@ -3,9 +3,7 @@ package meta
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
-	"regexp"
 	"time"
 
 	storage "github.com/exolutiontech/scraper-go/internal/pkg/storage"
@@ -28,7 +26,7 @@ func New(
 }
 
 func (s *MetaScraper) ScrapeOne(url string) ([]string, error) {
-	sitemapURL, err := s.extractSitemapURL(url)
+	sitemapURL, err := ExtractSitemapURL(url, s.Client)
 	if err != nil {
 		fmt.Println("no sitemap in robots.txt")
 	}
@@ -42,7 +40,7 @@ func (s *MetaScraper) ScrapeOne(url string) ([]string, error) {
 
 	var urls []string
 	for _, sitemapUrl := range sitemapUrls {
-		tUrls, err := s.extractURLsFromXML(sitemapUrl, true)
+		tUrls, err := ExtractURLsFromXML(sitemapUrl, s.Client, true)
 		if err != nil {
 			fmt.Println("sitemap error: ", sitemapUrl, err)
 			continue
@@ -58,7 +56,7 @@ func (s *MetaScraper) ScrapeOne(url string) ([]string, error) {
 	uniqueURLs := make(map[string]bool)
 
 	for _, url := range urls {
-		xmlURLs, err := s.extractURLsFromXML(url, true)
+		xmlURLs, err := ExtractURLsFromXML(url, s.Client, true)
 		if err != nil {
 			return nil, err
 		}
@@ -87,70 +85,4 @@ func (s *MetaScraper) ScrapeOne(url string) ([]string, error) {
 	}
 
 	return result, nil
-}
-
-func (s *MetaScraper) extractSitemapURL(url string) (string, error) {
-	req, err := http.NewRequest("GET", url+"/robots.txt", nil)
-	if err != nil {
-		return "", fmt.Errorf("error creating request for robots.txt: %s", err)
-	}
-
-	resp, err := s.Client.Do(req)
-	if err != nil {
-		return "", fmt.Errorf("error sending request for robots.txt: %s", err)
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", fmt.Errorf("error reading response body for robots.txt: %s", err)
-	}
-
-	pattern := `(?is)sitemap:\s*([^\s]+)`
-	regex := regexp.MustCompile(pattern)
-	match := regex.FindStringSubmatch(string(body))
-	if len(match) > 1 {
-		return match[1], nil
-	}
-	return "", nil
-}
-
-func (s *MetaScraper) extractURLsFromXML(url string, allowRedirects bool) ([]string, error) {
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, fmt.Errorf("error creating request for %s: %s", url, err)
-	}
-
-	client := s.Client
-	if !allowRedirects {
-		client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
-		}
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("error sending request for %s: %s", url, err)
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("error reading response body for %s: %s", url, err)
-	}
-
-	urls := extractURLs(string(body))
-	return urls, nil
-}
-
-func extractURLs(xmlData string) []string {
-	pattern := `<loc>([^<]+)</loc>`
-	regex := regexp.MustCompile(pattern)
-	matches := regex.FindAllStringSubmatch(xmlData, -1)
-	urls := make([]string, len(matches))
-	for i, match := range matches {
-		urls[i] = match[1]
-	}
-
-	return urls
 }
