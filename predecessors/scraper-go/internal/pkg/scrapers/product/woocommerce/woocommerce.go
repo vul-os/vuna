@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product"
 	"github.com/exolutiontech/scraper-go/internal/pkg/storage"
@@ -115,6 +116,8 @@ func scrapeProductWithoutVariations(productURL, productID, productName string, e
 	imageURL, _ := doc.
 		Find("div.woocommerce-product-gallery__image img").Attr("src")
 
+	createdAt := time.Now()
+
 	productData := product.ProductData{
 		Name:        productName,
 		Description: "",
@@ -128,6 +131,8 @@ func scrapeProductWithoutVariations(productURL, productID, productName string, e
 
 		ProductIdentifier: productIdentifier,
 		SiteIdentifier:    encodedSite,
+
+		DateCreated: createdAt,
 	}
 
 	dataPoint := product.DataPoint{
@@ -181,6 +186,8 @@ func scrapeProductWithVariations(productURL, productID, productName string, enco
 		attributes := variation["attributes"].(map[string]interface{})
 		firstValue := ""
 
+		createdAt := time.Now()
+
 		for _, value := range attributes {
 			firstValue = value.(string)
 			break
@@ -199,6 +206,8 @@ func scrapeProductWithVariations(productURL, productID, productName string, enco
 
 			ProductIdentifier: productIdentifier,
 			SiteIdentifier:    encodedSite,
+
+			DateCreated: createdAt,
 		}
 
 		dataPoint := product.DataPoint{
@@ -210,6 +219,8 @@ func scrapeProductWithVariations(productURL, productID, productName string, enco
 
 			Price:  priceFloat,
 			MaxQty: maxQtyInt,
+
+			DateCreated: createdAt,
 		}
 
 		dataPointList = append(dataPointList, dataPoint)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product"
 	"github.com/exolutiontech/scraper-go/internal/pkg/storage"
@@ -90,6 +91,7 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 			continue
 		}
 		productIdentifier := fmt.Sprintf("%s-%s$%d", encodedProductUrl, variant.SKU, variant.ID)
+		createdAt := time.Now()
 
 		dataPoint := product.DataPoint{
 			ProductIdentifier: productIdentifier,
@@ -100,6 +102,8 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 
 			Price:  priceFloat,
 			MaxQty: maxQtyInt,
+
+			DateCreated: createdAt,
 		}
 
 		dataPointList = append(dataPointList, dataPoint)
@@ -123,8 +127,9 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 				VariationID: fmt.Sprintf("%d", variant.ID),
 
 				ProductIdentifier: productIdentifier,
-				SiteIdentifier: encodedSite,
+				SiteIdentifier:    encodedSite,
 
+				DateCreated: createdAt,
 			}
 
 			productDataList = append(productDataList, productData)

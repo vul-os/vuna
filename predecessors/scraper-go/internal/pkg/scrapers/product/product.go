@@ -36,6 +36,8 @@ type ProductData struct {
 
 	ProductIdentifier string
 	SiteIdentifier string
+
+	DateCreated time.Time
 }
 
 type DataPoint struct {
