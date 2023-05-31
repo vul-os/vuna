@@ -18,16 +18,7 @@ def process_data():
         if file_contents:
             query_job = client.query(query)
             results = query_job.result()
-
-            # Process the query results and construct JSON response
-            output = []
-            for row in results:
-                typed_row = {}
-                for key, value in row.items():
-                    typed_row[key] = process_value(value)
-                output.append(typed_row)
-
-            return jsonify(output), 200
+            return jsonify(results), 200
         else:
             return jsonify({'error': 'File does not exist.'}), 404
     return jsonify({'error': 'Invalid template dict provided.'}), 400
