@@ -33,9 +33,6 @@ func EncodeURL(urlStr string) string {
 
 // EncodeAndCompressURL encodes and compresses the given URL.
 func CompressURL(urlString string) (string, error) {
-	// // Encode the URL
-	// encodedURL := url.QueryEscape(urlString)
-
 	// Compress the encoded URL
 	var compressedURL bytes.Buffer
 	compressor := zlib.NewWriter(&compressedURL)
@@ -45,12 +42,15 @@ func CompressURL(urlString string) (string, error) {
 	}
 	compressor.Close()
 
-	return compressedURL.String(), nil
+	// Convert the compressed URL to ASCII base64 string
+	asciiURL := base64.StdEncoding.EncodeToString(compressedURL.Bytes())
+
+	return asciiURL, nil
 }
 
 // DecompressAndDecodeURL decompresses and decodes the given compressed URL.
-func DecompressURL(compressedURL string) (string, error) {
-	// Convert the compressed URL from a string to a byte slice
+func Decompress(compressedURL string) (string, error) {
+	// Convert the ASCII base64 string to compressed byte slice
 	compressedBytes, err := base64.StdEncoding.DecodeString(compressedURL)
 	if err != nil {
 		return "", fmt.Errorf("error decoding base64 URL: %w", err)
@@ -69,11 +69,6 @@ func DecompressURL(compressedURL string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error reading decompressed URL: %w", err)
 	}
-
-	// decodedURL, err := url.QueryUnescape(decompressedBuffer.String())
-	// if err != nil {
-	// 	return "", fmt.Errorf("error decoding URL: %w", err)
-	// }
 
 	return decompressedBuffer.String(), nil
 }
