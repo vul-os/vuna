@@ -9,6 +9,7 @@ import (
 	// "github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
 	"fmt"
 	"net/http"
+	"os"
 
 	// "time"
 
@@ -24,6 +25,7 @@ import (
 	// "github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product/shopify"
 
 	"github.com/exolutiontech/scraper-go/internal/pkg/storage"
+	gcsutils "github.com/exolutiontech/scraper-go/internal/pkg/storage/gcs"
 )
 
 func main() {
@@ -61,7 +63,25 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println("results: ", results)
+	d, err := utils.ToMap(results.ProductData)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println("results: ", d)
+
+	// Write data to a CSV file
+	csvFile, err := os.Create("data.csv")
+	if err != nil {
+		fmt.Println("Error creating CSV file:", err)
+		return
+	}
+	defer csvFile.Close()
+
+	err = gcsutils.WriteCSVFile(csvFile, d)
+	if err != nil {
+		fmt.Println("Error writing CSV file:", err)
+	}
 
 	meta := meta.New(&client, st)
 	data, err := meta.ScrapeOne("https://3dprintingstore.co.za/")

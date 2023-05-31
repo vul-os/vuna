@@ -1,11 +1,11 @@
 package utils
 
 import (
-	"regexp"
-	"strings"
-	"net/url"
 	"fmt"
 	"math/rand"
+	"net/url"
+	"regexp"
+	"strings"
 )
 
 func GetBaseURL(rawURL string) (string, error) {
@@ -33,7 +33,6 @@ func SliceInString(a string, list []string) bool {
 	}
 	return false
 }
-
 
 // RandomSample returns a random sample of strings from a given list
 func RandomSample(stringList []string, sampleSize int) []string {
@@ -69,6 +68,8 @@ func CleanString(input string) string {
 	cleanStr = strings.TrimSpace(cleanStr)
 	cleanStr = strings.ReplaceAll(cleanStr, "\"", "")
 	cleanStr = strings.ReplaceAll(cleanStr, "'", "")
+	cleanStr = strings.ReplaceAll(cleanStr, "\"", "")
+
 	return cleanStr
 }
 

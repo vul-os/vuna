@@ -42,6 +42,7 @@ func WriteCSVFile(writer io.Writer, data []map[string]string) error {
 	for _, row := range data {
 		record := make([]string, 0, len(header))
 		for _, key := range header {
+			fmt.Println(row[key])
 			record = append(record, row[key])
 		}
 		csvWriter.Write(record)

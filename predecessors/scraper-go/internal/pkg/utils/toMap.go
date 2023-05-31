@@ -57,11 +57,15 @@ func structToMap(v reflect.Value) (map[string]string, error) {
 		case reflect.Slice:
 			if fieldType.Elem().Kind() == reflect.String {
 				var sliceValues []string
+				if fieldValue.Len() == 0 {
+					data[fieldName] = CleanStringCSV("")
+					continue
+				}
 				for j := 0; j < fieldValue.Len(); j++ {
 					tStr := CleanStringCSV(fieldValue.Index(j).String())
-					sliceValues = append(sliceValues, fmt.Sprintf(`"%s"`, tStr))
+					sliceValues = append(sliceValues, tStr)
 				}
-				data[fieldName] = strings.Join(sliceValues, ", ")
+				data[fieldName] = "[" + strings.Join(sliceValues, ",") + "]"
 			} else {
 				return nil, fmt.Errorf("ToMap: unsupported slice type")
 			}
