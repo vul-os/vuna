@@ -78,8 +78,16 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 			continue
 		}
 
+		productUrl := utils.RemoveURLPrefix(request.Url)
+		encodedProductUrl, err := utils.EncodeAndCompressURL(productUrl)
+		if err != nil {
+			continue
+		}
+		productIdentifier := fmt.Sprintf("%s-%s$%s", encodedProductUrl, variant.SKU, variant.ID)
+
 		dataPoint := product.DataPoint{
-			SiteID:      "", //fix here
+			ProductIdentifier: productIdentifier,
+
 			SKU:         variant.SKU,
 			ProductID:   fmt.Sprintf("%d", response.Product.ID),
 			VariationID: fmt.Sprintf("%d", variant.ID),
@@ -107,6 +115,8 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 				SKU:         variant.SKU,
 				ProductID:   fmt.Sprintf("%d", response.Product.ID),
 				VariationID: fmt.Sprintf("%d", variant.ID),
+
+				ProductIdentifier: productIdentifier,
 			}
 
 			productDataList = append(productDataList, productData)

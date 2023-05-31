@@ -33,10 +33,12 @@ type ProductData struct {
 	ProductID   string
 	VariationID string
 	SKU         string
+
+	ProductIdentifier string
 }
 
 type DataPoint struct {
-	SiteID string
+	ProductIdentifier string
 
 	ProductID   string
 	VariationID string
@@ -58,6 +60,6 @@ type ScrapeOneRequest struct {
 }
 
 type ScrapeOneResponse struct {
-	DataPoint  []DataPoint
+	DataPoint   []DataPoint
 	ProductData []ProductData
 }

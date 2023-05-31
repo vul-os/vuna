@@ -100,6 +100,13 @@ func scrapeProductWithoutVariations(productURL, productID, productName string,
 		}
 	}
 
+	productUrl := utils.RemoveURLPrefix(productURL)
+	encodedProductUrl, err := utils.EncodeAndCompressURL(productUrl)
+	productIdentifier := fmt.Sprintf("%s-default", encodedProductUrl)
+
+	if err != nil {
+		return product.ProductData{}, product.DataPoint{}, err
+	}
 	imageURL, _ := doc.
 		Find("div.woocommerce-product-gallery__image img").Attr("src")
 
@@ -113,9 +120,13 @@ func scrapeProductWithoutVariations(productURL, productID, productName string,
 		SKU:         sku,
 		ProductID:   productID,
 		VariationID: "",
+
+		ProductIdentifier: productIdentifier,
 	}
 
 	dataPoint := product.DataPoint{
+		ProductIdentifier: productIdentifier,
+
 		SKU:         sku,
 		ProductID:   productID,
 		VariationID: "",
@@ -149,6 +160,13 @@ func scrapeProductWithVariations(productURL, productID, productName string,
 		priceFloat, errp := utils.PriceToFloat(displayPrice)
 		maxQtyInt, errq := utils.MaxQtyToInt(availabilityHTML)
 
+		productUrl := utils.RemoveURLPrefix(productURL)
+		encodedProductUrl, err := utils.EncodeAndCompressURL(productUrl)
+		if err != nil {
+			continue
+		}
+		productIdentifier := fmt.Sprintf("%s-%s$%s", encodedProductUrl, sku, variationID)
+
 		if errp != nil || errq != nil {
 			continue
 		}
@@ -172,10 +190,13 @@ func scrapeProductWithVariations(productURL, productID, productName string,
 			SKU:         sku.(string),
 			ProductID:   productID,
 			VariationID: variationID.(string),
+
+			ProductIdentifier: productIdentifier,
 		}
 
 		dataPoint := product.DataPoint{
-			SiteID:      "", //fix here
+			ProductIdentifier: encodedProductUrl,
+
 			SKU:         sku.(string),
 			ProductID:   productID,
 			VariationID: variationID.(string),
