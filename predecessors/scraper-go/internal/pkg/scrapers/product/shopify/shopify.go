@@ -85,7 +85,7 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 		}
 
 		productUrl := utils.RemoveURLPrefix(request.Url)
-		encodedProductUrl, err := utils.CompressURL(productUrl)
+		encodedProductUrl, err := utils.EncodeAndCompressURL(productUrl)
 		if err != nil {
 			continue
 		}

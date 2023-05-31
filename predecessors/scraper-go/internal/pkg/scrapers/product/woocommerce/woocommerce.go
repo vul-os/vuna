@@ -106,7 +106,7 @@ func scrapeProductWithoutVariations(productURL, productID, productName string, e
 	}
 
 	productUrl := utils.RemoveURLPrefix(productURL)
-	encodedProductUrl, err := utils.CompressURL(productUrl)
+	encodedProductUrl, err := utils.EncodeAndCompressURL(productUrl)
 	productIdentifier := fmt.Sprintf("%s-default", encodedProductUrl)
 
 	if err != nil {
@@ -167,7 +167,7 @@ func scrapeProductWithVariations(productURL, productID, productName string, enco
 		maxQtyInt, errq := utils.MaxQtyToInt(availabilityHTML)
 
 		productUrl := utils.RemoveURLPrefix(productURL)
-		encodedProductUrl, err := utils.CompressURL(productUrl)
+		encodedProductUrl, err := utils.EncodeAndCompressURL(productUrl)
 		if err != nil {
 			continue
 		}
