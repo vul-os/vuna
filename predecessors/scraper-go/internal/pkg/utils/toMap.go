@@ -76,7 +76,7 @@ func structToMap(v reflect.Value) (map[string]string, error) {
 		case reflect.Struct:
 			if fieldType == reflect.TypeOf(time.Time{}) {
 				if t, ok := fieldValue.Interface().(time.Time); ok {
-					data[fieldName] = t.Format("2006/01/02 15:04:05.000000")
+					data[fieldName] = t.Format("2006/01/02 15:04:05")
 				}
 			} else {
 				nestedData, err := structToMap(fieldValue)
