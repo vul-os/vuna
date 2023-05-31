@@ -26,12 +26,11 @@ func ToMapAndWriteData(strg storage.FileStorage, list interface{}, fileName stri
 
 func Save(dataPointList []DataPoint, productDataList []ProductData,
 	strg storage.FileStorage, url string, fullScrape bool) error {
-	siteUrl, err := utils.GetBaseURL(url)
+
+	_, encodedSite, err := utils.UrlToIdetifier(url)
 	if err != nil {
 		return err
 	}
-	siteUrl = utils.RemoveURLPrefix(siteUrl)
-	encodedSite := utils.EncodeURL(siteUrl)
 
 	currentDatetime := time.Now()
 	formattedDatetime := currentDatetime.Format("2006-01-02-15-04-05")

@@ -35,6 +35,7 @@ type ProductData struct {
 	SKU         string
 
 	ProductIdentifier string
+	SiteIdentifier string
 }
 
 type DataPoint struct {

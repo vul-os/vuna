@@ -8,6 +8,21 @@ import (
 	"net/url"
 )
 
+func UrlToIdetifier(urlStr string) (string, string, error) {
+	urlString, err := GetBaseURL(urlStr)
+	if err != nil {
+		return "", "", err
+	}
+	urlString = RemoveURLPrefix(urlString)
+	encodedURL := url.QueryEscape(urlString)
+
+	encodedSite, err := CompressURL(encodedURL)
+	if err != nil {
+		return "", "", err
+	}
+	return urlString, encodedSite, nil
+}
+
 func EncodeURL(urlStr string) string {
 	// URL encoding
 	encodedURL := url.QueryEscape(urlStr)
@@ -17,14 +32,14 @@ func EncodeURL(urlStr string) string {
 }
 
 // EncodeAndCompressURL encodes and compresses the given URL.
-func EncodeAndCompressURL(urlString string) (string, error) {
-	// Encode the URL
-	encodedURL := url.QueryEscape(urlString)
+func CompressURL(urlString string) (string, error) {
+	// // Encode the URL
+	// encodedURL := url.QueryEscape(urlString)
 
 	// Compress the encoded URL
 	var compressedURL bytes.Buffer
 	compressor := zlib.NewWriter(&compressedURL)
-	_, err := compressor.Write([]byte(encodedURL))
+	_, err := compressor.Write([]byte(urlString))
 	if err != nil {
 		return "", fmt.Errorf("error compressing URL: %w", err)
 	}
@@ -34,7 +49,7 @@ func EncodeAndCompressURL(urlString string) (string, error) {
 }
 
 // DecompressAndDecodeURL decompresses and decodes the given compressed URL.
-func DecompressAndDecodeURL(compressedURL string) (string, error) {
+func DecompressURL(compressedURL string) (string, error) {
 	// Convert the compressed URL from a string to a byte slice
 	compressedBytes, err := base64.StdEncoding.DecodeString(compressedURL)
 	if err != nil {
@@ -55,10 +70,10 @@ func DecompressAndDecodeURL(compressedURL string) (string, error) {
 		return "", fmt.Errorf("error reading decompressed URL: %w", err)
 	}
 
-	decodedURL, err := url.QueryUnescape(decompressedBuffer.String())
-	if err != nil {
-		return "", fmt.Errorf("error decoding URL: %w", err)
-	}
+	// decodedURL, err := url.QueryUnescape(decompressedBuffer.String())
+	// if err != nil {
+	// 	return "", fmt.Errorf("error decoding URL: %w", err)
+	// }
 
-	return decodedURL, nil
+	return decompressedBuffer.String(), nil
 }

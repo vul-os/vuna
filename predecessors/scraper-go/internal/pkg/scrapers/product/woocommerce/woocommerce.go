@@ -34,6 +34,11 @@ func New(
 
 func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOneResponse,
 	error) {
+	_, encodedSite, err := utils.UrlToIdetifier(request.Url)
+	if err != nil {
+		return nil, err
+	}
+
 	body, err := utils.FetchWithProxy(s.ProxyConfig, request.Url)
 	if err != nil {
 		return nil, err
@@ -56,13 +61,13 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 
 	if doc.Find("form.variations_form").Length() > 0 {
 		productDataList, dataPointList, err = scrapeProductWithVariations(request.Url,
-			productID, productName, doc)
+			productID, productName, encodedSite, doc)
 		if err != nil {
 			return nil, err
 		}
 	} else {
 		productData, dataPoint, err := scrapeProductWithoutVariations(request.Url,
-			productID, productName, doc)
+			productID, productName, encodedSite, doc)
 		if err != nil {
 			return nil, err
 		}
@@ -78,7 +83,7 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 		ProductData: productDataList}, nil
 }
 
-func scrapeProductWithoutVariations(productURL, productID, productName string,
+func scrapeProductWithoutVariations(productURL, productID, productName string, encodedSite string,
 	doc *goquery.Document) (product.ProductData, product.DataPoint, error) {
 
 	summaryDiv := doc.Find("div.summary")
@@ -101,7 +106,7 @@ func scrapeProductWithoutVariations(productURL, productID, productName string,
 	}
 
 	productUrl := utils.RemoveURLPrefix(productURL)
-	encodedProductUrl, err := utils.EncodeAndCompressURL(productUrl)
+	encodedProductUrl, err := utils.CompressURL(productUrl)
 	productIdentifier := fmt.Sprintf("%s-default", encodedProductUrl)
 
 	if err != nil {
@@ -122,6 +127,7 @@ func scrapeProductWithoutVariations(productURL, productID, productName string,
 		VariationID: "",
 
 		ProductIdentifier: productIdentifier,
+		SiteIdentifier: encodedSite,
 	}
 
 	dataPoint := product.DataPoint{
@@ -138,7 +144,7 @@ func scrapeProductWithoutVariations(productURL, productID, productName string,
 	return productData, dataPoint, nil
 }
 
-func scrapeProductWithVariations(productURL, productID, productName string,
+func scrapeProductWithVariations(productURL, productID, productName string, encodedSite string,
 	doc *goquery.Document) ([]product.ProductData, []product.DataPoint, error) {
 
 	productDataList := []product.ProductData{}
@@ -161,7 +167,7 @@ func scrapeProductWithVariations(productURL, productID, productName string,
 		maxQtyInt, errq := utils.MaxQtyToInt(availabilityHTML)
 
 		productUrl := utils.RemoveURLPrefix(productURL)
-		encodedProductUrl, err := utils.EncodeAndCompressURL(productUrl)
+		encodedProductUrl, err := utils.CompressURL(productUrl)
 		if err != nil {
 			continue
 		}
@@ -192,6 +198,7 @@ func scrapeProductWithVariations(productURL, productID, productName string,
 			VariationID: variationID.(string),
 
 			ProductIdentifier: productIdentifier,
+			SiteIdentifier: encodedSite,
 		}
 
 		dataPoint := product.DataPoint{

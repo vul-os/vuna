@@ -15,7 +15,8 @@ import (
 
 // SiteData is a struct representing the site data
 type SiteData struct {
-	ID    string `json:"id"`
+	SiteIdentifier string `json:"site_identifier"`
+
 	Name  string `json:"name"`
 	Image string `json:"image"`
 
@@ -25,6 +26,8 @@ type SiteData struct {
 	Scraper    string `json:"scraper"`
 
 	RateLimit string `json:"rate_limit"`
+
+	Url string `json:"url"`
 }
 
 // func StructToMap(s SiteData) map[string]string {
@@ -58,16 +61,19 @@ func (s *SiteScraper) ScrapeOne(url string) (map[string]string, error) {
 	currencyCode := "ZAR"
 
 	name, image, technology := s.GetSiteInfo(url)
-	siteID := utils.EncodeURL(url)
-
+	siteUrl, encodedSite, err := utils.UrlToIdetifier(url)
+	if err != nil {
+		return nil, err
+	}
 	items := []map[string]string{{
-		"id":         siteID,
-		"name":       strings.TrimSpace(name),
-		"image":      strings.TrimSpace(image),
-		"currency":   currencyCode,
-		"technology": technology,
-		"rate_limit": "1/s",
-		"scraper":    technology,
+		"site_identifier": encodedSite,
+		"name":            strings.TrimSpace(name),
+		"image":           strings.TrimSpace(image),
+		"currency":        currencyCode,
+		"technology":      technology,
+		"rate_limit":      "1/s",
+		"scraper":         technology,
+		"url":             siteUrl,
 	}}
 
 	if s.FileStorage != nil {

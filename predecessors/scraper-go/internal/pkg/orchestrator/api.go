@@ -138,13 +138,14 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 	var siteInfo []site.SiteData
 	for _, siteMap := range siteInfoRawT {
 		site := site.SiteData{
-			Currency:   siteMap["currency"],
-			ID:         siteMap["id"],
-			Image:      siteMap["image"],
-			Name:       siteMap["name"],
-			RateLimit:  siteMap["rate_limit"],
-			Scraper:    siteMap["scraper"],
-			Technology: siteMap["technology"],
+			Currency:       siteMap["currency"],
+			SiteIdentifier: siteMap["site_identifier"],
+			Image:          siteMap["image"],
+			Name:           siteMap["name"],
+			RateLimit:      siteMap["rate_limit"],
+			Scraper:        siteMap["scraper"],
+			Technology:     siteMap["technology"],
+			Url:            siteMap["url"],
 		}
 		siteInfo = append(siteInfo, site)
 	}
