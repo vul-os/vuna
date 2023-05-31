@@ -82,7 +82,7 @@ func (t *TaskCreator) CreateTaskScrapeProduct(url string, scraper string, schedu
 	payload := map[string]interface{}{
 		"url":         url,
 		"scraper":     scraper,
-		"full_scrape": "true",
+		"full_scrape": true,
 	}
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
