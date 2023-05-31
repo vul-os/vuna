@@ -68,8 +68,9 @@ func (api *ScraperAPI) Site(w http.ResponseWriter, r *http.Request) {
 
 func (api *ScraperAPI) Product(w http.ResponseWriter, r *http.Request) {
 	type jsonData struct {
-		Url     string `json:"url"`
-		Scraper string `json:"scraper"`
+		Url        string `json:"url"`
+		Scraper    string `json:"scraper"`
+		FullScrape bool   `json:"full_scrape"`
 	}
 
 	proxyConfig := utils.ProxyConfig{
@@ -106,8 +107,10 @@ func (api *ScraperAPI) Product(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	scrapeOneResponse, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
-		Url: productURL,
+		Url:        productURL,
+		FullScrape: d.FullScrape,
 	})
+
 	if err != nil {
 		http.Error(w, fmt.Sprintf("scrape one error: %s", err), http.StatusBadRequest)
 		return

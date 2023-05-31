@@ -19,7 +19,7 @@ type TaskCreatorDetails struct {
 }
 
 type TaskCreator struct {
-	Client    *cloudtasks.Client
+	Client     *cloudtasks.Client
 	DetailsMap map[string]TaskCreatorDetails
 }
 
@@ -31,7 +31,7 @@ func New(detailsMap map[string]TaskCreatorDetails) (*TaskCreator, error) {
 	}
 
 	return &TaskCreator{
-		Client:    client,
+		Client:     client,
 		DetailsMap: detailsMap,
 	}, nil
 }
@@ -79,9 +79,10 @@ func (t *TaskCreator) CreateTaskOrchestrateProduct(file string) error {
 func (t *TaskCreator) CreateTaskScrapeProduct(url string, scraper string, scheduledTime time.Time) error {
 	taskURL := fmt.Sprintf("%s/scraper/product", t.DetailsMap["product"].TargetUrl)
 
-	payload := map[string]string{
-		"url":     url,
-		"scraper": scraper,
+	payload := map[string]interface{}{
+		"url":         url,
+		"scraper":     scraper,
+		"full_scrape": "true",
 	}
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
