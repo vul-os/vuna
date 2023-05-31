@@ -55,7 +55,7 @@ func main() {
 	var st storage.FileStorage
 	productScraper := woocommerce.New(proxyConfig, client, st)
 	results, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
-		Url:        "https://3dprintingstore.co.za/products/stepper-motor-nema-17-x-40mm-1-8-deg-step",
+		Url:        "https://www.biltongandbudz.co.za/product/barneys-farm-runtz-fem-autoflower/",
 		FullScrape: true,
 	})
 	if err != nil {

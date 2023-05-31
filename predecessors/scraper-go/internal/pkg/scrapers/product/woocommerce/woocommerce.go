@@ -127,7 +127,7 @@ func scrapeProductWithoutVariations(productURL, productID, productName string, e
 		VariationID: "",
 
 		ProductIdentifier: productIdentifier,
-		SiteIdentifier: encodedSite,
+		SiteIdentifier:    encodedSite,
 	}
 
 	dataPoint := product.DataPoint{
@@ -165,7 +165,6 @@ func scrapeProductWithVariations(productURL, productID, productName string, enco
 		variationID := variation["variation_id"]
 		priceFloat, errp := utils.PriceToFloat(displayPrice)
 		maxQtyInt, errq := utils.MaxQtyToInt(availabilityHTML)
-
 		productUrl := utils.RemoveURLPrefix(productURL)
 		encodedProductUrl, err := utils.EncodeAndCompressURL(productUrl)
 		if err != nil {
@@ -174,17 +173,18 @@ func scrapeProductWithVariations(productURL, productID, productName string, enco
 		productIdentifier := fmt.Sprintf("%s-%s$%s", encodedProductUrl, sku, variationID)
 
 		if errp != nil || errq != nil {
+			fmt.Println("Error MaxQty,Price: ", priceFloat, maxQtyInt)
 			continue
 		}
 
 		imageURL := variation["image"].(map[string]interface{})["src"]
 		attributes := variation["attributes"].(map[string]interface{})
 		firstValue := ""
+
 		for _, value := range attributes {
 			firstValue = value.(string)
 			break
 		}
-
 		productData := product.ProductData{
 			Name:        firstValue,
 			Description: "",
@@ -193,20 +193,20 @@ func scrapeProductWithVariations(productURL, productID, productName string, enco
 			Attributes: []string{},
 
 			URL:         productURL,
-			SKU:         sku.(string),
+			SKU:         fmt.Sprintf("%v", sku),
 			ProductID:   productID,
-			VariationID: variationID.(string),
+			VariationID: fmt.Sprintf("%v", variationID),
 
 			ProductIdentifier: productIdentifier,
-			SiteIdentifier: encodedSite,
+			SiteIdentifier:    encodedSite,
 		}
 
 		dataPoint := product.DataPoint{
 			ProductIdentifier: encodedProductUrl,
 
-			SKU:         sku.(string),
+			SKU:         fmt.Sprintf("%v", sku),
 			ProductID:   productID,
-			VariationID: variationID.(string),
+			VariationID: fmt.Sprintf("%v", variationID),
 
 			Price:  priceFloat,
 			MaxQty: maxQtyInt,
