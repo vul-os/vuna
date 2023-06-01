@@ -1,8 +1,15 @@
-from flask import Flask, request, jsonify, Blueprint
+from flask import Flask, request, jsonify, Blueprint, current_app
 from src.payments.plan.paystack import PaystackPlanManager
-from src.payments.plan.firestore import FirestoreManagerPlan
+from src.payments.plan.firestore import FirestorePlanManager
 
 plan_bp = Blueprint('plan_api', __name__)
+
+firestore_db = current_app.config['CLIENT']
+paystack_secret_key = current_app.config['PAYSTACK_SECRET_KEY']
+
+firestore_manager = FirestorePlanManager(firestore_db)
+paystack_manager = PaystackPlanManager(paystack_secret_key)
+
 
 @plan_bp.route('/plans', methods=['POST'])
 def create_plan():

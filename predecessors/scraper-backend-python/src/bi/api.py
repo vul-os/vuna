@@ -1,6 +1,12 @@
 from flask import Blueprint, request, jsonify
+from string import Template
+
 from google.cloud import bigquery
-from .utils import process_value, process_file
+
+from src.bi.utils import process_file
+
+
+client = bigquery.Client()
 
 bi_bp = Blueprint('bi', __name__)
 

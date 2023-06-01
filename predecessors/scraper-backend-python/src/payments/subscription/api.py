@@ -1,8 +1,15 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from src.payments.subscription.paystack import PaystackSubscriptionManager
-from src.payments.subscription.firestore import FirestoreManagerSubscription
+from src.payments.subscription.firestore import FirestoreSubscriptionManager
 
 subscriptions_bp = Blueprint('subscriptions', __name__)
+
+firestore_db = current_app.config['CLIENT']
+paystack_secret_key = current_app.config['PAYSTACK_SECRET_KEY']
+
+firestore_manager = FirestoreSubscriptionManager(firestore_db)
+paystack_manager = PaystackSubscriptionManager(paystack_secret_key)
+
 
 @subscriptions_bp.route('/', methods=['POST'])
 def create_subscription():

@@ -3,43 +3,46 @@ import requests
 class PaystackSubscriptionManager:
     def __init__(self, secret_key):
         self.secret_key = secret_key
-        self.base_url = 'https://api.paystack.co/'
+        self.base_url = 'https://api.paystack.co'
 
-    def create_subscription(self, customer_id, plan_code):
-        url = self.base_url + 'subscription'
+    def create_subscription(self, customer_id, plan_id):
+        url = f'{self.base_url}/subscription'
         headers = {
-            'Authorization': 'Bearer ' + self.secret_key,
+            'Authorization': f'Bearer {self.secret_key}',
             'Content-Type': 'application/json'
         }
         data = {
             'customer': customer_id,
-            'plan': plan_code
+            'plan': plan_id
         }
-        response = requests.post(url, headers=headers, json=data)
-        response_data = response.json()
-        subscription_code = response_data.get('data', {}).get('subscription_code')
-        return subscription_code
 
-    def update_subscription(self, subscription_code, customer_id=None, plan_code=None):
-        url = self.base_url + f'subscription/{subscription_code}'
+        response = requests.post(url, headers=headers, json=data)
+        if response.status_code == 201:
+            subscription_data = response.json()
+            return subscription_data['data']['subscription_code']
+        else:
+            return None
+
+    def update_subscription(self, subscription_code, customer_id=None, plan_id=None):
+        url = f'{self.base_url}/subscription/{subscription_code}'
         headers = {
-            'Authorization': 'Bearer ' + self.secret_key,
+            'Authorization': f'Bearer {self.secret_key}',
             'Content-Type': 'application/json'
         }
         data = {}
         if customer_id:
             data['customer'] = customer_id
-        if plan_code:
-            data['plan'] = plan_code
+        if plan_id:
+            data['plan'] = plan_id
 
         response = requests.put(url, headers=headers, json=data)
-        return response.ok
+        return response.status_code == 200
 
-    def cancel_subscription(self, subscription_code):
-        url = self.base_url + f'subscription/{subscription_code}/disable'
+    def delete_subscription(self, subscription_code):
+        url = f'{self.base_url}/subscription/{subscription_code}'
         headers = {
-            'Authorization': 'Bearer ' + self.secret_key
+            'Authorization': f'Bearer {self.secret_key}'
         }
 
-        response = requests.post(url, headers=headers)
-        return response.ok
+        response = requests.delete(url, headers=headers)
+        return response.status_code == 204

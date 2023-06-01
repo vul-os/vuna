@@ -3,14 +3,13 @@ from src.bi.api import bi_bp
 from src.payments.plan.api import plan_bp
 from src.payments.subscription.api import subscriptions_bp
 
-# paystack_secret_key = 'YOUR_PAYSTACK_SECRET_KEY'  # Replace with your actual Paystack secret key
 # cred = credentials.Certificate('path/to/service-account-key.json')  # Replace with your service account key path
 # firebase_admin.initialize_app(cred)
-# firestore_db = firestore.client()
-# firestore_manager = FirestoreManagerSubscription(firestore_db)
-# paystack_manager = PaystackSubscriptionManager(paystack_secret_key)
 
-# client = bigquery.Client()
+
+# firestore_db = firestore.client()
+# paystack_secret_key = 'YOUR_PAYSTACK_SECRET_KEY'  # Replace with your actual Paystack secret key
+
 
 app = Flask(__name__)
 
