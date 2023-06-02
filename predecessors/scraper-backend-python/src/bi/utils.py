@@ -1,7 +1,7 @@
 import os
 
 def process_file(name):
-    directory = os.path.join(os.getcwd(), "src/bi/sql")
+    directory = os.path.join(os.getcwd(), "sql")
     extension = ".sql"
 
     filename = name + extension
