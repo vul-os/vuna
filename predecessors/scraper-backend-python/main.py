@@ -1,7 +1,7 @@
 from flask import Flask
 from src.bi.api import bi_bp
-from src.payments.plan.api import plan_bp
-from src.payments.subscription.api import subscriptions_bp
+# from src.payments.plan.api import plan_bp
+# from src.payments.subscription.api import subscriptions_bp
 
 # cred = credentials.Certificate('path/to/service-account-key.json')  # Replace with your service account key path
 # firebase_admin.initialize_app(cred)
