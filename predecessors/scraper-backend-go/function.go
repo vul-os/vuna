@@ -8,17 +8,18 @@ import (
 	"cloud.google.com/go/bigquery"
 	"github.com/exolutionza/scraper-backend-go/internal/bi"
 	"github.com/gin-gonic/gin"
-	"google.golang.org/api/option"
+	// "google.golang.org/api/option"
 )
 
-func main() {
-
+func Main() {
 	// Create a BigQuery client
 	ctx := context.Background()
 	projectID := "scraping-is-hard"
 
 	// Provide the path to the keyfile.json
-	client, err := bigquery.NewClient(ctx, projectID, option.WithCredentialsFile("keyfile.json"))
+	// client, err := bigquery.NewClient(ctx, projectID, option.WithCredentialsFile("keyfile.json"))
+	client, err := bigquery.NewClient(ctx, projectID)
+
 	if err != nil {
 		log.Fatalf("Failed to create BigQuery client: %v", err)
 	}
