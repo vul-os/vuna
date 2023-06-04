@@ -34,11 +34,11 @@ func Main() {
 	// Define the routes
 	router.POST("/execute", processor.TemplateAndExecuteOne)
 
-	// Start the server
-	port := ":8080"
-	log.Printf("Server running on port %s", port)
-	err = router.Run(port)
-	if err != nil {
-		log.Fatalf("Failed to start server: %v", err)
-	}
+	// // Start the server
+	// port := ":8080"
+	// log.Printf("Server running on port %s", port)
+	// err = router.Run(port)
+	// if err != nil {
+	// 	log.Fatalf("Failed to start server: %v", err)
+	// }
 }
