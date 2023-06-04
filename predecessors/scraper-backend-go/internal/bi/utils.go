@@ -1,34 +1,23 @@
 package bi
 
 import (
-	"io/ioutil"
-	"os"
+	"embed"
 	"path/filepath"
 )
 
+//go:embed sql
+var sqlFiles embed.FS
+
 func ProcessFile(name string) string {
-	directory := filepath.Join(os.Getenv("PWD"), "sql")
 	extension := ".sql"
 
 	filename := name + extension
-	filepath := filepath.Join(directory, filename)
+	filepath := filepath.Join("sql", filename)
 
-	if fileExists(filepath) {
-		fileContents, err := ioutil.ReadFile(filepath)
-		if err != nil {
-			// Handle error reading file
-			return ""
-		}
-		return string(fileContents)
-	} else {
+	fileContents, err := sqlFiles.ReadFile(filepath)
+	if err != nil {
+		// Handle error reading file
 		return ""
 	}
-}
-
-func fileExists(filepath string) bool {
-	_, err := os.Stat(filepath)
-	if os.IsNotExist(err) {
-		return false
-	}
-	return true
+	return string(fileContents)
 }

@@ -24,10 +24,9 @@ WITH diffs AS (
   JOIN
     `scrapers.datapoint_raw` p ON t.ProductIdentifier = p.ProductIdentifier AND t.DateCreated = p.DateCreated
   WHERE
- t.DateCreated BETWEEN '2023-01-01' AND '2023-05-31'
+ t.DateCreated BETWEEN '{{ .date_start }}' AND '{{ .date_end }}'
 )
 SELECT
-
-  SUM(Revenue)
+  SUM(Revenue) as total_revenue
 FROM
   revenue_query
