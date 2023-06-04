@@ -8,10 +8,18 @@ import (
 	"cloud.google.com/go/bigquery"
 	"github.com/exolutionza/scraper-backend-go/internal/bi"
 	"github.com/gin-gonic/gin"
+
 	// "google.golang.org/api/option"
+	"net/http"
+
+	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
 )
 
-func Main() {
+func init() {
+	functions.HTTP("Router", router)
+}
+
+func router(w http.ResponseWriter, r *http.Request) {
 	// Create a BigQuery client
 	ctx := context.Background()
 	projectID := "scraping-is-hard"
