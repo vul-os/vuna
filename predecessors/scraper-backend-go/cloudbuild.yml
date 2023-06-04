@@ -4,6 +4,6 @@ steps:
       - 'functions'
       - 'deploy'
       - 'scraper-backend-go'
-      - '--runtime=go111'
+      - '--runtime=go120'
       - '--trigger-http'
       - '--region=us-central1'
