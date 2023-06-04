@@ -8,7 +8,6 @@ import (
 	"text/template"
 
 	"cloud.google.com/go/bigquery"
-	"github.com/gin-gonic/gin"
 )
 
 type BigQueryProcessor struct {
@@ -21,13 +20,13 @@ func NewBigQueryProcessor(client *bigquery.Client) *BigQueryProcessor {
 	}
 }
 
-func (bp *BigQueryProcessor) TemplateAndExecuteOne(c *gin.Context) {
-	ctx := c.Request.Context()
+func (bp *BigQueryProcessor) TemplateAndExecuteOne(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	// Parse the request body
 	var data map[string]interface{}
-	err := json.NewDecoder(c.Request.Body).Decode(&data)
+	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to parse request body"})
+		http.Error(w, "Failed to parse request body", http.StatusBadRequest)
 		return
 	}
 
@@ -38,21 +37,21 @@ func (bp *BigQueryProcessor) TemplateAndExecuteOne(c *gin.Context) {
 	// Process the file contents
 	fileContents := ProcessFile(name)
 	if fileContents == "" {
-		c.JSON(http.StatusNotFound, gin.H{"error": "File does not exist"})
+		http.Error(w, "File does not exist", http.StatusNotFound)
 		return
 	}
 
 	// Apply the template substitution
 	tmpl, err := template.New("query").Parse(fileContents)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse query template"})
+		http.Error(w, "Failed to parse query template", http.StatusInternalServerError)
 		return
 	}
 
 	var queryBuilder strings.Builder
 	err = tmpl.Execute(&queryBuilder, templateDict)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to execute query template"})
+		http.Error(w, "Failed to execute query template", http.StatusInternalServerError)
 		return
 	}
 
@@ -62,17 +61,17 @@ func (bp *BigQueryProcessor) TemplateAndExecuteOne(c *gin.Context) {
 	// Run the query and print results when the query job is completed.
 	job, err := q.Run(ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bigquery job run"})
+		http.Error(w, "Bigquery job run", http.StatusInternalServerError)
 		return
 	}
 	status, err := job.Wait(ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Bigquery error run wait %s", status)})
+		http.Error(w, fmt.Sprintf("Bigquery error run wait %s", status), http.StatusInternalServerError)
 		return
 	}
 	it, err := job.Read(ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bigquery job run"})
+		http.Error(w, "Bigquery job run", http.StatusInternalServerError)
 		return
 	}
 	data, columns, err := BqSQLToJSON(it)
@@ -87,6 +86,6 @@ func (bp *BigQueryProcessor) TemplateAndExecuteOne(c *gin.Context) {
 		Columns: columns,
 	}
 	// Set the response headers
-	c.Header("Content-Type", "application/json")
-	c.JSON(http.StatusOK, response)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }

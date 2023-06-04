@@ -1,16 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"log"
-
-	"context"
+	"net/http"
 
 	"cloud.google.com/go/bigquery"
 	"github.com/exolutionza/scraper-backend-go/internal/bi"
-	"github.com/gin-gonic/gin"
+	"github.com/gorilla/mux"
 
-	// "google.golang.org/api/option"
-	"net/http"
+	"context"
 
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
 )
@@ -24,10 +23,7 @@ func router(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 	projectID := "scraping-is-hard"
 
-	// Provide the path to the keyfile.json
-	// client, err := bigquery.NewClient(ctx, projectID, option.WithCredentialsFile("keyfile.json"))
 	client, err := bigquery.NewClient(ctx, projectID)
-
 	if err != nil {
 		log.Fatalf("Failed to create BigQuery client: %v", err)
 	}
@@ -36,17 +32,18 @@ func router(w http.ResponseWriter, r *http.Request) {
 	// Create a BigQuery processor
 	processor := bi.NewBigQueryProcessor(client)
 
-	// Create a Gin router
-	router := gin.Default()
+	// Create a Gorilla Mux router
+	router := mux.NewRouter()
 
 	// Define the routes
-	router.POST("/execute", processor.TemplateAndExecuteOne)
+	router.HandleFunc("/execute", processor.TemplateAndExecuteOne).Methods("POST")
+	router.HandleFunc("/", helloWorld).Methods("GET")
 
-	// // Start the server
-	// port := ":8080"
-	// log.Printf("Server running on port %s", port)
-	// err = router.Run(port)
-	// if err != nil {
-	// 	log.Fatalf("Failed to start server: %v", err)
-	// }
+	// Serve the HTTP requests
+	router.ServeHTTP(w, r)
+}
+
+// helloWorld writes "Hello, World!" to the HTTP response.
+func helloWorld(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Hello, World!")
 }
