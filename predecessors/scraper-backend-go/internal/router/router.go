@@ -33,7 +33,17 @@ func Router(w http.ResponseWriter, r *http.Request) {
 	router.HandleFunc("/execute", processor.TemplateAndExecuteOne).Methods("POST")
 	router.HandleFunc("/", helloWorld).Methods("GET")
 
-	// Serve the HTTP requests
+	// Handle CORS
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	// Apply the router
 	router.ServeHTTP(w, r)
 }
 

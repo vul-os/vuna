@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-
 	"path/filepath"
 
 	r "github.com/exolutionza/scraper-backend-go/internal/router"
@@ -13,6 +12,9 @@ import (
 )
 
 func main() {
+	// How to run this code:
+	// > go run ./cmd/main.go
+
 	// // // Set up local Environment
 
 	// Get the current working directory
