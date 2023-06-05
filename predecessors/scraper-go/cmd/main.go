@@ -57,7 +57,7 @@ func main() {
 	var st storage.FileStorage
 	productScraper := woocommerce.New(proxyConfig, client, st)
 	results, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
-		Url:        "https://www.biltongandbudz.co.za/product/barneys-farm-runtz-fem-autoflower/",
+		Url:        "https://toykingdom.co.za/product/lego-the-office/",
 		FullScrape: true,
 	})
 	if err != nil {

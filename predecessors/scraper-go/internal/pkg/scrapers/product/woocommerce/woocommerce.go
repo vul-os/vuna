@@ -144,6 +144,8 @@ func scrapeProductWithoutVariations(productURL, productID, productName string, e
 
 		Price:  priceFloat,
 		MaxQty: maxQtyInt,
+
+		DateCreated: createdAt,
 	}
 
 	return productData, dataPoint, nil
