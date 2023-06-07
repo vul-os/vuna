@@ -17,22 +17,23 @@ WITH diffs AS (
 ), revenue_query AS (
   SELECT
     t.ProductIdentifier,
+    t.DateCreated,
     SUM(t.Units_Sold * p.Price) AS Total_Revenue
   FROM
     the_query t
   JOIN
     `scrapers.datapoint_raw` p ON t.ProductIdentifier = p.ProductIdentifier AND t.DateCreated = p.DateCreated
-  WHERE
-    t.DateCreated  BETWEEN '{{ .date_start }}' AND '{{ .date_end }}'
-  GROUP BY t.ProductIdentifier
+
+  GROUP BY t.ProductIdentifier, t.DateCreated
 )
 SELECT DISTINCT
   r.ProductIdentifier,
   p.Name AS ProductName,
+  r.DateCreated,
   r.Total_Revenue
 FROM
   revenue_query r
 JOIN
   `scrapers.product_raw` p ON r.ProductIdentifier = p.ProductIdentifier
-ORDER BY r.Total_Revenue DESC, r.ProductIdentifier
-LIMIT 25
+ORDER BY r.DateCreated ASC, r.Total_Revenue DESC, r.ProductIdentifier
+LIMIT 250;
