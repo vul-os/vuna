@@ -10,9 +10,9 @@ import (
 	"strings"
 )
 
-const BACKSLACK_REP = "($)!"
-const EQUALS_REP = "#$$#"
-const CHAR_COMBO = "@#%&$!"
+const BACKSLACK_REP = "&($)!"
+const EQUALS_REP = "&$$&"
+const CHAR_COMBO = "@{&$!"
 
 func GetHostName(rawURL string) (string, error) {
 	parsedURL, err := url.Parse(rawURL)
