@@ -83,7 +83,7 @@ func (s *SiteScraper) ScrapeOne(url string) (map[string]string, error) {
 
 		currentDatetime := time.Now()
 		formattedDatetime := currentDatetime.Format("2006-01-02-15-04-05")
-		fileName := fmt.Sprintf("site/%s_%s_site.csv", hostIdentifier, formattedDatetime)
+		fileName := fmt.Sprintf("site/%s_%s_site.csv", hostName, formattedDatetime)
 		err := s.FileStorage.WriteData(items, fileName)
 		if err != nil {
 			return nil, err

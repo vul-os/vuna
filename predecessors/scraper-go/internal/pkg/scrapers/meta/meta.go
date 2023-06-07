@@ -76,12 +76,12 @@ func (s *MetaScraper) ScrapeOne(url string) ([]string, error) {
 		currentDatetime := time.Now()
 		formattedDatetime := currentDatetime.Format("2006-01-02-15-04-05")
 
-		hostIdentifier, _, err := utils.StringToIdentifier(url, nil)
+		hostName, err := utils.GetHostName(url)
 		if err != nil {
 			return nil, err
 		}
 
-		fileName := fmt.Sprintf("meta/%s_%s_products.txt", hostIdentifier, formattedDatetime)
+		fileName := fmt.Sprintf("meta/%s_%s_products.txt", hostName, formattedDatetime)
 		err = s.FileStorage.WriteData(result, fileName)
 		if err != nil {
 			return nil, err
