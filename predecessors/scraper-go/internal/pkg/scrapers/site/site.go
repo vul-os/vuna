@@ -61,29 +61,31 @@ func (s *SiteScraper) ScrapeOne(url string) (map[string]string, error) {
 	currencyCode := "ZAR"
 
 	name, image, technology := s.GetSiteInfo(url)
-	siteUrl, encodedSite, err := utils.UrlToIdetifier(url)
+	hostName, err := utils.GetHostName(url)
+	if err != nil {
+		return nil, err
+	}
+	hostIdentifier, _, err := utils.StringToIdentifier(url, nil)
 	if err != nil {
 		return nil, err
 	}
 	items := []map[string]string{{
-		"site_identifier": encodedSite,
+		"site_identifier": hostIdentifier,
 		"name":            strings.TrimSpace(name),
 		"image":           strings.TrimSpace(image),
 		"currency":        currencyCode,
 		"technology":      technology,
 		"rate_limit":      "1/s",
 		"scraper":         technology,
-		"url":             siteUrl,
+		"url":             hostName,
 	}}
 
 	if s.FileStorage != nil {
-		siteUrl := utils.RemoveURLPrefix(url)
-		encodedSite := utils.EncodeURL(siteUrl)
 
 		currentDatetime := time.Now()
 		formattedDatetime := currentDatetime.Format("2006-01-02-15-04-05")
 
-		fileName := fmt.Sprintf("site/%s_%s_site.csv", encodedSite, formattedDatetime)
+		fileName := fmt.Sprintf("site/%s_%s_site.csv", hostName, formattedDatetime)
 		err := s.FileStorage.WriteData(items, fileName)
 		if err != nil {
 			return nil, err
@@ -114,14 +116,29 @@ func (s *SiteScraper) GetSiteInfo(url string) (string, string, string) {
 	}
 
 	// Extract the name of the website
-	name := document.Find("title").Text()
+	name := document.Find("site_name").Text()
 
-	// Extract the image of the website
+	// Extract the image URL from the og:image meta tag
 	var image string
 	document.Find("meta[property='og:image']").Each(func(i int, selection *goquery.Selection) {
 		image, _ = selection.Attr("content")
 	})
 
+	// If og:image not found, try finding the first image in div#logo img
+	if len(image) == 0 {
+		image, _ = document.Find("div#logo img").First().Attr("src")
+	}
+
+	// If image is still not found, try finding the first image with link rel="icon"
+	if len(image) == 0 {
+		document.Find("link[rel='icon']").Each(func(i int, selection *goquery.Selection) {
+			iconURL, exists := selection.Attr("href")
+			if exists && strings.HasSuffix(iconURL, ".png") || strings.HasSuffix(iconURL, ".jpg") {
+				image = iconURL
+				return
+			}
+		})
+	}
 	technology := Detect(response, body)
 	// Return the name, image, and technology of the website
 	return name, image, technology

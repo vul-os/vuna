@@ -27,7 +27,7 @@ func ToMapAndWriteData(strg storage.FileStorage, list interface{}, fileName stri
 func Save(dataPointList []DataPoint, productDataList []ProductData,
 	strg storage.FileStorage, url string, fullScrape bool) error {
 
-	_, encodedSite, err := utils.UrlToIdetifier(url)
+	_, encodedSite, err := utils.StringToIdentifier(url, nil)
 	if err != nil {
 		return err
 	}

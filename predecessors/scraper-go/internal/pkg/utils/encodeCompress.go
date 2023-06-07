@@ -6,21 +6,49 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/url"
+	"regexp"
+	"strings"
 )
 
-func UrlToIdetifier(urlStr string) (string, string, error) {
-	urlString, err := GetBaseURL(urlStr)
-	if err != nil {
-		return "", "", err
-	}
-	urlString = RemoveURLPrefix(urlString)
-	encodedURL := url.QueryEscape(urlString)
+const BACKSLACK_REP = "($)!"
+const EQUALS_REP = "#$$#"
+const CHAR_COMBO = "@#%&$!"
 
-	encodedSite, err := EncodeAndCompressURL(encodedURL)
+func GetHostName(rawURL string) (string, error) {
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil {
+		return "", fmt.Errorf("error parsing URL: %v", err)
+	}
+	return RemoveWWWWPrefix(parsedURL.Host), nil
+}
+
+func RemoveWWWWPrefix(input string) string {
+	re := regexp.MustCompile(`^www\.`)
+	output := re.ReplaceAllString(input, "")
+	return output
+}
+
+func StringToIdentifier(urlString string, otherStringIds []string) (string, string, error) {
+	// Fixed character combination
+	hostString, err := GetHostName(urlString)
 	if err != nil {
 		return "", "", err
 	}
-	return urlString, encodedSite, nil
+	// Concatenate the strings with the fixed character combination
+	stringsToJoin := append(otherStringIds, hostString)
+	joinedString := strings.Join(stringsToJoin, CHAR_COMBO)
+
+	encoded4URL := url.QueryEscape(joinedString)
+
+	encodedString, err := EncodeAndCompressString(encoded4URL)
+	if err != nil {
+		return "", "", err
+	}
+	encodedHostString, err := EncodeAndCompressString(hostString)
+	if err != nil {
+		return "", "", err
+	}
+	return encodedHostString, encodedString, nil
 }
 
 func EncodeURL(urlStr string) string {
@@ -31,13 +59,33 @@ func EncodeURL(urlStr string) string {
 	return encodedURL
 }
 
+func replacePaddingChars(encodedString string) string {
+	// Replace '==' with '#~~#'
+	replacedString := strings.Replace(encodedString, "=", EQUALS_REP, -1)
+
+	// Replace '//' with '()!!'
+	replacedString = strings.Replace(replacedString, "/", BACKSLACK_REP, -1)
+
+	return replacedString
+}
+
+func restorePaddingChars(replacedString string) string {
+	// Restore '#~~#' to '=='
+	restoredString := strings.Replace(replacedString, EQUALS_REP, "=", -1)
+
+	// Restore '()!!' to '//'
+	restoredString = strings.Replace(restoredString, BACKSLACK_REP, "/", -1)
+
+	return restoredString
+}
+
 // EncodeAndCompressURL encodes and compresses the given URL.
-func EncodeAndCompressURL(urlString string) (string, error) {
+func EncodeAndCompressString(str string) (string, error) {
 
 	// Compress the encoded URL
 	var compressedURL bytes.Buffer
 	compressor := zlib.NewWriter(&compressedURL)
-	_, err := compressor.Write([]byte(urlString))
+	_, err := compressor.Write([]byte(str))
 	if err != nil {
 		return "", fmt.Errorf("error compressing URL: %w", err)
 	}
@@ -45,20 +93,14 @@ func EncodeAndCompressURL(urlString string) (string, error) {
 
 	// Convert the compressed URL to ASCII base64 string
 	asciiURL := base64.StdEncoding.EncodeToString(compressedURL.Bytes())
-	encodedString := url.QueryEscape(asciiURL)
-
-	return encodedString, nil
+	asciiURL = replacePaddingChars(asciiURL)
+	return asciiURL, nil
 }
 
 // DecompressAndDecodeURL decompresses and decodes the given compressed URL.
-func DecompressAndDecodeURL(compressedURL string) (string, error) {
-	decodedString, err := url.QueryUnescape(compressedURL)
-	if err != nil {
-		fmt.Println("Error decoding URL:", err)
-		return "", fmt.Errorf("error decoding URL: %w", err)
-	}
+func DecompressAndDecodeString(compressedString string) (string, error) {
 	// Convert the ASCII base64 string to compressed byte slice
-	compressedBytes, err := base64.StdEncoding.DecodeString(decodedString)
+	compressedBytes, err := base64.StdEncoding.DecodeString(compressedString)
 	if err != nil {
 		return "", fmt.Errorf("error decoding base64 URL: %w", err)
 	}
@@ -76,6 +118,6 @@ func DecompressAndDecodeURL(compressedURL string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error reading decompressed URL: %w", err)
 	}
-
-	return decompressedBuffer.String(), nil
+	res := restorePaddingChars(decompressedBuffer.String())
+	return res, nil
 }

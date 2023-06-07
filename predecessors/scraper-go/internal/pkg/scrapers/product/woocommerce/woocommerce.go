@@ -35,11 +35,6 @@ func New(
 
 func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOneResponse,
 	error) {
-	_, encodedSite, err := utils.UrlToIdetifier(request.Url)
-	if err != nil {
-		return nil, err
-	}
-
 	body, err := utils.FetchWithProxy(s.ProxyConfig, request.Url)
 	if err != nil {
 		return nil, err
@@ -62,13 +57,13 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 
 	if doc.Find("form.variations_form").Length() > 0 {
 		productDataList, dataPointList, err = scrapeProductWithVariations(request.Url,
-			productID, productName, encodedSite, doc)
+			productID, productName, doc)
 		if err != nil {
 			return nil, err
 		}
 	} else {
 		productData, dataPoint, err := scrapeProductWithoutVariations(request.Url,
-			productID, productName, encodedSite, doc)
+			productID, productName, doc)
 		if err != nil {
 			return nil, err
 		}
@@ -84,8 +79,8 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 		ProductData: productDataList}, nil
 }
 
-func scrapeProductWithoutVariations(productURL, productID, productName string, encodedSite string,
-	doc *goquery.Document) (product.ProductData, product.DataPoint, error) {
+func scrapeProductWithoutVariations(productURL, productID, productName string, 
+		doc *goquery.Document) (product.ProductData, product.DataPoint, error) {
 
 	summaryDiv := doc.Find("div.summary")
 	price := summaryDiv.Find("span.woocommerce-Price-amount.amount").Text()
@@ -106,13 +101,12 @@ func scrapeProductWithoutVariations(productURL, productID, productName string, e
 		}
 	}
 
-	productUrl := utils.RemoveURLPrefix(productURL)
-	encodedProductUrl, err := utils.EncodeAndCompressURL(productUrl)
-	productIdentifier := fmt.Sprintf("%s-default", encodedProductUrl)
-
+	otherStringIds := []string{fmt.Sprintf("%v", sku), "default"}
+	hostIdentifier, productIdentifier, err := utils.StringToIdentifier(productURL, otherStringIds)
 	if err != nil {
 		return product.ProductData{}, product.DataPoint{}, err
 	}
+
 	imageURL, _ := doc.
 		Find("div.woocommerce-product-gallery__image img").Attr("src")
 
@@ -130,7 +124,7 @@ func scrapeProductWithoutVariations(productURL, productID, productName string, e
 		VariationID: "",
 
 		ProductIdentifier: productIdentifier,
-		SiteIdentifier:    encodedSite,
+		SiteIdentifier:    hostIdentifier,
 
 		DateCreated: createdAt,
 	}
@@ -151,8 +145,8 @@ func scrapeProductWithoutVariations(productURL, productID, productName string, e
 	return productData, dataPoint, nil
 }
 
-func scrapeProductWithVariations(productURL, productID, productName string, encodedSite string,
-	doc *goquery.Document) ([]product.ProductData, []product.DataPoint, error) {
+func scrapeProductWithVariations(productURL, productID, productName string, 
+		doc *goquery.Document) ([]product.ProductData, []product.DataPoint, error) {
 
 	productDataList := []product.ProductData{}
 	dataPointList := []product.DataPoint{}
@@ -172,12 +166,12 @@ func scrapeProductWithVariations(productURL, productID, productName string, enco
 		variationID := variation["variation_id"]
 		priceFloat, errp := utils.PriceToFloat(displayPrice)
 		maxQtyInt, errq := utils.MaxQtyToInt(availabilityHTML)
-		productUrl := utils.RemoveURLPrefix(productURL)
-		encodedProductUrl, err := utils.EncodeAndCompressURL(productUrl)
+		
+		otherStringIds := []string{fmt.Sprintf("%v", sku), fmt.Sprintf("%v", variationID)}
+		hostIdentifier, productIdentifier, err := utils.StringToIdentifier(productURL, otherStringIds)
 		if err != nil {
 			continue
 		}
-		productIdentifier := fmt.Sprintf("%s-%s$%s", encodedProductUrl, sku, variationID)
 
 		if errp != nil || errq != nil {
 			fmt.Println("Error MaxQty,Price: ", priceFloat, maxQtyInt)
@@ -207,13 +201,13 @@ func scrapeProductWithVariations(productURL, productID, productName string, enco
 			VariationID: fmt.Sprintf("%v", variationID),
 
 			ProductIdentifier: productIdentifier,
-			SiteIdentifier:    encodedSite,
+			SiteIdentifier:    hostIdentifier,
 
 			DateCreated: createdAt,
 		}
 
 		dataPoint := product.DataPoint{
-			ProductIdentifier: encodedProductUrl,
+			ProductIdentifier: productIdentifier,
 
 			SKU:         fmt.Sprintf("%v", sku),
 			ProductID:   productID,

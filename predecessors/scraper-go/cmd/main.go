@@ -21,8 +21,8 @@ import (
 	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product"
 	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/site"
 
-	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product/woocommerce"
-	// "github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product/shopify"
+	// "github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product/woocommerce"
+	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product/shopify"
 
 	"github.com/exolutiontech/scraper-go/internal/pkg/storage"
 	gcsutils "github.com/exolutiontech/scraper-go/internal/pkg/storage/gcs"
@@ -55,9 +55,9 @@ func main() {
 		Password: "t62qs3cx4b6c",
 	}
 	var st storage.FileStorage
-	productScraper := woocommerce.New(proxyConfig, client, st)
+	productScraper := shopify.New(proxyConfig, client, st)
 	results, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
-		Url:        "https://toykingdom.co.za/product/lego-the-office/",
+		Url:        "https://www.mytoy.co.za/products/sunshine-double-sided-creative-easel-pink",
 		FullScrape: true,
 	})
 	if err != nil {
@@ -84,10 +84,10 @@ func main() {
 	}
 
 	meta := meta.New(&client, st)
-	data, err := meta.ScrapeOne("https://3dprintingstore.co.za/")
+	data, err := meta.ScrapeOne("https://www.mytoy.co.za")
 	fmt.Println(len(data))
 	fmt.Println(err)
 	sc := site.New(&client, st)
-	a, err := sc.ScrapeOne("https://3dprintingstore.co.za/")
+	a, err := sc.ScrapeOne("https://toykingdom.co.za/")
 	fmt.Println(a)
 }

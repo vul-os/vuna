@@ -51,11 +51,6 @@ type ProductResponse struct {
 
 func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOneResponse, error) {
 
-	_, encodedSite, err := utils.UrlToIdetifier(request.Url)
-	if err != nil {
-		return nil, err
-	}
-
 	body, err := utils.FetchWithProxy(s.ProxyConfig, request.Url+".json")
 	if err != nil {
 		return nil, err
@@ -85,12 +80,12 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 			continue
 		}
 
-		productUrl := utils.RemoveURLPrefix(request.Url)
-		encodedProductUrl, err := utils.EncodeAndCompressURL(productUrl)
+		otherStringIds := []string{fmt.Sprintf("%v", variant.SKU), fmt.Sprintf("%v", variant.ID)}
+		hostIdentifier, productIdentifier, err := utils.StringToIdentifier(request.Url, otherStringIds)
 		if err != nil {
 			continue
 		}
-		productIdentifier := fmt.Sprintf("%s-%s$%d", encodedProductUrl, variant.SKU, variant.ID)
+
 		createdAt := time.Now()
 
 		dataPoint := product.DataPoint{
@@ -127,7 +122,7 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 				VariationID: fmt.Sprintf("%d", variant.ID),
 
 				ProductIdentifier: productIdentifier,
-				SiteIdentifier:    encodedSite,
+				SiteIdentifier:    hostIdentifier,
 
 				DateCreated: createdAt,
 			}
