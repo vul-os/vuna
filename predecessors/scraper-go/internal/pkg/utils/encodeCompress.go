@@ -19,10 +19,10 @@ func GetHostName(rawURL string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error parsing URL: %v", err)
 	}
-	return RemoveWWWWPrefix(parsedURL.Host), nil
+	return RemoveWWWPrefix(parsedURL.Host), nil
 }
 
-func RemoveWWWWPrefix(input string) string {
+func RemoveWWWPrefix(input string) string {
 	re := regexp.MustCompile(`^www\.`)
 	output := re.ReplaceAllString(input, "")
 	return output
