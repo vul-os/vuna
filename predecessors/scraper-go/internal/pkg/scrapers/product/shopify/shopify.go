@@ -103,32 +103,30 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 
 		dataPointList = append(dataPointList, dataPoint)
 
-		if request.FullScrape {
-			imageSrcs := make([]string, len(response.Product.Images))
-			for i, img := range response.Product.Images {
-				imageSrcs[i] = img.Src
-			}
-
-			productData := product.ProductData{
-				Name:        response.Product.Title,
-				Description: "",
-
-				ImageURLs:  imageSrcs,
-				Attributes: []string{},
-
-				URL:         request.Url,
-				SKU:         variant.SKU,
-				ProductID:   fmt.Sprintf("%d", response.Product.ID),
-				VariationID: fmt.Sprintf("%d", variant.ID),
-
-				ProductIdentifier: productIdentifier,
-				SiteIdentifier:    hostIdentifier,
-
-				DateCreated: createdAt,
-			}
-
-			productDataList = append(productDataList, productData)
+		imageSrcs := make([]string, len(response.Product.Images))
+		for i, img := range response.Product.Images {
+			imageSrcs[i] = img.Src
 		}
+
+		productData := product.ProductData{
+			Name:        response.Product.Title,
+			Description: "",
+
+			ImageURLs:  imageSrcs,
+			Attributes: []string{},
+
+			URL:         request.Url,
+			SKU:         variant.SKU,
+			ProductID:   fmt.Sprintf("%d", response.Product.ID),
+			VariationID: fmt.Sprintf("%d", variant.ID),
+
+			ProductIdentifier: productIdentifier,
+			SiteIdentifier:    hostIdentifier,
+
+			DateCreated: createdAt,
+		}
+
+		productDataList = append(productDataList, productData)
 	}
 
 	err = product.Save(dataPointList, productDataList, s.FileStorage, request.Url, request.FullScrape)

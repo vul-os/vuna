@@ -58,8 +58,8 @@ type ProductScraper interface {
 }
 
 type ScrapeOneRequest struct {
-	Url        string
-	FullScrape bool
+	Url        string `json:"url"`
+	FullScrape bool	`json:"full_scrape"`
 }
 
 type ScrapeOneResponse struct {
