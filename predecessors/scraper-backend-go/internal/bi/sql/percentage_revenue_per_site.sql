@@ -5,9 +5,9 @@ WITH diffs AS (
     pr.SiteIdentifier,
     d.MaxQty - LAG(d.MaxQty) OVER (PARTITION BY d.ProductIdentifier ORDER BY d.DateCreated) AS difference
   FROM
-    `scrapers.datapoint_raw` d
+    `scrapers.datapoint_partitioned` d
   JOIN
-    `scrapers.product_raw` pr ON d.ProductIdentifier = pr.ProductIdentifier
+    `scrapers.product_unique` pr ON d.ProductIdentifier = pr.ProductIdentifier
   WHERE
     d.DateCreated BETWEEN '{{ .date_start }}' AND '{{ .date_end }}'
 ), 
@@ -31,7 +31,7 @@ revenue_query AS (
   FROM
     the_query t
   JOIN
-    `scrapers.datapoint_raw` p ON t.ProductIdentifier = p.ProductIdentifier AND t.DateCreated = p.DateCreated
+    `scrapers.datapoint_partitioned` p ON t.ProductIdentifier = p.ProductIdentifier AND t.DateCreated = p.DateCreated
 ),
 site_revenue AS (
   SELECT
@@ -40,7 +40,7 @@ site_revenue AS (
   FROM
     revenue_query r
   JOIN
-    `scrapers.site_raw` s ON r.SiteIdentifier = s.Site_Identifier
+    `scrapers.site_unique` s ON r.SiteIdentifier = s.Site_Identifier
   GROUP BY
     s.Name
 ),
