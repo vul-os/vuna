@@ -72,6 +72,7 @@ SELECT
   IFNULL(p2.current_period_revenue, 0) AS Revenue,
   c.current_price as Price,
   c.current_maxqty as MaxQty,
+  c.current_price * c.current_maxqty as SalesValue,
   p.name AS ProductName,
   p.ImageUrls AS ImageUrls,
   p.URL as ProductUrl

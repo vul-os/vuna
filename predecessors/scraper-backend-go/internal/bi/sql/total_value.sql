@@ -6,7 +6,7 @@ WITH latest_datapoint AS (
     MaxQty,
     ROW_NUMBER() OVER(PARTITION BY ProductIdentifier ORDER BY DateCreated DESC) AS row_num
   FROM
-    `scraping-is-hard.scrapers.datapoint_raw`
+    `scraping-is-hard.scrapers.datapoint_partitioned`
   WHERE 
     MaxQty > 0
 ), latest_product_info AS (

@@ -18,7 +18,7 @@ FROM (
       Price * MaxQty AS TotalValue,
       ROW_NUMBER() OVER (PARTITION BY ProductIdentifier ORDER BY DateCreated DESC) AS rn
     FROM
-      `scrapers.datapoint_raw`
+      `scrapers.datapoint_partitioned`
     WHERE
       MaxQty > 0
   ) AS subsub
@@ -29,7 +29,7 @@ JOIN (
     DISTINCT ProductIdentifier,
     Name
   FROM
-    `scrapers.product_raw`
+    `scrapers.product_unique`
 ) p ON subquery.ProductIdentifier = p.ProductIdentifier
 ORDER BY subquery.TotalValue DESC
 LIMIT 25
