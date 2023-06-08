@@ -129,7 +129,7 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 		productDataList = append(productDataList, productData)
 	}
 
-	err = product.Save(dataPointList, productDataList, s.FileStorage, request.Url, request.FullScrape)
+	err = product.Save(dataPointList, productDataList, s.FileStorage, request.Url, true)
 	if err != nil {
 		return nil, err
 	}
