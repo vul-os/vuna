@@ -75,7 +75,6 @@ func (bp *BigQueryProcessor) TemplateAndExecuteOne(w http.ResponseWriter, r *htt
 		return
 	}
 	data, columns, err := BqSQLToJSON(it)
-	fmt.Println(data, columns)
 	type ExecuteOneResponse struct {
 		Columns []string    `json:"columns"`
 		Data    interface{} `json:"data"`
