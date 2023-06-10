@@ -1,57 +1,43 @@
 WITH diffs AS (
   SELECT
-    d.DateCreated,
-    d.ProductIdentifier,
-    pr.SiteIdentifier,
-    d.MaxQty - LAG(d.MaxQty) OVER (PARTITION BY d.ProductIdentifier ORDER BY d.DateCreated) AS difference
-  FROM
-    `scrapers.datapoint_partitioned` d
-  JOIN
-    `scrapers.product_unique` pr ON d.ProductIdentifier = pr.ProductIdentifier
-  WHERE
-    d.DateCreated BETWEEN '{{ .date_start }}' AND '{{ .date_end }}'
-), 
-the_query AS (
-  SELECT
-    DateCreated,
     ProductIdentifier,
-    SiteIdentifier,
-    -1 * SUM(difference) AS Units_Sold
+    maxqty - LAG(maxqty) OVER (PARTITION BY ProductIdentifier ORDER BY DateCreated) AS difference
   FROM
-    diffs
-  WHERE difference < 0
-  GROUP BY ProductIdentifier, SiteIdentifier, DateCreated
-), 
-revenue_query AS (
+    `scrapers.datapoint_raw`
+), filtered_diffs AS (
   SELECT
-    t.DateCreated,
-    t.ProductIdentifier,
-    t.SiteIdentifier,
-    t.Units_Sold * p.Price AS Revenue
-  FROM
-    the_query t
+    ProductIdentifier,
+    CASE
+      WHEN difference > 0 THEN 0
+      ELSE -difference
+    END AS positive_difference
+  FROM diffs
+  WHERE difference IS NOT NULL
+), sales_data AS (
+  SELECT
+    ProductIdentifier,
+    SUM(positive_difference) AS total_difference
+  FROM filtered_diffs
+  GROUP BY ProductIdentifier
+), revenue_data AS (
+  SELECT 
+    s.ProductIdentifier,
+    MAX(d.price) * s.total_difference AS Total_Revenue
+  FROM 
+    sales_data s
   JOIN
-    `scrapers.datapoint_partitioned` p ON t.ProductIdentifier = p.ProductIdentifier AND t.DateCreated = p.DateCreated
-),
-site_revenue AS (
-  SELECT
-    s.Name,
-    SUM(r.Revenue) as total_revenue
-  FROM
-    revenue_query r
-  JOIN
-    `scrapers.site_unique` s ON r.SiteIdentifier = s.Site_Identifier
-  GROUP BY
-    s.Name
-),
-total_revenue AS (
-  SELECT
-    SUM(total_revenue) as total_revenue
-  FROM
-    site_revenue
+    `scrapers.datapoint_raw` d ON s.ProductIdentifier = d.ProductIdentifier
+  GROUP BY s.ProductIdentifier, s.total_difference
 )
-SELECT
-  s.Name,
-  (s.total_revenue / t.total_revenue) * 100 as revenue_percentage
-FROM
-  site_revenue s, total_revenue t
+SELECT 
+  p.SiteIdentifier,
+  si.Url,
+  SUM(r.Total_Revenue) as total_revenue_per_site,
+  (SUM(r.Total_Revenue) / (SELECT SUM(Total_Revenue) FROM revenue_data)) * 100 AS percentage_of_total
+FROM 
+  revenue_data r
+JOIN
+  `scrapers.product_raw` p ON r.ProductIdentifier = p.ProductIdentifier
+JOIN
+  `scrapers.site_raw` si ON p.SiteIdentifier = si.site_identifier
+GROUP BY p.SiteIdentifier, si.Url;

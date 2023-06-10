@@ -34,6 +34,6 @@ FROM
   revenue_query r
 JOIN
   `scrapers.product_unique` p ON r.ProductIdentifier = p.ProductIdentifier
-ORDER BY r.DateCreated ASC, r.Total_Revenue DESC, r.ProductIdentifier
 WHERE r.Total_Revenue > 0
+ORDER BY r.DateCreated ASC, r.Total_Revenue DESC, r.ProductIdentifier
 LIMIT 100
