@@ -32,4 +32,4 @@ JOIN (
     `scrapers.product_unique`
 ) p ON subquery.ProductIdentifier = p.ProductIdentifier
 ORDER BY subquery.TotalValue DESC
-LIMIT 25
+LIMIT 1000

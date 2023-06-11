@@ -15,7 +15,20 @@ WITH diffs AS (
     END AS positive_difference_price
   FROM diffs
   WHERE difference IS NOT NULL
+), revenue AS (
+  SELECT
+    ProductIdentifier,
+    SUM(positive_difference_price) AS total_revenue
+  FROM filtered_diffs
+  GROUP BY ProductIdentifier
+  HAVING SUM(positive_difference_price) > 0
 )
-SELECT
-  SUM(positive_difference_price) AS total_revenue
-FROM filtered_diffs
+SELECT 
+  r.ProductIdentifier,
+  p.Name AS ProductName,
+  r.total_revenue
+FROM 
+  revenue r
+JOIN
+  `scrapers.product_unique` p ON r.ProductIdentifier = p.ProductIdentifier
+ORDER BY r.total_revenue DESC;

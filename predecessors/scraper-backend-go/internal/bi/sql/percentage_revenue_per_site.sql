@@ -1,6 +1,8 @@
 WITH diffs AS (
   SELECT
+    DateCreated,
     ProductIdentifier,
+    Price,
     maxqty - LAG(maxqty) OVER (PARTITION BY ProductIdentifier ORDER BY DateCreated) AS difference
   FROM
     `scrapers.datapoint_raw`
@@ -9,36 +11,29 @@ WITH diffs AS (
     ProductIdentifier,
     CASE
       WHEN difference > 0 THEN 0
-      ELSE -difference
-    END AS positive_difference
+      ELSE -difference * Price
+    END AS positive_difference_price
   FROM diffs
   WHERE difference IS NOT NULL
-), sales_data AS (
+), revenue AS (
   SELECT
-    ProductIdentifier,
-    SUM(positive_difference) AS total_difference
-  FROM filtered_diffs
-  GROUP BY ProductIdentifier
-), revenue_data AS (
-  SELECT 
-    s.ProductIdentifier,
-    MAX(d.price * s.total_difference) AS Total_Revenue
-  FROM 
-    sales_data s
-  JOIN
-    `scrapers.datapoint_raw` d ON s.ProductIdentifier = d.ProductIdentifier
-  GROUP BY s.ProductIdentifier
+    d.ProductIdentifier,
+    p.SiteIdentifier,
+    SUM(d.positive_difference_price) AS total_revenue
+  FROM filtered_diffs d
+  JOIN `scrapers.product_unique` p ON d.ProductIdentifier = p.ProductIdentifier
+  GROUP BY d.ProductIdentifier, p.SiteIdentifier
+  HAVING SUM(d.positive_difference_price) > 0
 )
 SELECT 
-  p.SiteIdentifier,
-  si.Url,
-  SUM(r.Total_Revenue) as total_revenue
+  r.SiteIdentifier,
+  s.Url AS SiteUrl,
+  SUM(r.total_revenue) as total_revenue
 FROM 
-  revenue_data r
+  revenue r
 JOIN
-  `scrapers.product_raw` p ON r.ProductIdentifier = p.ProductIdentifier
-JOIN
-  `scrapers.site_raw` si ON p.SiteIdentifier = si.site_identifier
+  `scrapers.site_unique` s ON r.SiteIdentifier = s.SiteIdentifier
 GROUP BY 
-  p.SiteIdentifier,
-  si.Url;
+  r.SiteIdentifier,
+  s.Url
+ORDER BY total_revenue DESC;
