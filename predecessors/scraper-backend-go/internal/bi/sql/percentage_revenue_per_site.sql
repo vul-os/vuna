@@ -22,22 +22,23 @@ WITH diffs AS (
 ), revenue_data AS (
   SELECT 
     s.ProductIdentifier,
-    MAX(d.price) * s.total_difference AS Total_Revenue
+    MAX(d.price * s.total_difference) AS Total_Revenue
   FROM 
     sales_data s
   JOIN
     `scrapers.datapoint_raw` d ON s.ProductIdentifier = d.ProductIdentifier
-  GROUP BY s.ProductIdentifier, s.total_difference
+  GROUP BY s.ProductIdentifier
 )
 SELECT 
   p.SiteIdentifier,
   si.Url,
-  SUM(r.Total_Revenue) as total_revenue_per_site,
-  (SUM(r.Total_Revenue) / (SELECT SUM(Total_Revenue) FROM revenue_data)) * 100 AS percentage_of_total
+  SUM(r.Total_Revenue) as total_revenue
 FROM 
   revenue_data r
 JOIN
   `scrapers.product_raw` p ON r.ProductIdentifier = p.ProductIdentifier
 JOIN
   `scrapers.site_raw` si ON p.SiteIdentifier = si.site_identifier
-GROUP BY p.SiteIdentifier, si.Url;
+GROUP BY 
+  p.SiteIdentifier,
+  si.Url;

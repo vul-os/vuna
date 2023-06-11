@@ -23,7 +23,7 @@ WITH diffs AS (
 SELECT 
   s.ProductIdentifier,
   p.Name AS ProductName,
-  MAX(d.price) * s.total_difference AS Total_Revenue
+  SUM(d.price * s.total_difference) AS Total_Revenue
 FROM 
   sales_data s
 JOIN

@@ -22,12 +22,12 @@ WITH diffs AS (
 ), revenue_data AS (
   SELECT 
     s.ProductIdentifier,
-    MAX(d.price) * s.total_difference AS Total_Revenue
+    SUM(d.price * s.total_difference) AS Total_Revenue
   FROM 
     sales_data s
   JOIN
-    `scrapers.datapoint_partitioned` d ON s.ProductIdentifier = d.ProductIdentifier
-  GROUP BY s.ProductIdentifier, s.total_difference
+    `scrapers.datapoint_raw` d ON s.ProductIdentifier = d.ProductIdentifier
+  GROUP BY s.ProductIdentifier
 )
-SELECT SUM(Total_Revenue) as total_revenue
-FROM revenue_data;
+SELECT sum(Total_Revenue) as total_revenue
+FROM revenue_data
