@@ -10,13 +10,20 @@ import (
 	"github.com/exolutionza/scraper-backend-go/internal/bi"
 	"github.com/gorilla/mux"
 
+	"github.com/exolutionza/scraper-backend-go/internal/auth"
+	"github.com/exolutionza/scraper-backend-go/internal/permissions/plan"
+	"github.com/exolutionza/scraper-backend-go/internal/permissions/site"
 	"github.com/exolutionza/scraper-backend-go/internal/search"
+
+	firebase "firebase.google.com/go"
 )
 
 func Router(w http.ResponseWriter, r *http.Request) {
+	projectID := "scraping-is-hard"
+	paystackKey := "asdasd"
+
 	// Create a BigQuery client
 	ctx := context.Background()
-	projectID := "scraping-is-hard"
 
 	client, err := bigquery.NewClient(ctx, projectID)
 	if err != nil {
@@ -27,6 +34,30 @@ func Router(w http.ResponseWriter, r *http.Request) {
 	// Create a BigQuery processor
 	processor := bi.NewBigQueryProcessor(client)
 
+	bqClient, err := bigquery.NewClient(context.Background(), projectID)
+	if err != nil {
+		panic(err)
+	}
+
+	conf := &firebase.Config{
+		ProjectID: projectID,
+	}
+	app, err := firebase.NewApp(context.Background(), conf)
+	if err != nil {
+		log.Fatalf("Failed to initialize Firebase app: %v", err)
+	}
+
+	// Initialize Firebase Auth client
+	authClient, err := app.Auth(context.Background())
+	if err != nil {
+		log.Fatalf("Failed to initialize Firebase Auth client: %v", err)
+	}
+	// Create UserPlanService instance
+	userPlanService := plan.NewUserPlanService(authClient, paystackKey)
+
+	// Create SitePermissionService instance
+	sitePermissionService := site.NewSitePermissionService(bqClient, userPlanService)
+
 	// Create a SearchHandler
 	searchHandler := search.NewSearchHandler(client)
 
@@ -34,12 +65,22 @@ func Router(w http.ResponseWriter, r *http.Request) {
 	router := mux.NewRouter()
 
 	// Define the routes
-	router.HandleFunc("/execute", processor.TemplateAndExecuteOne).Methods("POST")
 	router.HandleFunc("/", helloWorld).Methods("GET")
-	router.HandleFunc("/search", searchHandler.Handler).Methods("POST")
+
+	protectedRouter := router.PathPrefix("").Subrouter()
+	protectedRouter.Use(auth.IsAuthenticated(authClient))
+
+	protectedRouter.HandleFunc("/update-site-permissions",
+		sitePermissionService.UpdateSitePermissions).Methods("POST")
+	protectedRouter.HandleFunc("/create-transaction",
+		userPlanService.CreateTransaction).Methods("POST")
+	protectedRouter.HandleFunc("/search",
+		searchHandler.Handler).Methods("POST")
+	protectedRouter.HandleFunc("/execute",
+		processor.TemplateAndExecuteOne).Methods("POST")
 
 	// Apply the enableCORS middleware to all routes
-	handler := enableCORS(router)
+	handler := EnableCORS(router)
 
 	// Serve the HTTP requests
 	handler.ServeHTTP(w, r)
@@ -48,22 +89,4 @@ func Router(w http.ResponseWriter, r *http.Request) {
 // helloWorld writes "Hello, World!" to the HTTP response.
 func helloWorld(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Hello, World!")
-}
-
-func enableCORS(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Set CORS headers
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-
-		// Allow preflight requests
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
-		// Call the next handler
-		next.ServeHTTP(w, r)
-	})
 }
