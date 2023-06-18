@@ -167,7 +167,7 @@ func (s *FileStorageGCS) GetLatestFile(folderPrefix, textIn string) (string, err
 			return "", fmt.Errorf("error getting next object from GCS: %v", err)
 		}
 		if attrs.Prefix == "" && strings.Contains(attrs.Name, textIn) {
-			newName := strings.ReplaceAll(attrs.Name, textIn, "")
+			newName := strings.ReplaceAll(attrs.Name, folderPrefix, "")
 			splitName := strings.Split(newName, "_")
 			dateString := ""
 			if len(splitName) == 2 {

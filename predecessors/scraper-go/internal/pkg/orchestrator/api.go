@@ -248,14 +248,14 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type SiteData struct {
-		SiteIdentifier string  `bigquery:"siteidentifier"`
-		Name           *string `bigquery:"name"`
-		Image          *string `bigquery:"image"`
-		Currency       *string `bigquery:"currency"`
-		Technology     *string `bigquery:"technology"`
-		Scraper        *string `bigquery:"scraper"`
-		RateLimit      *string `bigquery:"ratelimit"`
-		Url            *string `bigquery:"url"`
+		SiteIdentifier string              `bigquery:"siteidentifier"`
+		Name           bigquery.NullString `bigquery:"name"`
+		Image          bigquery.NullString `bigquery:"image"`
+		Currency       bigquery.NullString `bigquery:"currency"`
+		Technology     bigquery.NullString `bigquery:"technology"`
+		Scraper        bigquery.NullString `bigquery:"scraper"`
+		RateLimit      bigquery.NullString `bigquery:"ratelimit"`
+		Url            bigquery.NullString `bigquery:"url"`
 	}
 
 	var siteInfo SiteData
