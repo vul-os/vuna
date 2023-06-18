@@ -72,8 +72,12 @@ func (t *TaskCreator) CreateTaskScrapeMeta(url string) error {
 	return t.createTask(fmt.Sprintf("%s/scraper/meta/%s", t.DetailsMap["meta"].TargetUrl, url), "meta")
 }
 
-func (t *TaskCreator) CreateTaskOrchestrateProduct(file string) error {
-	return t.createTask(fmt.Sprintf("%s/orchestrator/product/%s", t.DetailsMap["orchestrateProduct"].TargetUrl, file), "orchestrateProduct")
+func (t *TaskCreator) CreateTaskOrchestrateMetaProduct(file string) error {
+	return t.createTask(fmt.Sprintf("%s/orchestrator/product/meta/%s", t.DetailsMap["orchestrateProductMeta"].TargetUrl, file), "orchestrateProductMeta")
+}
+
+func (t *TaskCreator) CreateTaskOrchestrateProduct(siteIdentifier string) error {
+	return t.createTask(fmt.Sprintf("%s/orchestrator/product/%s", t.DetailsMap["orchestrateProduct"].TargetUrl, siteIdentifier), "orchestrateProduct")
 }
 
 func (t *TaskCreator) CreateTaskScrapeProduct(url string, scraper string, scheduledTime time.Time) error {

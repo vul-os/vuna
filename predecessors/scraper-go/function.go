@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+    "cloud.google.com/go/bigquery"
 
 	// metaScraper "scraper-go/internal/pkg/scrapers/meta"
 	// siteScraper "scraper-go/internal/pkg/scrapers/site"
@@ -27,6 +28,7 @@ func init() {
 
 // router sets up the mux router and handles the HTTP request.
 func router(w http.ResponseWriter, r *http.Request) {
+	ctx := context.Background()
 	rtr := mux.NewRouter()
 	bucketName := "exolution-scraper-data"
 	projectId := "scraping-is-hard"
@@ -55,6 +57,12 @@ func router(w http.ResponseWriter, r *http.Request) {
 			Location:  location,
 			QueueID:   repeastQueue,
 		},
+		"orchestrateProductMeta": {
+			TargetUrl: bigInstanceTargetUrl,
+			ProjectID: projectId,
+			Location:  location,
+			QueueID:   noRepeatQueue,
+		},
 		"orchestrateProduct": {
 			TargetUrl: bigInstanceTargetUrl,
 			ProjectID: projectId,
@@ -62,6 +70,17 @@ func router(w http.ResponseWriter, r *http.Request) {
 			QueueID:   noRepeatQueue,
 		},
 	}
+
+	bigqueryClient, err := bigquery.NewClient(ctx, projectId)
+    if err != nil {
+		fmt.Sprintf("Failed to create client: %v", err)
+		return
+    }
+    
+    fmt.Printf("Client created for project: %s\n", projectId)
+
+    // Remember to close the client!
+    defer bigqueryClient.Close()
 
 	client, err := storage.NewClient(context.Background())
 	if err != nil {
@@ -75,7 +94,7 @@ func router(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s := scrapers.New(storage)
-	o := orchestrator.New(*taskCreator, storage)
+	o := orchestrator.New(*taskCreator, storage, *bigqueryClient)
 
 	rtr.HandleFunc("/", helloWorld).Methods(http.MethodGet)
 
@@ -83,6 +102,8 @@ func router(w http.ResponseWriter, r *http.Request) {
 	rtr.HandleFunc("/orchestrator/site", o.Site).Methods(http.MethodGet)
 	rtr.HandleFunc("/orchestrator/product", o.AllProducts).Methods(http.MethodGet)
 	rtr.HandleFunc("/orchestrator/product/{file}", o.Product).Methods(http.MethodGet)
+	rtr.HandleFunc("/orchestrator/product/meta", o.AllMetaProducts).Methods(http.MethodGet)
+	rtr.HandleFunc("/orchestrator/product/meta/{file}", o.MetaProduct).Methods(http.MethodGet)
 
 	rtr.HandleFunc("/scraper/meta/{url}", s.Meta).Methods(http.MethodGet)
 	rtr.HandleFunc("/scraper/site/{url}", s.Site).Methods(http.MethodGet)

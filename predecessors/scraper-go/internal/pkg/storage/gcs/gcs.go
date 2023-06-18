@@ -8,6 +8,7 @@ import (
 	"github.com/exolutiontech/scraper-go/internal/pkg/storage"
 
 	"google.golang.org/api/iterator"
+	"time"
 
 	cloudStorage "cloud.google.com/go/storage"
 )
@@ -93,7 +94,7 @@ func (s *FileStorageGCS) GetLatestFiles(folderPrefix, textIn string) ([]string, 
 		Prefix:    folderPrefix,
 	}
 
-	var latestFiles []string
+	latestFilesMap := make(map[string]string)
 
 	it := bucket.Objects(ctx, query)
 	for {
@@ -106,12 +107,43 @@ func (s *FileStorageGCS) GetLatestFiles(folderPrefix, textIn string) ([]string, 
 		}
 
 		if attrs.Prefix == "" && strings.Contains(attrs.Name, textIn) {
-			latestFiles = append(latestFiles, attrs.Name)
+			splitName := strings.Split(attrs.Name, "_")
+			if len(splitName) < 2 {
+				continue
+			}
+			url := splitName[0]
+			dateAndTime := strings.Split(splitName[1], "-")
+			if len(dateAndTime) < 3 {
+				continue
+			}
+
+			dateString := strings.Join(dateAndTime[:3], "-")
+			newTime, err := time.Parse("2006-01-02", dateString)
+			if err != nil {
+				return nil, fmt.Errorf("error parsing date: %v", err)
+			}
+
+			existingFile, exists := latestFilesMap[url]
+			if exists {
+				existingDateString := strings.Split(existingFile, "_")[1]
+				existingDate, _ := time.Parse("2006-01-02", existingDateString[:10])
+				if newTime.After(existingDate) {
+					latestFilesMap[url] = attrs.Name
+				}
+			} else {
+				latestFilesMap[url] = attrs.Name
+			}
 		}
+	}
+
+	var latestFiles []string
+	for _, filename := range latestFilesMap {
+		latestFiles = append(latestFiles, filename)
 	}
 
 	return latestFiles, nil
 }
+
 
 func (s *FileStorageGCS) GetLatestFile(folderPrefix, textIn string) (string, error) {
 	ctx := context.Background()
@@ -123,7 +155,7 @@ func (s *FileStorageGCS) GetLatestFile(folderPrefix, textIn string) (string, err
 	}
 
 	var latestFile string
-	var latestTime int64
+	var latestTime time.Time
 
 	it := bucket.Objects(ctx, query)
 	for {
@@ -136,9 +168,32 @@ func (s *FileStorageGCS) GetLatestFile(folderPrefix, textIn string) (string, err
 		}
 
 		if attrs.Prefix == "" && strings.Contains(attrs.Name, textIn) {
-			if attrs.Updated.Unix() > latestTime {
+			splitName := strings.Split(attrs.Name, "_")
+			dateString := ""
+			if len(splitName) == 2 {
+				// format: [date]_[textIn]
+				dateString = splitName[0]
+			} else if len(splitName) == 3 {
+				// format: [url]_[date]_[textIn]
+				dateString = splitName[1]
+			} else {
+				continue
+			}
+
+			dateAndTime := strings.Split(dateString, "-")
+			if len(dateAndTime) < 3 {
+				continue
+			}
+
+			date := strings.Join(dateAndTime[:3], "-")
+			newTime, err := time.Parse("2006-01-02", date)
+			if err != nil {
+				return "", fmt.Errorf("error parsing date: %v", err)
+			}
+
+			if newTime.After(latestTime) {
 				latestFile = attrs.Name
-				latestTime = attrs.Updated.Unix()
+				latestTime = newTime
 			}
 		}
 	}

@@ -19,10 +19,12 @@ import (
 
 	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/meta"
 	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product"
+
+	// "github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product/shopify"
+	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product/woocommerce"
 	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/site"
 
-	// "github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product/woocommerce"
-	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product/shopify"
+	// "github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product/shopify"
 
 	"github.com/exolutiontech/scraper-go/internal/pkg/storage"
 	gcsutils "github.com/exolutiontech/scraper-go/internal/pkg/storage/gcs"
@@ -55,14 +57,15 @@ func main() {
 		Password: "t62qs3cx4b6c",
 	}
 	var st storage.FileStorage
-	productScraper := shopify.New(proxyConfig, client, st)
+	productScraper := woocommerce.New(proxyConfig, client, st)
 	results, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
-		Url:        "https://www.mytoy.co.za/products/sunshine-double-sided-creative-easel-pink",
+		Url:        "https://mini-me.co.za/product/4-way-tyre-iron-silver/",
 		FullScrape: true,
 	})
 	if err != nil {
 		fmt.Println(err)
 	}
+	fmt.Println(results)
 	d, err := utils.ToMap(results.ProductData)
 	if err != nil {
 		fmt.Println(err)
@@ -84,10 +87,10 @@ func main() {
 	}
 
 	meta := meta.New(&client, st)
-	data, err := meta.ScrapeOne("https://www.mytoy.co.za")
+	data, err := meta.ScrapeOne("https://mini-me.co.za/")
 	fmt.Println(len(data))
 	fmt.Println(err)
 	sc := site.New(&client, st)
-	a, err := sc.ScrapeOne("https://toykingdom.co.za/")
+	a, err := sc.ScrapeOne("https://mini-me.co.za/")
 	fmt.Println(a)
 }

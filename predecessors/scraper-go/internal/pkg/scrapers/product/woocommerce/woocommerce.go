@@ -79,8 +79,8 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 		ProductData: productDataList}, nil
 }
 
-func scrapeProductWithoutVariations(productURL, productID, productName string, 
-		doc *goquery.Document) (product.ProductData, product.DataPoint, error) {
+func scrapeProductWithoutVariations(productURL, productID, productName string,
+	doc *goquery.Document) (product.ProductData, product.DataPoint, error) {
 
 	summaryDiv := doc.Find("div.summary")
 	price := summaryDiv.Find("span.woocommerce-Price-amount.amount").Text()
@@ -145,8 +145,8 @@ func scrapeProductWithoutVariations(productURL, productID, productName string,
 	return productData, dataPoint, nil
 }
 
-func scrapeProductWithVariations(productURL, productID, productName string, 
-		doc *goquery.Document) ([]product.ProductData, []product.DataPoint, error) {
+func scrapeProductWithVariations(productURL, productID, productName string,
+	doc *goquery.Document) ([]product.ProductData, []product.DataPoint, error) {
 
 	productDataList := []product.ProductData{}
 	dataPointList := []product.DataPoint{}
@@ -166,7 +166,7 @@ func scrapeProductWithVariations(productURL, productID, productName string,
 		variationID := variation["variation_id"]
 		priceFloat, errp := utils.PriceToFloat(displayPrice)
 		maxQtyInt, errq := utils.MaxQtyToInt(availabilityHTML)
-		
+
 		otherStringIds := []string{fmt.Sprintf("%v", sku), fmt.Sprintf("%v", variationID)}
 		hostIdentifier, productIdentifier, err := utils.StringToIdentifier(productURL, otherStringIds)
 		if err != nil {
