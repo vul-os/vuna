@@ -15,12 +15,12 @@ import (
 	"github.com/exolutionza/scraper-backend-go/internal/permissions/site"
 	"github.com/exolutionza/scraper-backend-go/internal/search"
 
-	firebase "firebase.google.com/go"
+	firebase "firebase.google.com/go/v4"
 )
 
 func Router(w http.ResponseWriter, r *http.Request) {
 	projectID := "scraping-is-hard"
-	paystackKey := "asdasd"
+	paystackKey := "***REMOVED-SECRET***"
 
 	// Create a BigQuery client
 	ctx := context.Background()

@@ -1,14 +1,12 @@
 package plan
 
 import (
-	"net/http"
-	"firebase.google.com/go/auth"
+	"firebase.google.com/go/v4/auth"
 )
 
 type UserPlanService struct {
-	httpClient  *http.Client
-	authClient  *auth.Client
-	paystackKey string
+	AuthClient  *auth.Client
+	PaystackKey string
 }
 
 func NewUserPlanService(
@@ -16,7 +14,7 @@ func NewUserPlanService(
 		paystackKey string,
 ) *UserPlanService {
 	return &UserPlanService{
-		authClient:  authClient,
-		paystackKey: paystackKey,
+		AuthClient:  authClient,
+		PaystackKey: paystackKey,
 	}
 }

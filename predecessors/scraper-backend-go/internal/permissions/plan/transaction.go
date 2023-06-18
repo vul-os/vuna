@@ -6,8 +6,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"firebase.google.com/go/auth"
+
+	scraperAuth "github.com/exolutionza/scraper-backend-go/internal/auth"
 )
+
+type CreateTransactionRequest struct {
+	Plan string `json:"plan"`
+}
 
 type PaystackTransactionRequest struct {
 	Email  string `json:"email"`
@@ -16,7 +21,7 @@ type PaystackTransactionRequest struct {
 }
 
 type PaystackTransactionResponse struct {
-	Status  bool `json:"status"`
+	Status  bool   `json:"status"`
 	Message string `json:"message"`
 	Data    struct {
 		AuthorizationURL string `json:"authorization_url"`
@@ -25,12 +30,15 @@ type PaystackTransactionResponse struct {
 	} `json:"data"`
 }
 
-func (s *UserPlanService) CreateTransaction(w http.ResponseWriter, 
-		r *http.Request) {
-
-	user := r.Context().Value("user").(*auth.Token)
-	email := user.Claims["email"].(string)
-	var req PaystackTransactionRequest
+func (s *UserPlanService) CreateTransaction(w http.ResponseWriter,
+	r *http.Request) {
+	user, ok := r.Context().Value("user").(scraperAuth.User)
+	if !ok {
+		http.Error(w, "Failed to retrieve user from context", http.StatusInternalServerError)
+		return
+	}
+	email := user.Email
+	var req CreateTransactionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Failed to decode request body", http.StatusBadRequest)
 		return
@@ -41,31 +49,31 @@ func (s *UserPlanService) CreateTransaction(w http.ResponseWriter,
 		Amount: "1",
 		Plan:   req.Plan,
 	}
-
 	reqBody, err := json.Marshal(transactionReq)
 	if err != nil {
-		http.Error(w, 
+		http.Error(w,
 			fmt.Sprintf("Failed to marshal transaction request: %v", err),
 			http.StatusInternalServerError)
 		return
 	}
 
-	httpReq, err := http.NewRequest("POST", 
-		"https://api.paystack.co/transaction/initialize", 
+	httpReq, err := http.NewRequest("POST",
+		"https://api.paystack.co/transaction/initialize",
 		bytes.NewBuffer(reqBody))
 	if err != nil {
-		http.Error(w, 
-			fmt.Sprintf("Failed to create Paystack transaction request: %v", err), 
+		http.Error(w,
+			fmt.Sprintf("Failed to create Paystack transaction request: %v", err),
 			http.StatusInternalServerError)
 		return
 	}
-
-	httpReq.Header.Set("Authorization", "Bearer "+s.paystackKey)
+	fmt.Println(s.PaystackKey)
+	httpReq.Header.Set("Authorization", "Bearer "+s.PaystackKey)
 	httpReq.Header.Set("Content-Type", "application/json")
+	httpClient := http.Client{}
 
-	resp, err := s.httpClient.Do(httpReq)
+	resp, err := httpClient.Do(httpReq)
 	if err != nil {
-		http.Error(w, 
+		http.Error(w,
 			fmt.Sprintf("Failed to send Paystack transaction request: %v", err),
 			http.StatusInternalServerError)
 		return
@@ -73,15 +81,15 @@ func (s *UserPlanService) CreateTransaction(w http.ResponseWriter,
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		http.Error(w, "Paystack API returned non-200 status code", 
+		http.Error(w, "Paystack API returned non-200 status code",
 			http.StatusInternalServerError)
 		return
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		http.Error(w, 
-			fmt.Sprintf("Failed to read Paystack transaction response: %v", err), 
+		http.Error(w,
+			fmt.Sprintf("Failed to read Paystack transaction response: %v", err),
 			http.StatusInternalServerError)
 		return
 	}
@@ -89,16 +97,16 @@ func (s *UserPlanService) CreateTransaction(w http.ResponseWriter,
 	var transactionResp PaystackTransactionResponse
 	err = json.Unmarshal(body, &transactionResp)
 	if err != nil {
-		http.Error(w, 
+		http.Error(w,
 			fmt.Sprintf(
-				"Failed to unmarshal Paystack transaction response: %v", 
-				err), 
+				"Failed to unmarshal Paystack transaction response: %v",
+				err),
 			http.StatusInternalServerError)
 		return
 	}
 
 	if !transactionResp.Status {
-		http.Error(w, fmt.Sprintf("Paystack transaction creation failed: %s", 
+		http.Error(w, fmt.Sprintf("Paystack transaction creation failed: %s",
 			transactionResp.Message), http.StatusInternalServerError)
 		return
 	}
@@ -111,7 +119,7 @@ func (s *UserPlanService) CreateTransaction(w http.ResponseWriter,
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(respData); err != nil {
-		http.Error(w, fmt.Sprintf("Failed to encode response: %v", err), 
+		http.Error(w, fmt.Sprintf("Failed to encode response: %v", err),
 			http.StatusInternalServerError)
 		return
 	}
