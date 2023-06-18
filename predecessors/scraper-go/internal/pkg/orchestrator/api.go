@@ -121,22 +121,26 @@ func (o *OrchestratorAPI) AllProducts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	type row struct {
+		SiteIdentifier string
+	}
+
 	for {
-		var siteIdentifier string
-		err := it.Next(&siteIdentifier)
+		var values row
+		err := it.Next(&values)
 		if err == iterator.Done {
 			break
 		}
 		if err != nil {
 			http.Error(w, "Failed to iterate over results", http.StatusInternalServerError)
-			fmt.Println("Error AllMetaProducts: ", err)
+			fmt.Println("Error AllProducts: ", err)
 			return
 		}
 
-		err = o.TaskCreator.CreateTaskOrchestrateProduct(siteIdentifier)
+		err = o.TaskCreator.CreateTaskOrchestrateProduct(values.SiteIdentifier)
 		if err != nil {
 			http.Error(w, "Failed to create product task", http.StatusInternalServerError)
-			fmt.Println("Error AllMetaProducts: ", err)
+			fmt.Println("Error AllProducts: ", err)
 			return
 		}
 	}

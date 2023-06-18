@@ -101,7 +101,7 @@ func router(w http.ResponseWriter, r *http.Request) {
 	rtr.HandleFunc("/orchestrator/meta", o.Meta).Methods(http.MethodGet)
 	rtr.HandleFunc("/orchestrator/site", o.Site).Methods(http.MethodGet)
 	rtr.HandleFunc("/orchestrator/product", o.AllProducts).Methods(http.MethodGet)
-	rtr.HandleFunc("/orchestrator/product/{file}", o.Product).Methods(http.MethodGet)
+	rtr.HandleFunc("/orchestrator/product/{siteIdentifier}", o.Product).Methods(http.MethodGet)
 	rtr.HandleFunc("/orchestrator/product-meta", o.AllMetaProducts).Methods(http.MethodGet)
 	rtr.HandleFunc("/orchestrator/product-meta/{file}", o.MetaProduct).Methods(http.MethodGet)
 
