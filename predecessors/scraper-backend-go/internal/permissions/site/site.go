@@ -44,13 +44,20 @@ func (s *SitePermissionService) UpdateSitePermissions(w http.ResponseWriter,
 		http.Error(w, "Failed to decode request body", http.StatusBadRequest)
 		return
 	}
-
 	// Perform site permission updates
 	maxProducts, err := s.userPlanService.GetMaxProductsForUser(user.Email)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to get max products for user: %v", err),
-			http.StatusInternalServerError)
-		return
+		errString := fmt.Sprintf("Failed to get max products for user: %v", err)
+		// Check if trial account
+		if maxProducts == 0 {
+			maxProducts, err = s.userPlanService.GetMaxProductsForTrialUser(userID)
+			if err != nil {
+				errString = fmt.Sprintf("Failed to get max products for user: %v and %v", err, errString)
+				http.Error(w, errString,
+					http.StatusInternalServerError)
+				return
+			}
+		}
 	}
 
 	productCount, err := s.getProductCountForSites(req.SiteIdentifiers)

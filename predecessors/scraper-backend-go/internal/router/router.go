@@ -70,10 +70,14 @@ func Router(w http.ResponseWriter, r *http.Request) {
 	protectedRouter := router.PathPrefix("").Subrouter()
 	protectedRouter.Use(auth.IsAuthenticated(authClient))
 
-	protectedRouter.HandleFunc("/update-site-permissions",
+	protectedRouter.HandleFunc("/subscription/create",
+		userPlanService.CreateSubscription).Methods("POST")
+	protectedRouter.HandleFunc("/subscription/disable",
+		userPlanService.DisableSubscription).Methods("POST")
+
+	protectedRouter.HandleFunc("/site-permissions/update",
 		sitePermissionService.UpdateSitePermissions).Methods("POST")
-	protectedRouter.HandleFunc("/create-transaction",
-		userPlanService.CreateTransaction).Methods("POST")
+
 	protectedRouter.HandleFunc("/search",
 		searchHandler.Handler).Methods("POST")
 	protectedRouter.HandleFunc("/execute",
