@@ -223,7 +223,6 @@ func (o *OrchestratorAPI) MetaProduct(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Write([]byte("hopefully created meta product scrape task"))
 }
-
 func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	siteIdentifier := vars["siteIdentifier"]
@@ -249,6 +248,9 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 
 	type SiteData struct {
 		SiteIdentifier string              `bigquery:"siteidentifier"`
+		Name           bigquery.NullString `bigquery:"name"`
+		Image          bigquery.NullString `bigquery:"image"`
+		Currency       bigquery.NullString `bigquery:"currency"`
 		Technology     bigquery.NullString `bigquery:"technology"`
 		Scraper        bigquery.NullString `bigquery:"scraper"`
 		RateLimit      bigquery.NullString `bigquery:"ratelimit"`
