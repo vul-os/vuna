@@ -237,7 +237,18 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var siteInfo site.SiteData
+	type SiteData struct {
+		SiteIdentifier string `bigquery:"siteidentifier"`
+		Name           string `bigquery:"name"`
+		Image          string `bigquery:"image"`
+		Currency       string `bigquery:"currency"`
+		Technology     string `bigquery:"technology"`
+		Scraper        string `bigquery:"scraper"`
+		RateLimit      string `bigquery:"ratelimit"`
+		Url            string `bigquery:"url"`
+	}
+
+	var siteInfo SiteData
 	for {
 		err := it.Next(&siteInfo)
 		if err == iterator.Done {
@@ -251,29 +262,29 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 	}
 
 	query = o.BqClient.Query(`
+	SELECT 
+		URL 
+	FROM (
 		SELECT 
-			product.URL 
-		FROM (
-			SELECT 
-				p.URL, 
-				p.ProductID, 
-				MAX(d.DateCreated) AS MaxDate
-			FROM ` + "`scrapers.product_unique`" + ` AS p
-			INNER JOIN ` + "`scrapers.datapoint_raw`" + ` AS d 
-				ON p.ProductID = d.ProductID 
-				AND p.SiteIdentifier = d.SiteIdentifier
-			WHERE 
-				p.SiteIdentifier = @siteIdentifier
-			GROUP BY 
-				p.URL, 
-				p.ProductID
-		) as latest
-		INNER JOIN ` + "`scrapers.datapoint_raw`" + ` AS dr 
-			ON latest.ProductID = dr.ProductID 
-			AND latest.MaxDate = dr.DateCreated
+			p.URL, 
+			p.ProductIdentifier, 
+			MAX(d.DateCreated) AS MaxDate
+		FROM ` + "`scrapers.product_unique`" + ` AS p
+		INNER JOIN ` + "`scrapers.datapoint_raw`" + ` AS d 
+			ON p.ProductIdentifier = d.ProductIdentifier
 		WHERE 
-			dr.MaxQty > 0
+			p.SiteIdentifier = @siteIdentifier
+		GROUP BY 
+			p.URL, 
+			p.ProductIdentifier
+	) as latest
+	INNER JOIN ` + "`scrapers.datapoint_raw`" + ` AS dr 
+		ON latest.ProductIdentifier = dr.ProductIdentifier 
+		AND latest.MaxDate = dr.DateCreated
+	WHERE  
+		dr.MaxQty > 0
 	`)
+
 	query.Parameters = []bigquery.QueryParameter{
 		{Name: "siteIdentifier", Value: siteIdentifier},
 	}
