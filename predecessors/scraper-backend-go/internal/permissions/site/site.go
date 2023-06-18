@@ -9,8 +9,9 @@ import (
 
 	"cloud.google.com/go/bigquery"
 	"google.golang.org/api/iterator"
+	"github.com/exolutionza/scraper-backend-go/internal/permissions/plan"
 
-	plan "github.com/exolutionza/scraper-backend-go/internal/permissions/plan"
+	"firebase.google.com/go/auth"
 )
 
 type SitePermissionService struct {
@@ -18,8 +19,8 @@ type SitePermissionService struct {
 	userPlanService *plan.UserPlanService
 }
 
-func NewSitePermissionService(client *bigquery.Client,
-	userPlanService *plan.UserPlanService) *SitePermissionService {
+func NewSitePermissionService(client *bigquery.Client, 
+		userPlanService *plan.UserPlanService) *SitePermissionService {
 	return &SitePermissionService{
 		client:          client,
 		userPlanService: userPlanService,
@@ -28,9 +29,12 @@ func NewSitePermissionService(client *bigquery.Client,
 
 func (s *SitePermissionService) UpdateSitePermissions(w http.ResponseWriter, 
 		r *http.Request) {
+	// Get the user ID from the authenticated user
+	user := r.Context().Value("user").(*auth.Token)
+	userID := user.UID
+
 	// Parse request body
 	var req struct {
-		UserID          string   `json:"user_id"`
 		SiteIdentifiers []string `json:"site_identifiers"`
 	}
 
@@ -41,17 +45,17 @@ func (s *SitePermissionService) UpdateSitePermissions(w http.ResponseWriter,
 	}
 
 	// Perform site permission updates
-	maxProducts, err := s.userPlanService.GetMaxProductsForUser(req.UserID)
+	maxProducts, err := s.userPlanService.GetMaxProductsForUser(userID)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to get max products for user: %v", err), 
-			http.StatusInternalServerError)
+		http.StatusInternalServerError)
 		return
 	}
 
 	productCount, err := s.getProductCountForSites(req.SiteIdentifiers)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to get product count for sites: %v", err),
-			 http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Failed to get product count for sites: %v", err), 
+			http.StatusInternalServerError)
 		return
 	}
 
@@ -61,10 +65,9 @@ func (s *SitePermissionService) UpdateSitePermissions(w http.ResponseWriter,
 		return
 	}
 
-	if err := s.updateSitePermissionsTable(req.UserID, req.SiteIdentifiers); 
-		err != nil {
-		http.Error(w, fmt.Sprintf("Failed to update site permissions table: %v", err), 
-			http.StatusInternalServerError)
+	if err := s.updateSitePermissionsTable(userID, req.SiteIdentifiers); err != nil {
+		http.Error(w, fmt.Sprintf("Failed to update site permissions table: %v", err),
+			 http.StatusInternalServerError)
 		return
 	}
 
@@ -73,8 +76,7 @@ func (s *SitePermissionService) UpdateSitePermissions(w http.ResponseWriter,
 	fmt.Fprint(w, "Site permissions updated successfully")
 }
 
-func (s *SitePermissionService) getProductCountForSites(siteIdentifiers []string) (int,
-		error) {
+func (s *SitePermissionService) getProductCountForSites(siteIdentifiers []string) (int, error) {
 	ctx := context.Background()
 
 	query := s.client.Query(`
@@ -112,8 +114,7 @@ func (s *SitePermissionService) getProductCountForSites(siteIdentifiers []string
 	return productCount, nil
 }
 
-func (s *SitePermissionService) updateSitePermissionsTable(userID string,
-	siteIdentifiers []string) error {
+func (s *SitePermissionService) updateSitePermissionsTable(userID string, siteIdentifiers []string) error {
 	ctx := context.Background()
 
 	siteIds := strings.Join(siteIdentifiers, `","`)
@@ -133,3 +134,4 @@ func (s *SitePermissionService) updateSitePermissionsTable(userID string,
 
 	return nil
 }
+

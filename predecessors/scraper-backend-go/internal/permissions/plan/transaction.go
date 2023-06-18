@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"firebase.google.com/go/auth"
 )
 
 type PaystackTransactionRequest struct {
@@ -24,7 +25,11 @@ type PaystackTransactionResponse struct {
 	} `json:"data"`
 }
 
-func (s *UserPlanService) CreateTransaction(w http.ResponseWriter, r *http.Request) {
+func (s *UserPlanService) CreateTransaction(w http.ResponseWriter, 
+		r *http.Request) {
+
+	user := r.Context().Value("user").(*auth.Token)
+	email := user.Claims["email"].(string)
 	var req PaystackTransactionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Failed to decode request body", http.StatusBadRequest)
@@ -32,22 +37,25 @@ func (s *UserPlanService) CreateTransaction(w http.ResponseWriter, r *http.Reque
 	}
 
 	transactionReq := PaystackTransactionRequest{
-		Email:  req.Email,
-		Amount: req.Amount,
+		Email:  email,
+		Amount: "1",
 		Plan:   req.Plan,
 	}
 
 	reqBody, err := json.Marshal(transactionReq)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to marshal transaction request: %v", err),
+		http.Error(w, 
+			fmt.Sprintf("Failed to marshal transaction request: %v", err),
 			http.StatusInternalServerError)
 		return
 	}
 
-	httpReq, err := http.NewRequest("POST", "https://api.paystack.co/transaction/initialize", 
+	httpReq, err := http.NewRequest("POST", 
+		"https://api.paystack.co/transaction/initialize", 
 		bytes.NewBuffer(reqBody))
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to create Paystack transaction request: %v", err), 
+		http.Error(w, 
+			fmt.Sprintf("Failed to create Paystack transaction request: %v", err), 
 			http.StatusInternalServerError)
 		return
 	}
@@ -57,7 +65,8 @@ func (s *UserPlanService) CreateTransaction(w http.ResponseWriter, r *http.Reque
 
 	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to send Paystack transaction request: %v", err),
+		http.Error(w, 
+			fmt.Sprintf("Failed to send Paystack transaction request: %v", err),
 			http.StatusInternalServerError)
 		return
 	}
@@ -71,7 +80,8 @@ func (s *UserPlanService) CreateTransaction(w http.ResponseWriter, r *http.Reque
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to read Paystack transaction response: %v", err), 
+		http.Error(w, 
+			fmt.Sprintf("Failed to read Paystack transaction response: %v", err), 
 			http.StatusInternalServerError)
 		return
 	}
@@ -79,7 +89,10 @@ func (s *UserPlanService) CreateTransaction(w http.ResponseWriter, r *http.Reque
 	var transactionResp PaystackTransactionResponse
 	err = json.Unmarshal(body, &transactionResp)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to unmarshal Paystack transaction response: %v", err), 
+		http.Error(w, 
+			fmt.Sprintf(
+				"Failed to unmarshal Paystack transaction response: %v", 
+				err), 
 			http.StatusInternalServerError)
 		return
 	}

@@ -30,9 +30,13 @@ func (bp *BigQueryProcessor) TemplateAndExecuteOne(w http.ResponseWriter, r *htt
 		return
 	}
 
+	userId := "userIdHere" // GPT Get user ID from context
+
 	// Extract the name and template_dict from the data
 	name, _ := data["name"].(string)
 	templateDict, _ := data["template_dict"].(map[string]interface{})
+
+	templateDict["userId"] = userId
 
 	// Process the file contents
 	fileContents := ProcessFile(name)
