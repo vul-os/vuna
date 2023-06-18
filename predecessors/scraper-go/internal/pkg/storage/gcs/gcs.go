@@ -7,8 +7,9 @@ import (
 
 	"github.com/exolutiontech/scraper-go/internal/pkg/storage"
 
-	"google.golang.org/api/iterator"
 	"time"
+
+	"google.golang.org/api/iterator"
 
 	cloudStorage "cloud.google.com/go/storage"
 )
@@ -144,7 +145,6 @@ func (s *FileStorageGCS) GetLatestFiles(folderPrefix, textIn string) ([]string, 
 	return latestFiles, nil
 }
 
-
 func (s *FileStorageGCS) GetLatestFile(folderPrefix, textIn string) (string, error) {
 	ctx := context.Background()
 	bucket := s.Client.Bucket(s.BucketName)
@@ -166,9 +166,9 @@ func (s *FileStorageGCS) GetLatestFile(folderPrefix, textIn string) (string, err
 		if err != nil {
 			return "", fmt.Errorf("error getting next object from GCS: %v", err)
 		}
-
 		if attrs.Prefix == "" && strings.Contains(attrs.Name, textIn) {
-			splitName := strings.Split(attrs.Name, "_")
+			newName := strings.ReplaceAll(attrs.Name, textIn, "")
+			splitName := strings.Split(newName, "_")
 			dateString := ""
 			if len(splitName) == 2 {
 				// format: [date]_[textIn]
@@ -192,7 +192,7 @@ func (s *FileStorageGCS) GetLatestFile(folderPrefix, textIn string) (string, err
 			}
 
 			if newTime.After(latestTime) {
-				latestFile = attrs.Name
+				latestFile = newName
 				latestTime = newTime
 			}
 		}
