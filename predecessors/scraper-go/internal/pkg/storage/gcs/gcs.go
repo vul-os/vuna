@@ -192,7 +192,7 @@ func (s *FileStorageGCS) GetLatestFile(folderPrefix, textIn string) (string, err
 			}
 
 			if newTime.After(latestTime) {
-				latestFile = newName
+				latestFile = attrs.Name
 				latestTime = newTime
 			}
 		}
