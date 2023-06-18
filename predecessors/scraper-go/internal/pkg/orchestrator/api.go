@@ -223,6 +223,7 @@ func (o *OrchestratorAPI) MetaProduct(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Write([]byte("hopefully created meta product scrape task"))
 }
+
 func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	siteIdentifier := vars["siteIdentifier"]
@@ -242,7 +243,7 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 	it, err := query.Read(ctx)
 	if err != nil {
 		http.Error(w, "Failed to execute query", http.StatusInternalServerError)
-		fmt.Println("Error MetaProduct: ", err)
+		fmt.Println("Error Product: ", err)
 		return
 	}
 
@@ -328,6 +329,13 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("URL: ", url)
 		if siteInfo.Scraper.Valid {
 			fmt.Println("Scrape Product Task: ", siteInfo.Scraper.StringVal, url)
+			scheduledTime = scheduledTime.Add(time.Second * time.Duration(rateLimit))
+			err := o.TaskCreator.CreateTaskScrapeProduct(url, siteInfo.Scraper.StringVal, scheduledTime)
+			if err != nil {
+				fmt.Println(err)
+				http.Error(w, "Failed to create product task", http.StatusInternalServerError)
+				return
+			}
 		}
 		scheduledTime = scheduledTime.Add(time.Second * time.Duration(rateLimit))
 		// Create the product scrape task here
