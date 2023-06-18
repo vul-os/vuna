@@ -258,7 +258,7 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 		Url            bigquery.NullString `bigquery:"url"`
 	}
 
-	var siteInfo []SiteData
+	var siteInfo SiteData
 	err = it.Next(&siteInfo)
 	if err != nil {
 		if err == iterator.Done {
@@ -267,11 +267,6 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Failed to iterate over results", http.StatusInternalServerError)
 			fmt.Println("Error MetaProduct: ", err)
 		}
-		return
-	}
-
-	if len(siteInfo) == 0 {
-		http.Error(w, "No site data found", http.StatusNotFound)
 		return
 	}
 
@@ -328,8 +323,8 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 	scheduledTime := startTime
 	for _, url := range urls {
 		fmt.Println("URL: ", url)
-		if siteInfo[0].Scraper.Valid {
-			fmt.Println("Scrape Product Task: ", siteInfo[0].Scraper.StringVal, url)
+		if siteInfo.Scraper.Valid {
+			fmt.Println("Scrape Product Task: ", siteInfo.Scraper.StringVal, url)
 		}
 		scheduledTime = scheduledTime.Add(time.Second * time.Duration(rateLimit))
 		// Create the product scrape task here
