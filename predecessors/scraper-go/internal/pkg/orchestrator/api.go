@@ -249,9 +249,6 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 
 	type SiteData struct {
 		SiteIdentifier string              `bigquery:"siteidentifier"`
-		Name           bigquery.NullString `bigquery:"name"`
-		Image          bigquery.NullString `bigquery:"image"`
-		Currency       bigquery.NullString `bigquery:"currency"`
 		Technology     bigquery.NullString `bigquery:"technology"`
 		Scraper        bigquery.NullString `bigquery:"scraper"`
 		RateLimit      bigquery.NullString `bigquery:"ratelimit"`
@@ -305,10 +302,14 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	type URLData struct {
+		URL string `bigquery:"URL"`
+	}
+
+	var urlData URLData
 	urls := []string{}
 	for {
-		var url string
-		err := it.Next(&url)
+		err := it.Next(&urlData)
 		if err == iterator.Done {
 			break
 		}
@@ -317,7 +318,7 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("Error Product: ", err)
 			return
 		}
-		urls = append(urls, url)
+		urls = append(urls, urlData.URL)
 	}
 
 	scheduledTime := startTime
