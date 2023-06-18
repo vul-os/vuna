@@ -248,14 +248,14 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type SiteData struct {
-		SiteIdentifier string `bigquery:"siteidentifier"`
-		Name           string `bigquery:"name"`
-		Image          string `bigquery:"image"`
-		Currency       string `bigquery:"currency"`
-		Technology     string `bigquery:"technology"`
-		Scraper        string `bigquery:"scraper"`
-		RateLimit      string `bigquery:"ratelimit"`
-		Url            string `bigquery:"url"`
+		SiteIdentifier string  `bigquery:"siteidentifier"`
+		Name           *string `bigquery:"name"`
+		Image          *string `bigquery:"image"`
+		Currency       *string `bigquery:"currency"`
+		Technology     *string `bigquery:"technology"`
+		Scraper        *string `bigquery:"scraper"`
+		RateLimit      *string `bigquery:"ratelimit"`
+		Url            *string `bigquery:"url"`
 	}
 
 	var siteInfo SiteData
@@ -302,7 +302,7 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 	it, err = query.Read(ctx)
 	if err != nil {
 		http.Error(w, "Failed to execute query", http.StatusInternalServerError)
-		fmt.Println("Error MetaProduct: ", err)
+		fmt.Println("Error Product: ", err)
 		return
 	}
 
@@ -315,7 +315,7 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 		}
 		if err != nil {
 			http.Error(w, "Failed to iterate over results", http.StatusInternalServerError)
-			fmt.Println("Error MetaProduct: ", err)
+			fmt.Println("Error Product: ", err)
 			return
 		}
 		urls = append(urls, url)
@@ -326,11 +326,13 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("URL: ", url)
 		fmt.Println("Scrape Product Task: ", siteInfo.Scraper, url)
 		scheduledTime = scheduledTime.Add(time.Second * time.Duration(rateLimit))
-		err := o.TaskCreator.CreateTaskScrapeProduct(url, siteInfo.Scraper, scheduledTime)
-		if err != nil {
-			fmt.Println(err)
-			http.Error(w, "Failed to create product task", http.StatusInternalServerError)
-			return
+		if siteInfo.Scraper != nil {
+			err := o.TaskCreator.CreateTaskScrapeProduct(url, *siteInfo.Scraper, scheduledTime)
+			if err != nil {
+				fmt.Println(err)
+				http.Error(w, "Failed to create product task", http.StatusInternalServerError)
+				return
+			}
 		}
 	}
 
