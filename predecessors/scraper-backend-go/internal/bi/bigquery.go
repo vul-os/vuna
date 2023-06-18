@@ -8,6 +8,7 @@ import (
 	"text/template"
 
 	"cloud.google.com/go/bigquery"
+	"firebase.google.com/go/auth"
 )
 
 type BigQueryProcessor struct {
@@ -29,14 +30,14 @@ func (bp *BigQueryProcessor) TemplateAndExecuteOne(w http.ResponseWriter, r *htt
 		http.Error(w, "Failed to parse request body", http.StatusBadRequest)
 		return
 	}
-
-	userId := "userIdHere" // GPT Get user ID from context
+	// Get the user ID from the authenticated user
+	user := r.Context().Value("user").(*auth.Token)
 
 	// Extract the name and template_dict from the data
 	name, _ := data["name"].(string)
 	templateDict, _ := data["template_dict"].(map[string]interface{})
 
-	templateDict["userId"] = userId
+	templateDict["userId"] = user.UID
 
 	// Process the file contents
 	fileContents := ProcessFile(name)

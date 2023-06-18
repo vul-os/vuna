@@ -1,22 +1,13 @@
-WITH
-product_sites AS (
-  SELECT DISTINCT
-    ProductIdentifier,
-    SiteIdentifier
-  FROM `scrapers.product_unique`
-),
+WITH 
 distinct_products AS (
   SELECT DISTINCT
-    ps.SiteIdentifier,
-    dp.ProductIdentifier
-  FROM `scrapers.datapoint_partitioned` dp
-  JOIN product_sites ps ON dp.ProductIdentifier = ps.ProductIdentifier
+    ProductIdentifier
+  FROM `scrapers.datapoint_partitioned`
 ),
 period_1_sales AS (
   SELECT 
-    ps.SiteIdentifier,
-    dp.ProductIdentifier, 
-    SUM(-1 * dp.difference * dp.Price) AS revenue
+    ProductIdentifier, 
+    SUM(-1 * difference * Price) AS revenue
   FROM 
     (SELECT
        DateCreated,
@@ -24,17 +15,15 @@ period_1_sales AS (
        IFNULL(maxqty - LAG(maxqty) OVER (PARTITION BY ProductIdentifier ORDER BY DateCreated), 0) AS difference,
        Price
      FROM `scrapers.datapoint_partitioned`
-    ) dp
-  JOIN product_sites ps ON dp.ProductIdentifier = ps.ProductIdentifier
+    ) t
   WHERE 
-    dp.difference < 0 AND dp.DateCreated BETWEEN TIMESTAMP(DATE_SUB(PARSE_TIMESTAMP('%Y-%m-%d', '2023-06-01'), INTERVAL 7 DAY)) AND TIMESTAMP(PARSE_TIMESTAMP('%Y-%m-%d', '2023-06-01'))
-  GROUP BY ps.SiteIdentifier, dp.ProductIdentifier
+    difference < 0 AND DATE_TRUNC(DATE(t.DateCreated), DAY) BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)
+  GROUP BY ProductIdentifier
 ),
 period_2_sales AS (
   SELECT 
-    ps.SiteIdentifier,
-    dp.ProductIdentifier, 
-    SUM(-1 * dp.difference * dp.Price) AS revenue
+    ProductIdentifier, 
+    SUM(-1 * difference * Price) AS revenue
   FROM 
     (SELECT
        DateCreated,
@@ -42,33 +31,29 @@ period_2_sales AS (
        IFNULL(maxqty - LAG(maxqty) OVER (PARTITION BY ProductIdentifier ORDER BY DateCreated), 0) AS difference,
        Price
      FROM `scrapers.datapoint_partitioned`
-    ) dp
-  JOIN product_sites ps ON dp.ProductIdentifier = ps.ProductIdentifier
+    ) t
   WHERE 
-    dp.difference < 0 AND dp.DateCreated BETWEEN TIMESTAMP(PARSE_TIMESTAMP('%Y-%m-%d', '2023-06-01')) AND TIMESTAMP(PARSE_TIMESTAMP('%Y-%m-%d', '2023-06-08'))
-  GROUP BY ps.SiteIdentifier, dp.ProductIdentifier
+    difference < 0 AND DATE_TRUNC(DATE(t.DateCreated), DAY) BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 14 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 8 DAY)
+  GROUP BY ProductIdentifier
 ),
 period_1_rank AS (
   SELECT 
-    SiteIdentifier,
     ProductIdentifier, 
-    RANK() OVER(PARTITION BY SiteIdentifier ORDER BY revenue DESC) as rank
+    RANK() OVER(ORDER BY revenue ASC) as rank
   FROM period_1_sales
 ),
 period_2_rank AS (
   SELECT 
-    SiteIdentifier,
     ProductIdentifier, 
-    RANK() OVER(PARTITION BY SiteIdentifier ORDER BY revenue DESC) as rank,
+    RANK() OVER(ORDER BY revenue ASC) as rank,
     revenue AS current_period_revenue
   FROM period_2_sales
 ),
 current_values AS (
   SELECT
-    ps.SiteIdentifier,
-    dp.ProductIdentifier,
-    dp.Price AS current_price,
-    dp.maxqty AS current_maxqty
+    ProductIdentifier,
+    Price AS current_price,
+    maxqty AS current_maxqty
   FROM (
     SELECT 
       ProductIdentifier,
@@ -77,31 +62,30 @@ current_values AS (
       ROW_NUMBER() OVER (PARTITION BY ProductIdentifier ORDER BY DateCreated DESC) as rn
     FROM
       `scrapers.datapoint_partitioned`
-  ) dp
-  JOIN product_sites ps ON dp.ProductIdentifier = ps.ProductIdentifier
-  WHERE dp.rn = 1
-),
-site_values AS (
-  SELECT 
-    SiteIdentifier,
-    SUM(current_price * current_maxqty) as TotalValue
-  FROM current_values
-  GROUP BY SiteIdentifier
+  ) 
+  WHERE rn = 1
 )
 SELECT 
-  su.SiteIdentifier, 
-  su.Name AS SiteName,
-  su.Url AS SiteUrl,
-  su.Image AS SiteImage,
-  sv.TotalValue,
-  IFNULL(p2.rank, 0) AS Rank,
-  IFNULL(p1.rank, 0) - IFNULL(p2.rank, 0) AS RankChange
+  dp.ProductIdentifier, 
+  RANK() OVER(ORDER BY IFNULL(p2.rank, 0) DESC) AS Rank,
+  IFNULL(p1.rank, 0) - IFNULL(p2.rank, 0) AS RankChange,
+  IFNULL(p2.current_period_revenue, 0) AS Revenue,
+  c.current_price as Price,
+  c.current_maxqty as MaxQty,
+  c.current_price * c.current_maxqty as SalesValue,
+  p.Name AS ProductName,
+  p.ImageUrls AS ImageUrls,
+  p.URL as ProductUrl
 FROM 
-  `scrapers.site_unique` su
-JOIN 
-  site_values sv ON su.SiteIdentifier = sv.SiteIdentifier
+  distinct_products dp
 LEFT JOIN 
-  period_1_rank p1 ON su.SiteIdentifier = p1.SiteIdentifier
+  period_1_rank p1 ON dp.ProductIdentifier = p1.ProductIdentifier
 LEFT JOIN 
-  period_2_rank p2 ON su.SiteIdentifier = p2.SiteIdentifier
-ORDER BY RankChange DESC
+  period_2_rank p2 ON dp.ProductIdentifier = p2.ProductIdentifier
+LEFT JOIN
+  current_values c ON dp.ProductIdentifier = c.ProductIdentifier
+LEFT JOIN
+  `scrapers.product_unique` p ON dp.ProductIdentifier = p.ProductIdentifier
+WHERE c.current_maxqty > 0 
+  AND p.Name IS NOT NULL
+ORDER BY Rank ASC;
