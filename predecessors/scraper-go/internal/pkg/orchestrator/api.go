@@ -258,17 +258,21 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 		Url            bigquery.NullString `bigquery:"url"`
 	}
 
-	var siteInfo SiteData
-	for {
-		err := it.Next(&siteInfo)
+	var siteInfo []SiteData
+	err = it.Next(&siteInfo)
+	if err != nil {
 		if err == iterator.Done {
-			break
-		}
-		if err != nil {
+			http.Error(w, "No site data found", http.StatusNotFound)
+		} else {
 			http.Error(w, "Failed to iterate over results", http.StatusInternalServerError)
 			fmt.Println("Error MetaProduct: ", err)
-			return
 		}
+		return
+	}
+
+	if len(siteInfo) == 0 {
+		http.Error(w, "No site data found", http.StatusNotFound)
+		return
 	}
 
 	query = o.BqClient.Query(`
@@ -324,16 +328,11 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 	scheduledTime := startTime
 	for _, url := range urls {
 		fmt.Println("URL: ", url)
-		fmt.Println("Scrape Product Task: ", siteInfo.Scraper, url)
-		scheduledTime = scheduledTime.Add(time.Second * time.Duration(rateLimit))
-		if siteInfo.Scraper.Valid {
-			err := o.TaskCreator.CreateTaskScrapeProduct(url, siteInfo.Scraper.StringVal, scheduledTime)
-			if err != nil {
-				fmt.Println(err)
-				http.Error(w, "Failed to create product task", http.StatusInternalServerError)
-				return
-			}
+		if siteInfo[0].Scraper.Valid {
+			fmt.Println("Scrape Product Task: ", siteInfo[0].Scraper.StringVal, url)
 		}
+		scheduledTime = scheduledTime.Add(time.Second * time.Duration(rateLimit))
+		// Create the product scrape task here
 	}
 
 	w.Write([]byte("hopefully created product scrape task"))
