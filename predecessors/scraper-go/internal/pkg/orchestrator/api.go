@@ -41,12 +41,18 @@ func New(
 func (o *OrchestratorAPI) Meta(w http.ResponseWriter, r *http.Request) {
 	latestFile, err := o.FileStorage.GetLatestFile("root/", "sites.txt")
 	if err != nil {
-		fmt.Println("file storage error -> GetLatestFile")
+		errorStr := fmt.Sprintf("file storage error -> GetLatestFile, err: %v", err)
+		fmt.Println(errorStr)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(errorStr))
 	}
 	fmt.Println("GetLatestFile: ", latestFile)
 	urls, err := o.FileStorage.ReadData(latestFile)
 	if err != nil {
-		fmt.Println("file storage error -> ReadData")
+		errorStr := fmt.Sprintf("file storage error -> ReadData, err: %v", err)
+		fmt.Println(errorStr)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(errorStr))
 	}
 	fmt.Println("Urls: ", urls)
 	if urlStringList, ok := urls.([]string); ok {
