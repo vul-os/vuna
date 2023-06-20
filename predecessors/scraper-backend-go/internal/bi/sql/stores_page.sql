@@ -1,13 +1,7 @@
-WITH 
-distinct_products AS (
-  SELECT DISTINCT
-    ProductIdentifier
-  FROM `scrapers.datapoint_partitioned`
-),
-period_1_sales AS (
+WITH period_1_sales AS (
   SELECT 
-    ProductIdentifier, 
-    SUM(-1 * difference * Price) AS revenue
+    ps.SiteIdentifier,
+    SUM(-1 * dp.difference * dp.Price) AS revenue
   FROM 
     (SELECT
        DateCreated,
@@ -15,15 +9,22 @@ period_1_sales AS (
        IFNULL(maxqty - LAG(maxqty) OVER (PARTITION BY ProductIdentifier ORDER BY DateCreated), 0) AS difference,
        Price
      FROM `scrapers.datapoint_partitioned`
-    ) t
+    ) dp
+  JOIN (
+    SELECT DISTINCT
+      ProductIdentifier,
+      SiteIdentifier
+    FROM `scrapers.product_unique`
+  ) ps ON dp.ProductIdentifier = ps.ProductIdentifier
   WHERE 
-    difference < 0 AND DATE_TRUNC(DATE(t.DateCreated), DAY) BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)
-  GROUP BY ProductIdentifier
+    dp.difference < 0
+    AND DATE_TRUNC(DATE(dp.DateCreated), DAY) BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY) AND CURRENT_DATE()
+  GROUP BY ps.SiteIdentifier
 ),
 period_2_sales AS (
   SELECT 
-    ProductIdentifier, 
-    SUM(-1 * difference * Price) AS revenue
+    ps.SiteIdentifier,
+    SUM(-1 * dp.difference * dp.Price) AS revenue
   FROM 
     (SELECT
        DateCreated,
@@ -31,61 +32,88 @@ period_2_sales AS (
        IFNULL(maxqty - LAG(maxqty) OVER (PARTITION BY ProductIdentifier ORDER BY DateCreated), 0) AS difference,
        Price
      FROM `scrapers.datapoint_partitioned`
-    ) t
+    ) dp
+  JOIN (
+    SELECT DISTINCT
+      ProductIdentifier,
+      SiteIdentifier
+    FROM `scrapers.product_unique`
+  ) ps ON dp.ProductIdentifier = ps.ProductIdentifier
   WHERE 
-    difference < 0 AND DATE_TRUNC(DATE(t.DateCreated), DAY) BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 14 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 8 DAY)
-  GROUP BY ProductIdentifier
+    dp.difference < 0
+    AND DATE_TRUNC(DATE(dp.DateCreated), DAY) BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 14 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 8 DAY)
+  GROUP BY ps.SiteIdentifier
 ),
 period_1_rank AS (
   SELECT 
-    ProductIdentifier, 
-    RANK() OVER(ORDER BY revenue ASC) as rank
+    SiteIdentifier,
+    revenue,
+    RANK() OVER (ORDER BY revenue DESC) AS rank
   FROM period_1_sales
 ),
 period_2_rank AS (
   SELECT 
-    ProductIdentifier, 
-    RANK() OVER(ORDER BY revenue ASC) as rank,
-    revenue AS current_period_revenue
+    SiteIdentifier,
+    revenue,
+    RANK() OVER (ORDER BY revenue DESC) AS rank
   FROM period_2_sales
 ),
-current_values AS (
+product_counts AS (
   SELECT
-    ProductIdentifier,
-    Price AS current_price,
-    maxqty AS current_maxqty
-  FROM (
+    pu.SiteIdentifier,
+    COUNT(DISTINCT pu.ProductIdentifier) AS ProductCount
+  FROM `scrapers.product_unique` pu
+  WHERE EXISTS (
+    SELECT 1 FROM `scrapers.datapoint_partitioned` dp
+    WHERE dp.ProductIdentifier = pu.ProductIdentifier
+    AND dp.maxqty > 0
+  )
+  GROUP BY pu.SiteIdentifier
+),
+product_values AS (
+  SELECT
+    pu.SiteIdentifier,
+    SUM(dp.MaxQty * dp.Price) AS TotalValue
+  FROM `scrapers.product_unique` pu
+  JOIN (
     SELECT 
       ProductIdentifier,
-      Price,
-      maxqty,
-      ROW_NUMBER() OVER (PARTITION BY ProductIdentifier ORDER BY DateCreated DESC) as rn
-    FROM
-      `scrapers.datapoint_partitioned`
-  ) 
-  WHERE rn = 1
+      MaxQty,
+      Price
+    FROM (
+      SELECT 
+        ProductIdentifier,
+        MaxQty,
+        Price,
+        ROW_NUMBER() OVER (PARTITION BY ProductIdentifier ORDER BY DateCreated DESC) AS rn
+      FROM `scrapers.datapoint_partitioned`
+      WHERE MaxQty > 0
+    ) t
+    WHERE rn = 1
+  ) dp ON pu.ProductIdentifier = dp.ProductIdentifier
+  GROUP BY pu.SiteIdentifier
 )
+
 SELECT 
-  dp.ProductIdentifier, 
-  RANK() OVER(ORDER BY IFNULL(p2.rank, 0) DESC) AS Rank,
-  IFNULL(p1.rank, 0) - IFNULL(p2.rank, 0) AS RankChange,
-  IFNULL(p2.current_period_revenue, 0) AS Revenue,
-  c.current_price as Price,
-  c.current_maxqty as MaxQty,
-  c.current_price * c.current_maxqty as SalesValue,
-  p.Name AS ProductName,
-  p.ImageUrls AS ImageUrls,
-  p.URL as ProductUrl
+  su.SiteIdentifier, 
+  su.Name AS SiteName,
+  su.Url AS SiteUrl,
+  su.Image AS SiteImage,
+  IFNULL(p2.revenue, 0) AS Period2Revenue,
+  IFNULL(p1.revenue, 0) AS Period1Revenue,
+  IFNULL(p1.revenue, 0) - IFNULL(p2.revenue, 0) AS RevenueChange,
+  IFNULL(p1.rank, 0) AS Period1Rank,
+  IFNULL(p2.rank, 0) AS Period2Rank,
+  IFNULL(pc.ProductCount, 0) AS ProductCount,
+  IFNULL(pv.TotalValue, 0) AS TotalValue
 FROM 
-  distinct_products dp
+  `scrapers.site_unique` su
 LEFT JOIN 
-  period_1_rank p1 ON dp.ProductIdentifier = p1.ProductIdentifier
+  period_1_rank p1 ON su.SiteIdentifier = p1.SiteIdentifier
 LEFT JOIN 
-  period_2_rank p2 ON dp.ProductIdentifier = p2.ProductIdentifier
-LEFT JOIN
-  current_values c ON dp.ProductIdentifier = c.ProductIdentifier
-LEFT JOIN
-  `scrapers.product_unique` p ON dp.ProductIdentifier = p.ProductIdentifier
-WHERE c.current_maxqty > 0 
-  AND p.Name IS NOT NULL
-ORDER BY Rank ASC;
+  period_2_rank p2 ON su.SiteIdentifier = p2.SiteIdentifier
+LEFT JOIN 
+  product_counts pc ON su.SiteIdentifier = pc.SiteIdentifier
+LEFT JOIN 
+  product_values pv ON su.SiteIdentifier = pv.SiteIdentifier
+ORDER BY RevenueChange DESC;

@@ -8,7 +8,7 @@ import (
 	"text/template"
 
 	"cloud.google.com/go/bigquery"
-	"firebase.google.com/go/auth"
+	scraperAuth "github.com/exolutionza/scraper-backend-go/internal/auth"
 )
 
 type BigQueryProcessor struct {
@@ -30,14 +30,18 @@ func (bp *BigQueryProcessor) TemplateAndExecuteOne(w http.ResponseWriter, r *htt
 		http.Error(w, "Failed to parse request body", http.StatusBadRequest)
 		return
 	}
-	// Get the user ID from the authenticated user
-	user := r.Context().Value("user").(*auth.Token)
 
+	// Get the user ID from the authenticated user
+	user, ok := r.Context().Value("user").(scraperAuth.User)
+	if !ok {
+		http.Error(w, "Failed to retrieve user from context", http.StatusInternalServerError)
+		return
+	}
 	// Extract the name and template_dict from the data
 	name, _ := data["name"].(string)
 	templateDict, _ := data["template_dict"].(map[string]interface{})
 
-	templateDict["userId"] = user.UID
+	templateDict["userId"] = user.ID
 
 	// Process the file contents
 	fileContents := ProcessFile(name)

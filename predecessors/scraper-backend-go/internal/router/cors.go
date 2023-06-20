@@ -2,7 +2,6 @@ package router
 
 import (
 	"net/http"
-
 )
 
 func EnableCORS(next http.Handler) http.Handler {
@@ -10,7 +9,7 @@ func EnableCORS(next http.Handler) http.Handler {
 		// Set CORS headers
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Headers", "*")
 
 		// Allow preflight requests
 		if r.Method == "OPTIONS" {
