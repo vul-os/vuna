@@ -5,9 +5,13 @@ WITH diffs AS (
     maxqty - LAG(maxqty) OVER (PARTITION BY ProductIdentifier ORDER BY DateCreated) AS difference
   FROM
     `scrapers.datapoint_raw`
-  {{ if .product_identifier }}
-  WHERE ProductIdentifier = '{{ .product_identifier }}'
-  {{ end }}
+  WHERE
+    {{ if .ProductIdentifier }}
+    ProductIdentifier = '{{ .ProductIdentifier }}'
+    AND
+    {{ end }}
+    DateCreated >= TIMESTAMP('{{ .date_start }}')
+    AND DateCreated <= TIMESTAMP('{{ .date_end }}')
 ), the_query AS (
   SELECT
     DateCreated,
@@ -37,6 +41,8 @@ FROM
   revenue_query r
 JOIN
   `scrapers.product_unique` p ON r.ProductIdentifier = p.ProductIdentifier
-WHERE r.Total_Revenue > 0
-ORDER BY r.DateCreated ASC, r.Total_Revenue DESC, r.ProductIdentifier
+WHERE
+  r.Total_Revenue > 0
+ORDER BY
+  r.DateCreated ASC, r.Total_Revenue DESC, r.ProductIdentifier
 LIMIT 1000;

@@ -5,6 +5,6 @@ SELECT
 FROM
   `scrapers.datapoint_raw`
 WHERE
-  ProductIdentifier = '{{ .product_identifier }}'
+  ProductIdentifier = '{{ .ProductIdentifier }}'
 ORDER BY
   DateCreated;
