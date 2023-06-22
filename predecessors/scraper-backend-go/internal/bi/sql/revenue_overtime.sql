@@ -1,6 +1,6 @@
 WITH diffs AS (
   SELECT
-    DateCreated,
+    DATE_TRUNC(DateCreated, DAY) AS DateCreated,
     ProductIdentifier,
     maxqty - LAG(maxqty) OVER (PARTITION BY ProductIdentifier ORDER BY DateCreated) AS difference
   FROM
@@ -29,7 +29,7 @@ WITH diffs AS (
   FROM
     the_query t
   JOIN
-    `scrapers.datapoint_raw` p ON t.ProductIdentifier = p.ProductIdentifier AND t.DateCreated = p.DateCreated
+    `scrapers.datapoint_raw` p ON t.ProductIdentifier = p.ProductIdentifier 
   GROUP BY t.ProductIdentifier, t.DateCreated
 )
 SELECT
