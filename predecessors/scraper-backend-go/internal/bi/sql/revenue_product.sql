@@ -13,7 +13,7 @@ WITH diffs AS (
   FROM
     diffs
   WHERE difference < 0
-    AND ProductIdentifier = '{{ .product_id }}'
+    AND ProductIdentifier = '{{ .ProductIdentifier }}'
   GROUP BY ProductIdentifier, DateCreated
 ), revenue_query AS (
   SELECT

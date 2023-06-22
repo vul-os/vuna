@@ -8,6 +8,7 @@ import (
 	"text/template"
 
 	"cloud.google.com/go/bigquery"
+	scraperAuth "github.com/exolutionza/scraper-backend-go/internal/auth"
 )
 
 type BigQueryProcessor struct {
@@ -30,9 +31,17 @@ func (bp *BigQueryProcessor) TemplateAndExecuteOne(w http.ResponseWriter, r *htt
 		return
 	}
 
+	// Get the user ID from the authenticated user
+	user, ok := r.Context().Value("user").(scraperAuth.User)
+	if !ok {
+		http.Error(w, "Failed to retrieve user from context", http.StatusInternalServerError)
+		return
+	}
 	// Extract the name and template_dict from the data
 	name, _ := data["name"].(string)
 	templateDict, _ := data["template_dict"].(map[string]interface{})
+
+	templateDict["userId"] = user.ID
 
 	// Process the file contents
 	fileContents := ProcessFile(name)
