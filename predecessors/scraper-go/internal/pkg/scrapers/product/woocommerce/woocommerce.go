@@ -79,7 +79,7 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 		ProductData: productDataList}, nil
 }
 
-func scrapeProductWithoutVariations(productURL, productID, productName string,
+func scrapeProductWithoutVariations(productURL, productID, productName string, config map[string]string,
 	doc *goquery.Document) (product.ProductData, product.DataPoint, error) {
 
 	summaryDiv := doc.Find("div.summary")
@@ -145,7 +145,7 @@ func scrapeProductWithoutVariations(productURL, productID, productName string,
 	return productData, dataPoint, nil
 }
 
-func scrapeProductWithVariations(productURL, productID, productName string,
+func scrapeProductWithVariations(productURL, productID, productName string, config map[string]string,
 	doc *goquery.Document) ([]product.ProductData, []product.DataPoint, error) {
 
 	productDataList := []product.ProductData{}
