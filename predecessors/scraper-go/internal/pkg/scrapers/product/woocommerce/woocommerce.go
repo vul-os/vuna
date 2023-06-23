@@ -33,8 +33,7 @@ func New(
 	}
 }
 
-func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOneResponse,
-	error) {
+func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOneResponse, error) {
 	body, err := utils.FetchWithProxy(s.ProxyConfig, request.Url)
 	if err != nil {
 		return nil, err
@@ -45,25 +44,29 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 		return nil, err
 	}
 
-	productName := doc.Find("h1.product_title").Text()
+	lookup := func(key string) string {
+		if val, ok := request.Config[key]; ok {
+			return val
+		}
+		return ""
+	}
+	productName := doc.Find(lookup("product_title")).Text()
 
-	productID, _ := doc.Find("input[name='add-to-cart']").Attr("value")
+	productID, _ := doc.Find(lookup("add_to_cart_input")).Attr("value")
 	if productID == "" {
-		productID, _ = doc.Find("button[name='add-to-cart']").Attr("value")
+		productID, _ = doc.Find(lookup("add_to_cart_button")).Attr("value")
 	}
 
 	var productDataList []product.ProductData
 	var dataPointList []product.DataPoint
 
-	if doc.Find("form.variations_form").Length() > 0 {
-		productDataList, dataPointList, err = scrapeProductWithVariations(request.Url,
-			productID, productName, doc)
+	if doc.Find(lookup("form_variations")).Length() > 0 {
+		productDataList, dataPointList, err = scrapeProductWithVariations(request.Url, productID, productName, lookup, doc)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		productData, dataPoint, err := scrapeProductWithoutVariations(request.Url,
-			productID, productName, doc)
+		productData, dataPoint, err := scrapeProductWithoutVariations(request.Url, productID, productName, lookup, doc)
 		if err != nil {
 			return nil, err
 		}
@@ -75,17 +78,14 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 	if err != nil {
 		return nil, err
 	}
-	return &product.ScrapeOneResponse{DataPoint: dataPointList,
-		ProductData: productDataList}, nil
+	return &product.ScrapeOneResponse{DataPoint: dataPointList, ProductData: productDataList}, nil
 }
 
-func scrapeProductWithoutVariations(productURL, productID, productName string, config map[string]string,
-	doc *goquery.Document) (product.ProductData, product.DataPoint, error) {
-
-	summaryDiv := doc.Find("div.summary")
-	price := summaryDiv.Find("span.woocommerce-Price-amount.amount").Text()
-	sku := summaryDiv.Find("span.sku").Text()
-	maxQty := summaryDiv.Find("p.stock").Text()
+func scrapeProductWithoutVariations(productURL, productID, productName string, lookup func(string) string, doc *goquery.Document) (product.ProductData, product.DataPoint, error) {
+	summaryDiv := doc.Find(lookup("summary_div"))
+	price := summaryDiv.Find(lookup("price_amount")).Text()
+	sku := summaryDiv.Find(lookup("sku")).Text()
+	maxQty := summaryDiv.Find(lookup("max_qty")).Text()
 
 	priceFloat, err := utils.PriceToFloat(price)
 	if err != nil {
@@ -93,7 +93,7 @@ func scrapeProductWithoutVariations(productURL, productID, productName string, c
 	}
 	maxQtyInt, err := utils.MaxQtyToInt(maxQty)
 	if err != nil {
-		inputField := doc.Find("input[name=quantity]")
+		inputField := doc.Find(lookup("quantity_input"))
 		maxAttr := inputField.AttrOr("max", "0")
 		maxQtyInt, err = utils.MaxQtyToInt(maxAttr)
 		if err != nil {
@@ -108,7 +108,7 @@ func scrapeProductWithoutVariations(productURL, productID, productName string, c
 	}
 
 	imageURL, _ := doc.
-		Find("div.woocommerce-product-gallery__image img").Attr("src")
+		Find(lookup("image_div") + " img").Attr("src")
 
 	createdAt := time.Now()
 
@@ -145,14 +145,12 @@ func scrapeProductWithoutVariations(productURL, productID, productName string, c
 	return productData, dataPoint, nil
 }
 
-func scrapeProductWithVariations(productURL, productID, productName string, config map[string]string,
-	doc *goquery.Document) ([]product.ProductData, []product.DataPoint, error) {
-
+func scrapeProductWithVariations(productURL, productID, productName string, lookup func(string) string, doc *goquery.Document) ([]product.ProductData, []product.DataPoint, error) {
 	productDataList := []product.ProductData{}
 	dataPointList := []product.DataPoint{}
 
-	productVariations := doc.Find("form.variations_form").
-		AttrOr("data-product_variations", "")
+	productVariations := doc.Find(lookup("form_variations")).
+		AttrOr(lookup("data-product_variations"), "")
 	variationsData := make([]map[string]interface{}, 0)
 	if err := json.Unmarshal([]byte(productVariations), &variationsData); err != nil {
 		fmt.Println("Error decoding variations data:", err)
@@ -160,10 +158,10 @@ func scrapeProductWithVariations(productURL, productID, productName string, conf
 	}
 
 	for _, variation := range variationsData {
-		availabilityHTML := variation["availability_html"]
-		displayPrice := variation["display_price"]
-		sku := variation["sku"]
-		variationID := variation["variation_id"]
+		availabilityHTML := variation[lookup("availability_html")]
+		displayPrice := variation[lookup("display_price")]
+		sku := variation[lookup("variation_sku")]
+		variationID := variation[lookup("variation_id")]
 		priceFloat, errp := utils.PriceToFloat(displayPrice)
 		maxQtyInt, errq := utils.MaxQtyToInt(availabilityHTML)
 

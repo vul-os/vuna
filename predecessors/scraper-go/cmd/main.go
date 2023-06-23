@@ -45,6 +45,24 @@ func randomSampleSlice(data []string, size int) []string {
 }
 
 func main() {
+	config := map[string]string{
+		"product_title":           "h1.product_title",
+		"add_to_cart_input":       "input[name='add-to-cart']",
+		"add_to_cart_button":      "button[name='add-to-cart']",
+		"form_variations":         "form.variations_form",
+		"summary_div":             "div.summary",
+		"price_amount":            "span.woocommerce-Price-amount.amount",
+		"sku":                     "span.sku",
+		"max_qty":                 "p.stock",
+		"quantity_input":          "input[name=quantity]",
+		"data_product_variations": ".variations_form",
+		"availability_html":       "availability_html",
+		"display_price":           "display_price",
+		"variation_sku":           "sku",
+		"variation_id":            "variation_id",
+		"image_src":               "image.src",
+		"attributes":              "attributes",
+	}
 	// // Use PORT environment variable, or default to 8080.
 	// port := "8080"
 	// if envPort := os.Getenv("PORT"); envPort != "" {
@@ -101,7 +119,7 @@ func main() {
 	// if err != nil {
 	// 	fmt.Println("Error writing CSV file:", err)
 	// }
-	sphaurl := "http://baroq.co.za"
+	sphaurl := "https://biltongandbudz.co.za"
 
 	sc := site.New(&client, st)
 	a, err := sc.ScrapeOne(sphaurl)
@@ -118,6 +136,7 @@ func main() {
 		results, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
 			Url:        l,
 			FullScrape: true,
+			Config:     config,
 		})
 		fmt.Println(fmt.Sprintf("start-%s----------------------------------------------------------", l))
 
