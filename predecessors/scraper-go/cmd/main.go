@@ -9,13 +9,13 @@ import (
 	// "github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
 	"fmt"
 	"net/http"
-	"os"
+
+	// "os"
 
 	// "time"
 
-	// "github.com/exolutiontech/scraper-go/internal/pkg/orchestrator/proxy"
-	// "github.com/exolutiontech/scraper-go/internal/pkg/utils"
-	utils "github.com/exolutiontech/scraper-go/internal/pkg/utils"
+	"github.com/exolutiontech/scraper-go/internal/pkg/utils"
+	// utils "github.com/exolutiontech/scraper-go/internal/pkg/utils"
 
 	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/meta"
 	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product"
@@ -27,8 +27,22 @@ import (
 	// "github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product/shopify"
 
 	"github.com/exolutiontech/scraper-go/internal/pkg/storage"
-	gcsutils "github.com/exolutiontech/scraper-go/internal/pkg/storage/gcs"
+	// gcsutils "github.com/exolutiontech/scraper-go/internal/pkg/storage/gcs"
+	"math/rand"
+	"time"
 )
+
+// Function to generate a random sample or slice
+func randomSampleSlice(data []string, size int) []string {
+	result := make([]string, size)
+
+	for i := 0; i < size; i++ {
+		randomIndex := rand.Intn(len(data))
+		result[i] = data[randomIndex]
+	}
+
+	return result
+}
 
 func main() {
 	// // Use PORT environment variable, or default to 8080.
@@ -50,6 +64,8 @@ func main() {
 	// fmt.Println(proxyList)
 	// return
 	// return
+	rand.Seed(time.Now().UnixNano())
+
 	client := http.Client{}
 	proxyConfig := utils.ProxyConfig{
 		Address:  "p.webshare.io:80",
@@ -58,39 +74,91 @@ func main() {
 	}
 	var st storage.FileStorage
 	productScraper := woocommerce.New(proxyConfig, client, st)
-	results, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
-		Url:        "https://mini-me.co.za/product/4-way-tyre-iron-silver/",
-		FullScrape: true,
-	})
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(results)
-	d, err := utils.ToMap(results.ProductData)
-	if err != nil {
-		fmt.Println(err)
-	}
+	// results, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
+	// 	Url:        "https://mini-me.co.za/product/4-way-tyre-iron-silver/",
+	// 	FullScrape: true,
+	// })
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+	// fmt.Println(results)
+	// d, err := utils.ToMap(results.ProductData)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 
-	fmt.Println("results: ", d)
+	// fmt.Println("results: ", d)
 
-	// Write data to a CSV file
-	csvFile, err := os.Create("data.csv")
-	if err != nil {
-		fmt.Println("Error creating CSV file:", err)
-		return
-	}
-	defer csvFile.Close()
+	// // Write data to a CSV file
+	// csvFile, err := os.Create("data.csv")
+	// if err != nil {
+	// 	fmt.Println("Error creating CSV file:", err)
+	// 	return
+	// }
+	// defer csvFile.Close()
 
-	err = gcsutils.WriteCSVFile(csvFile, d)
-	if err != nil {
-		fmt.Println("Error writing CSV file:", err)
-	}
+	// err = gcsutils.WriteCSVFile(csvFile, d)
+	// if err != nil {
+	// 	fmt.Println("Error writing CSV file:", err)
+	// }
+	sphaurl := "http://baroq.co.za"
+
+	sc := site.New(&client, st)
+	a, err := sc.ScrapeOne(sphaurl)
+	fmt.Println(a)
+	fmt.Println(err)
 
 	meta := meta.New(&client, st)
-	data, err := meta.ScrapeOne("https://mini-me.co.za/")
+	data, err := meta.ScrapeOne(sphaurl)
 	fmt.Println(len(data))
 	fmt.Println(err)
-	sc := site.New(&client, st)
-	a, err := sc.ScrapeOne("https://mini-me.co.za/")
-	fmt.Println(a)
+	fmt.Println(data)
+	randomSample := randomSampleSlice(data, 5)
+	for _, l := range randomSample {
+		results, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
+			Url:        l,
+			FullScrape: true,
+		})
+		fmt.Println(fmt.Sprintf("start-%s----------------------------------------------------------", l))
+
+		for i, pd := range results.ProductData {
+			fmt.Println("***********************************************")
+			fmt.Println("ProductData: ", i)
+			fmt.Println("Name: ", pd.Name)
+			fmt.Println("Description : ", pd.Description)
+			fmt.Println("ImageURLs : ", pd.ImageURLs)
+			fmt.Println("Attributes : ", pd.Attributes)
+			fmt.Println("Categories : ", pd.Categories)
+			fmt.Println("Tags  : ", pd.Tags)
+			fmt.Println("ProductIdentifier: ", pd.ProductIdentifier)
+			fmt.Println("ProductId: ", pd.ProductID)
+			fmt.Println("VariationID : ", pd.VariationID)
+			fmt.Println("SKU  : ", pd.SKU)
+			fmt.Println("SiteIdentifier  : ", pd.SiteIdentifier)
+			fmt.Println("DateCreated  : ", pd.DateCreated)
+			fmt.Println("***********************************************")
+
+		}
+		for i, dp := range results.DataPoint {
+			fmt.Println("***********************************************")
+			fmt.Println("ProductData: ", i)
+			fmt.Println("ProductIdentifier: ", dp.ProductIdentifier)
+			fmt.Println("ProductId: ", dp.ProductID)
+			fmt.Println("VariationID : ", dp.VariationID)
+			fmt.Println("SKU  : ", dp.SKU)
+			fmt.Println("Price  : ", dp.Price)
+			fmt.Println("MaxQty : ", dp.MaxQty)
+			fmt.Println("DateCreated  : ", dp.DateCreated)
+			fmt.Println("***********************************************")
+
+		}
+		fmt.Println("error: ", err)
+
+		fmt.Println(fmt.Sprintf("start-%s----------------------------------------------------------", l))
+
+		fmt.Println()
+		fmt.Println()
+
+		// fmt.Println(results)
+	}
 }

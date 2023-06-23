@@ -35,7 +35,7 @@ type ProductData struct {
 	SKU         string
 
 	ProductIdentifier string
-	SiteIdentifier string
+	SiteIdentifier    string
 
 	DateCreated time.Time
 }
@@ -58,8 +58,9 @@ type ProductScraper interface {
 }
 
 type ScrapeOneRequest struct {
-	Url        string `json:"url"`
-	FullScrape bool	`json:"full_scrape"`
+	Url        string            `json:"url"`
+	FullScrape bool              `json:"full_scrape"`
+	Config     map[string]string `json:"config"`
 }
 
 type ScrapeOneResponse struct {
