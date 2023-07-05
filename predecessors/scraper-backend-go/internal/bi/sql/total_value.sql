@@ -1,14 +1,13 @@
 SELECT
-  pu.SiteIdentifier,
   SUM(dp.MaxQty * dp.Price) AS TotalValue
 FROM `scrapers.product_unique` pu
 JOIN (
-  SELECT 
+  SELECT
     ProductIdentifier,
     MaxQty,
     Price
   FROM (
-    SELECT 
+    SELECT
       ProductIdentifier,
       MaxQty,
       Price,
