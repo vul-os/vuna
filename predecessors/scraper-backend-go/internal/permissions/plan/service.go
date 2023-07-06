@@ -260,7 +260,9 @@ func (s *UserPlanService) GetAllSubscriptions(w http.ResponseWriter, r *http.Req
 	type RetType struct {
 		SubscriptionCode string `json:"subscription_code"`
 		Plan             Plan   `json:"plan"`
+		MaxProducts      int    `json:"max_products"`
 	}
+
 	type Response struct {
 		Data []RetType `json:"data"`
 	}
@@ -273,9 +275,15 @@ func (s *UserPlanService) GetAllSubscriptions(w http.ResponseWriter, r *http.Req
 			http.Error(w, fmt.Sprintf("Failed to get plan: %v", err), http.StatusInternalServerError)
 			return
 		}
+		maxProducts, err := s.GetMaxProductsForUser(email) // Update this line with the appropriate method to get the max products
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Failed to get max products: %v", err), http.StatusInternalServerError)
+			return
+		}
 		ret = append(ret, RetType{
 			SubscriptionCode: v.SubscriptionCode,
 			Plan:             plan,
+			MaxProducts:      maxProducts,
 		})
 	}
 	response := Response{
