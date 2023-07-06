@@ -70,6 +70,8 @@ func Router(w http.ResponseWriter, r *http.Request) {
 	protectedRouter := router.PathPrefix("").Subrouter()
 	protectedRouter.Use(auth.IsAuthenticated(authClient))
 
+	protectedRouter.HandleFunc("/subscriptions",
+		userPlanService.GetAllSubscriptions).Methods("POST")
 	protectedRouter.HandleFunc("/subscription/create",
 		userPlanService.CreateSubscription).Methods("POST")
 	protectedRouter.HandleFunc("/subscription/disable",
