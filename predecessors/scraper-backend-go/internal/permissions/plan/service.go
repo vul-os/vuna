@@ -243,20 +243,6 @@ func (s *UserPlanService) DisableSubscription(w http.ResponseWriter, r *http.Req
 }
 
 func (s *UserPlanService) GetAllSubscriptions(w http.ResponseWriter, r *http.Request) {
-	// Retrieve user email from context
-	user, ok := r.Context().Value("user").(scraperAuth.User)
-	if !ok {
-		http.Error(w, "Failed to retrieve user from context", http.StatusInternalServerError)
-		return
-	}
-	email := user.Email
-
-	subscriptions, err := s.GetCustomer(email)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to get subscriptions: %v", err), http.StatusInternalServerError)
-		return
-	}
-
 	type RetType struct {
 		SubscriptionCode string `json:"subscription_code"`
 		Plan             Plan   `json:"plan"`
@@ -268,6 +254,33 @@ func (s *UserPlanService) GetAllSubscriptions(w http.ResponseWriter, r *http.Req
 	}
 
 	var ret []RetType
+	// Retrieve user email from context
+	user, ok := r.Context().Value("user").(scraperAuth.User)
+	if !ok {
+		http.Error(w, "Failed to retrieve user from context", http.StatusInternalServerError)
+		return
+	}
+	email := user.Email
+
+	subscriptions, err := s.GetCustomer(email)
+	if err != nil {
+		fmt.Println(fmt.Sprintf("Failed to get subscriptions: %v", err))
+		rt := RetType{
+			SubscriptionCode: "FREE",
+			Plan:             Plan{Name: "Free"},
+			MaxProducts:      500,
+		}
+		response := Response{
+			Data: []RetType{rt},
+		}
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			http.Error(w, fmt.Sprintf("Failed to encode response: %v", err), http.StatusInternalServerError)
+			return
+		}
+		return
+	}
+
 	for _, v := range subscriptions {
 		fmt.Println(v.SubscriptionCode)
 		plan, err := s.GetPlan(v.SubscriptionCode)
