@@ -79,8 +79,15 @@ func (s *SitePermissionService) UpdateSitePermissions(w http.ResponseWriter,
 	}
 
 	// Return success response
+	successResponse := struct {
+		Message string `json:"message"`
+	}{
+		Message: "Site permissions updated successfully",
+	}
+	responseJSON, _ := json.Marshal(successResponse)
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprint(w, "Site permissions updated successfully")
+	w.Write(responseJSON)
 }
 
 func (s *SitePermissionService) getProductCountForSites(siteIdentifiers []string) (int, error) {
