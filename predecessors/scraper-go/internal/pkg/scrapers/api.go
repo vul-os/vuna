@@ -20,17 +20,25 @@ import (
 
 	"github.com/exolutiontech/scraper-go/internal/pkg/storage"
 	"github.com/gorilla/mux"
+	"cloud.google.com/go/bigquery"
+
 )
 
 type ScraperAPI struct {
 	FileStorage storage.FileStorage
+	DatapointTable *bigquery.Table 
+	ProductTable *bigquery.Table
 }
 
 func New(
 	fs storage.FileStorage,
+	dpt *bigquery.Table,
+	pt  *bigquery.Table,
 ) *ScraperAPI {
 	return &ScraperAPI{
 		FileStorage: fs,
+		DatapointTable: dpt,
+		ProductTable: pt,
 	}
 }
 
@@ -70,7 +78,6 @@ func (api *ScraperAPI) Product(w http.ResponseWriter, r *http.Request) {
 	type jsonData struct {
 		Url        string `json:"url"`
 		Scraper    string `json:"scraper"`
-		FullScrape bool   `json:"full_scrape"`
 	}
 
 	proxyConfig := utils.ProxyConfig{
@@ -98,9 +105,9 @@ func (api *ScraperAPI) Product(w http.ResponseWriter, r *http.Request) {
 
 	switch d.Scraper {
 	case "woocommerce":
-		productScraper = woocommerce.New(proxyConfig, client, api.FileStorage)
+		productScraper = woocommerce.New(proxyConfig, client, api.DatapointTable, api.ProductTable)
 	case "shopify":
-		productScraper = shopify.New(proxyConfig, client, api.FileStorage)
+		productScraper = shopify.New(proxyConfig, client, api.DatapointTable, api.ProductTable)
 	default:
 		fmt.Println("Scraper not implimented")
 		http.Error(w, "scraper type not implimented", http.StatusBadRequest)
@@ -108,7 +115,6 @@ func (api *ScraperAPI) Product(w http.ResponseWriter, r *http.Request) {
 	}
 	scrapeOneResponse, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
 		Url:        productURL,
-		FullScrape: d.FullScrape,
 	})
 
 	if err != nil {

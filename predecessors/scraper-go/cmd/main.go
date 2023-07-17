@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"cloud.google.com/go/bigquery"
 	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/meta"
 	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product"
 	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product/woocommerce"
@@ -66,7 +67,10 @@ func main() {
 	}
 
 	var st storage.FileStorage
-	productScraper := woocommerce.New(proxyConfig, client, st)
+	var t1 *bigquery.Table
+	var t2 *bigquery.Table
+
+	productScraper := woocommerce.New(proxyConfig, client, t1, t2)
 
 	file, err := os.Open(linksFilePath)
 	if err != nil {
@@ -102,7 +106,6 @@ func main() {
 		for _, l := range randomSample {
 			results, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
 				Url:        l,
-				FullScrape: true,
 				Config:     config,
 			})
 
