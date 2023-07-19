@@ -18,27 +18,26 @@ import (
 
 	// product "scraper-go/internal/pkg/scrapers/product"
 
+	"cloud.google.com/go/bigquery"
 	"github.com/exolutiontech/scraper-go/internal/pkg/storage"
 	"github.com/gorilla/mux"
-	"cloud.google.com/go/bigquery"
-
 )
 
 type ScraperAPI struct {
-	FileStorage storage.FileStorage
-	DatapointTable *bigquery.Table 
-	ProductTable *bigquery.Table
+	FileStorage    storage.FileStorage
+	DatapointTable *bigquery.Table
+	ProductTable   *bigquery.Table
 }
 
 func New(
 	fs storage.FileStorage,
 	dpt *bigquery.Table,
-	pt  *bigquery.Table,
+	pt *bigquery.Table,
 ) *ScraperAPI {
 	return &ScraperAPI{
-		FileStorage: fs,
+		FileStorage:    fs,
 		DatapointTable: dpt,
-		ProductTable: pt,
+		ProductTable:   pt,
 	}
 }
 
@@ -76,8 +75,8 @@ func (api *ScraperAPI) Site(w http.ResponseWriter, r *http.Request) {
 
 func (api *ScraperAPI) Product(w http.ResponseWriter, r *http.Request) {
 	type jsonData struct {
-		Url        string `json:"url"`
-		Scraper    string `json:"scraper"`
+		Url     string `json:"url"`
+		Scraper string `json:"scraper"`
 	}
 
 	proxyConfig := utils.ProxyConfig{
@@ -105,24 +104,6 @@ func (api *ScraperAPI) Product(w http.ResponseWriter, r *http.Request) {
 
 	switch d.Scraper {
 	case "woocommerce":
-		config := map[string]string{
-			"product_title":           "h1.product_title",
-			"add_to_cart_input":       "input[name='add-to-cart']",
-			"add_to_cart_button":      "button[name='add-to-cart']",
-			"form_variations":         "form.variations_form",
-			"summary_div":             "div.summary",
-			"price_amount":            "span.woocommerce-Price-amount.amount",
-			"sku":                     "span.sku",
-			"max_qty":                 "p.stock",
-			"quantity_input":          "input[name=quantity]",
-			"data_product_variations": ".variations_form",
-			"availability_html":       "availability_html",
-			"display_price":           "display_price",
-			"variation_sku":           "sku",
-			"variation_id":            "variation_id",
-			"image_src":               "image.src",
-			"attributes":              "attributes",
-		}
 		productScraper = woocommerce.New(proxyConfig, client, api.DatapointTable, api.ProductTable)
 	case "shopify":
 		productScraper = shopify.New(proxyConfig, client, api.DatapointTable, api.ProductTable)
@@ -131,8 +112,27 @@ func (api *ScraperAPI) Product(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "scraper type not implimented", http.StatusBadRequest)
 		return
 	}
+	config := map[string]string{
+		"product_title":           "h1.product_title",
+		"add_to_cart_input":       "input[name='add-to-cart']",
+		"add_to_cart_button":      "button[name='add-to-cart']",
+		"form_variations":         "form.variations_form",
+		"summary_div":             "div.summary",
+		"price_amount":            "span.woocommerce-Price-amount.amount",
+		"sku":                     "span.sku",
+		"max_qty":                 "p.stock",
+		"quantity_input":          "input[name=quantity]",
+		"data_product_variations": ".variations_form",
+		"availability_html":       "availability_html",
+		"display_price":           "display_price",
+		"variation_sku":           "sku",
+		"variation_id":            "variation_id",
+		"image_src":               "image.src",
+		"attributes":              "attributes",
+	}
 	scrapeOneResponse, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
-		Url:        productURL,
+		Url:    productURL,
+		Config: config,
 	})
 
 	if err != nil {
