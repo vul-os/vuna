@@ -27,7 +27,7 @@ type ProductData struct {
 	ImageURLs  []string
 	Attributes []string
 	Categories []string
-	Tags       []string
+	Tags       string
 
 	URL         string
 	ProductID   string

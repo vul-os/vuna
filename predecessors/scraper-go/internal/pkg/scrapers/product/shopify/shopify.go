@@ -7,29 +7,29 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product"
 	"cloud.google.com/go/bigquery"
+	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product"
 	"github.com/exolutiontech/scraper-go/internal/pkg/utils"
 )
 
 type scraper struct {
-	ProxyConfig utils.ProxyConfig
-	Client      http.Client
-	DatapointTable *bigquery.Table 
-	ProductTable *bigquery.Table
+	ProxyConfig    utils.ProxyConfig
+	Client         http.Client
+	DatapointTable *bigquery.Table
+	ProductTable   *bigquery.Table
 }
 
 func New(
 	pc utils.ProxyConfig,
 	client http.Client,
 	dpt *bigquery.Table,
-	pt  *bigquery.Table,
+	pt *bigquery.Table,
 ) product.ProductScraper {
 	return &scraper{
-		ProxyConfig: pc,
-		Client:      client,
+		ProxyConfig:    pc,
+		Client:         client,
 		DatapointTable: dpt,
-		ProductTable: pt,
+		ProductTable:   pt,
 	}
 }
 
@@ -40,6 +40,7 @@ type ProductResponse struct {
 		Description string `json:"body_html"`
 		Vendor      string `json:"vendor"`
 		Price       string `json:"price"`
+		Tags        string `json:"tags"`
 		Images      []struct {
 			Src string `json:"src"`
 		} `json:"images"`
@@ -117,6 +118,7 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 
 			ImageURLs:  imageSrcs,
 			Attributes: []string{},
+			Tags:       response.Product.Tags, // Assign tags here
 
 			URL:         request.Url,
 			SKU:         variant.SKU,
@@ -131,7 +133,7 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 
 		productDataList = append(productDataList, productData)
 	}
-	
+
 	err = product.Save(dataPointList, productDataList, s.DatapointTable, s.ProductTable)
 	if err != nil {
 		return nil, err
