@@ -70,14 +70,14 @@ func (s *SiteScraper) ScrapeOne(url string) (map[string]string, error) {
 		return nil, err
 	}
 	items := []map[string]string{{
-		"site_identifier": hostIdentifier,
-		"name":            strings.TrimSpace(name),
-		"image":           strings.TrimSpace(image),
-		"currency":        currencyCode,
-		"technology":      technology,
-		"rate_limit":      "1/s",
-		"scraper":         technology,
-		"url":             hostName,
+		"siteidentifier": hostIdentifier,
+		"name":           strings.TrimSpace(name),
+		"image":          strings.TrimSpace(image),
+		"currency":       currencyCode,
+		"technology":     technology,
+		"ratelimit":      "1/s",
+		"scraper":        technology,
+		"url":            hostName,
 	}}
 	if s.FileStorage != nil {
 
