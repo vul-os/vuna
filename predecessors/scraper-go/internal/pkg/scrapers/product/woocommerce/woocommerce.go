@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product"
-	"github.com/exolutiontech/scraper-go/internal/pkg/storage"
 	"github.com/exolutiontech/scraper-go/internal/pkg/utils"
 
 	"strings"
+	"cloud.google.com/go/bigquery"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -18,18 +18,21 @@ import (
 type scraper struct {
 	ProxyConfig utils.ProxyConfig
 	Client      http.Client
-	FileStorage storage.FileStorage
+	DatapointTable *bigquery.Table 
+	ProductTable *bigquery.Table
 }
 
 func New(
 	pc utils.ProxyConfig,
 	client http.Client,
-	fs storage.FileStorage,
+	dpt *bigquery.Table,
+	pt  *bigquery.Table,
 ) product.ProductScraper {
 	return &scraper{
 		ProxyConfig: pc,
 		Client:      client,
-		FileStorage: fs,
+		DatapointTable: dpt,
+		ProductTable: pt,
 	}
 }
 
@@ -74,7 +77,7 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 		dataPointList = append(dataPointList, dataPoint)
 	}
 
-	err = product.Save(dataPointList, productDataList, s.FileStorage, request.Url, request.FullScrape)
+	err = product.Save(dataPointList, productDataList, s.DatapointTable, s.ProductTable)
 	if err != nil {
 		return nil, err
 	}

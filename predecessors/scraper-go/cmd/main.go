@@ -68,9 +68,8 @@ func scrapeStore(client *http.Client, st storage.FileStorage, proxyConfig utils.
 
 	for _, l := range randomSample {
 		results, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
-			Url:        l,
-			FullScrape: true,
-			Config:     config, // Pass the config here
+			Url:    l,
+			Config: config, // Pass the config here
 		})
 
 		fmt.Println(fmt.Sprintf("Scraping Product: %s", l))
@@ -136,7 +135,7 @@ func main() {
 	resultsChan := make(chan StoreResult)
 	doneChan := make(chan struct{})
 
-	productScraper := woocommerce.New(proxyConfig, *client, st)
+	productScraper := woocommerce.New(proxyConfig, *client, nil, nil)
 
 	config := map[string]string{
 		"product_title":           "h1.product_title",

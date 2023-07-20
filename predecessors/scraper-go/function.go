@@ -38,6 +38,10 @@ func router(w http.ResponseWriter, r *http.Request) {
 	bigInstanceTargetUrl := "https://function-go-big-gizrqdvcaq-uc.a.run.app"
 	smallInstanceTargetUrl := "https://function-go-gizrqdvcaq-uc.a.run.app"
 
+	datasetId := "scrapers"
+	datapointTableName := "datapoint_raw"
+	productTableName := "product_raw"
+
 	detailsMap := map[string]tasks.TaskCreatorDetails{
 		"site": {
 			TargetUrl: bigInstanceTargetUrl,
@@ -93,7 +97,13 @@ func router(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error creating tack creator")
 		return
 	}
-	s := scrapers.New(storage)
+
+	// Get the dataset handle.
+	dataset := bigqueryClient.Dataset(datasetId)
+	datapointTable := dataset.Table(datapointTableName)
+	productDataTable := dataset.Table(productTableName)
+
+	s := scrapers.New(storage, datapointTable, productDataTable)
 	o := orchestrator.New(*taskCreator, storage, *bigqueryClient)
 
 	rtr.HandleFunc("/", helloWorld).Methods(http.MethodGet)

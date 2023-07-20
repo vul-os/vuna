@@ -27,7 +27,7 @@ type ProductData struct {
 	ImageURLs  []string
 	Attributes []string
 	Categories []string
-	Tags       []string
+	Tags       string
 
 	URL         string
 	ProductID   string
@@ -58,9 +58,8 @@ type ProductScraper interface {
 }
 
 type ScrapeOneRequest struct {
-	Url        string            `json:"url"`
-	FullScrape bool              `json:"full_scrape"`
-	Config     map[string]string `json:"config"`
+	Url    string            `json:"url"`
+	Config map[string]string `json:"config"`
 }
 
 type ScrapeOneResponse struct {
