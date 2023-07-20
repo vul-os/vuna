@@ -10,29 +10,30 @@ import (
 	"github.com/exolutiontech/scraper-go/internal/pkg/utils"
 
 	"strings"
+
 	"cloud.google.com/go/bigquery"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
 type scraper struct {
-	ProxyConfig utils.ProxyConfig
-	Client      http.Client
-	DatapointTable *bigquery.Table 
-	ProductTable *bigquery.Table
+	ProxyConfig    utils.ProxyConfig
+	Client         http.Client
+	DatapointTable *bigquery.Table
+	ProductTable   *bigquery.Table
 }
 
 func New(
 	pc utils.ProxyConfig,
 	client http.Client,
 	dpt *bigquery.Table,
-	pt  *bigquery.Table,
+	pt *bigquery.Table,
 ) product.ProductScraper {
 	return &scraper{
-		ProxyConfig: pc,
-		Client:      client,
+		ProxyConfig:    pc,
+		Client:         client,
 		DatapointTable: dpt,
-		ProductTable: pt,
+		ProductTable:   pt,
 	}
 }
 
@@ -62,7 +63,7 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 
 	var productDataList []product.ProductData
 	var dataPointList []product.DataPoint
-
+	fmt.Println("yooooo!:", request.Url)
 	if doc.Find(lookup("form_variations")).Length() > 0 {
 		productDataList, dataPointList, err = scrapeProductWithVariations(request.Url, productID, productName, lookup, doc)
 		if err != nil {
@@ -76,7 +77,9 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 		productDataList = append(productDataList, productData)
 		dataPointList = append(dataPointList, dataPoint)
 	}
-
+	if request.Save == false {
+		return &product.ScrapeOneResponse{DataPoint: dataPointList, ProductData: productDataList}, nil
+	}
 	err = product.Save(dataPointList, productDataList, s.DatapointTable, s.ProductTable)
 	if err != nil {
 		return nil, err
@@ -105,7 +108,7 @@ func scrapeProductWithoutVariations(productURL, productID, productName string, l
 	}
 
 	otherStringIds := []string{fmt.Sprintf("%v", sku), "default"}
-	hostIdentifier, productIdentifier, err := utils.StringToIdentifier(productURL, otherStringIds)
+	hostIdentifier, productIdentifier, err := utils.StringToProductIdentifier(productURL, otherStringIds)
 	if err != nil {
 		return product.ProductData{}, product.DataPoint{}, err
 	}
@@ -169,7 +172,7 @@ func scrapeProductWithVariations(productURL, productID, productName string, look
 		maxQtyInt, errq := utils.MaxQtyToInt(availabilityHTML)
 
 		otherStringIds := []string{fmt.Sprintf("%v", sku), fmt.Sprintf("%v", variationID)}
-		hostIdentifier, productIdentifier, err := utils.StringToIdentifier(productURL, otherStringIds)
+		hostIdentifier, productIdentifier, err := utils.StringToProductIdentifier(productURL, otherStringIds)
 		if err != nil {
 			continue
 		}

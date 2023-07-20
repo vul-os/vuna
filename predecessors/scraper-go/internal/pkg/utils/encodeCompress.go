@@ -14,12 +14,20 @@ const BACKSLACK_REP = "&($)!"
 const EQUALS_REP = "&$$&"
 const CHAR_COMBO = "@{&$!"
 
-func GetHostName(rawURL string) (string, error) {
+func GetHostName(rawURL string) (string, string, error) {
 	parsedURL, err := url.Parse(rawURL)
 	if err != nil {
-		return "", fmt.Errorf("error parsing URL: %v", err)
+		return "", "", fmt.Errorf("error parsing URL: %v", err)
 	}
-	return RemoveWWWPrefix(parsedURL.Host), nil
+	hostId := RemoveWWWPrefix(RemoveHTTPPrefix(parsedURL.Host))
+	productId := RemoveWWWPrefix(RemoveHTTPPrefix(parsedURL.RawPath))
+	return hostId, productId, nil
+}
+
+func RemoveHTTPPrefix(input string) string {
+	re := regexp.MustCompile(`^(http://|https://)`)
+	output := re.ReplaceAllString(input, "")
+	return output
 }
 
 func RemoveWWWPrefix(input string) string {
@@ -28,23 +36,39 @@ func RemoveWWWPrefix(input string) string {
 	return output
 }
 
-func StringToIdentifier(urlString string, otherStringIds []string) (string, string, error) {
+func StringToSiteIdentifier(urlString string, otherStringIds []string) (string, string, error) {
 	// Fixed character combination
-	hostString, err := GetHostName(urlString)
+	hostString, _, err := GetHostName(urlString)
+
 	if err != nil {
 		return "", "", err
 	}
-	// Concatenate the strings with the fixed character combination
-	stringsToJoin := append(otherStringIds, hostString)
-	joinedString := strings.Join(stringsToJoin, CHAR_COMBO)
 
+	return StringToXIdentifier(hostString, otherStringIds)
+}
+
+func StringToProductIdentifier(urlString string, otherStringIds []string) (string, string, error) {
+	// Fixed character combination
+	_, productString, err := GetHostName(urlString)
+
+	if err != nil {
+		return "", "", err
+	}
+	return StringToXIdentifier(productString, otherStringIds)
+}
+
+func StringToXIdentifier(stringy string, otherStringIds []string) (string, string, error) {
+	// Concatenate the strings with the fixed character combination
+	stringsToJoin := append(otherStringIds, stringy)
+	joinedString := strings.Join(stringsToJoin, CHAR_COMBO)
 	encoded4URL := url.QueryEscape(joinedString)
 
 	encodedString, err := EncodeAndCompressString(encoded4URL)
 	if err != nil {
 		return "", "", err
 	}
-	encodedHostString, err := EncodeAndCompressString(hostString)
+
+	encodedHostString, err := EncodeAndCompressString(stringy)
 	if err != nil {
 		return "", "", err
 	}

@@ -76,7 +76,7 @@ func (s *MetaScraper) ScrapeOne(url string) ([]string, error) {
 		currentDatetime := time.Now()
 		formattedDatetime := currentDatetime.Format("2006-01-02-15-04-05")
 
-		hostName, err := utils.GetHostName(url)
+		hostName, _, err := utils.GetHostName(url)
 		if err != nil {
 			return nil, err
 		}

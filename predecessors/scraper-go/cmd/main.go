@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
-	"cloud.google.com/go/bigquery"
 	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/meta"
 	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product"
 	"github.com/exolutiontech/scraper-go/internal/pkg/scrapers/product/woocommerce"
@@ -17,6 +17,12 @@ import (
 	"github.com/exolutiontech/scraper-go/internal/pkg/storage"
 	"github.com/exolutiontech/scraper-go/internal/pkg/utils"
 )
+
+type StoreResult struct {
+	URL         string
+	TotalPrice  float64
+	TotalMaxQty int
+}
 
 func randomSampleSlice(data []string, size int) []string {
 	if len(data) <= size {
@@ -34,31 +40,67 @@ func randomSampleSlice(data []string, size int) []string {
 	return result
 }
 
-func main() {
-	linksFilePath := "links.txt"
+func scrapeStore(client *http.Client, st storage.FileStorage, proxyConfig utils.ProxyConfig, storeURL string, wg *sync.WaitGroup, resultsChan chan<- StoreResult, productScraper product.ProductScraper, outputWriter *bufio.Writer, config map[string]string) {
+	defer wg.Done()
 
-	config := map[string]string{
-		"product_title":           "h1.product_title.entry-title",
-		"add_to_cart_input":       "input.qty",
-		"add_to_cart_button":      "button.single_add_to_cart_button",
-		"form_variations":         "ul[data-attribute_name='attribute_pa_size']",
-		"summary_div":             "div.woocommerce-product-details__short-description",
-		"price_amount":            "span.woocommerce-Price-amount",
-		"sku":                     ".sku_wrapper .sku",
-		"max_qty":                 "input.qty",
-		"quantity_input":          "input.qty",
-		"data_product_variations": ".variations_form",
-		"availability_html":       "p.stock",
-		"display_price":           "span.woocommerce-Price-currencySymbol",
-		"variation_sku":           ".variation-sku",
-		"variation_id":            ".variation-id",
-		"image_src":               "img.wp-post-image",
-		"attributes":              ".product_meta",
+	sc := site.New(client, st)
+	a, err := sc.ScrapeOne(storeURL)
+	fmt.Println("Site Scrape Result:")
+	fmt.Println("********************")
+	fmt.Println("Site Data:", a)
+	fmt.Println("Error:", err)
+
+	metaScraper := meta.New(client, st)
+	data, err := metaScraper.ScrapeOne(storeURL)
+	fmt.Println("Meta Scrape Result:")
+	fmt.Println("********************")
+	fmt.Println("Data Length:", len(data))
+	fmt.Println("Error:", err)
+
+	if len(data) == 0 || err != nil {
+		fmt.Println("Skipping store due to no data or error:", storeURL)
+		return
 	}
+
+	randomSample := randomSampleSlice(data, 50)
+	totalMaxQty := 0
+	totalPrice := 0.0
+
+	for _, l := range randomSample {
+		results, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
+			Url:    l,
+			Config: config, // Pass the config here
+			Save:   false,
+		})
+		fmt.Println()
+		fmt.Println(fmt.Sprintf("Scraping Product: %s", l))
+		fmt.Println("***********************************************")
+		if err != nil {
+			fmt.Println("Error occurred during product scraping:", err)
+			continue
+		}
+
+		fmt.Println(results)
+		fmt.Println(storeURL, totalPrice, totalMaxQty)
+		outputWriter.WriteString(fmt.Sprintf("%s\n", results))
+		outputWriter.Flush()
+
+		for _, dp := range results.DataPoint {
+			totalMaxQty += dp.MaxQty
+			totalPrice += dp.Price
+		}
+	}
+
+}
+
+func main() {
+	linksFilePath := "/home/imran/Documents/data/scraperlinks/test_iceid.txt"
+	outputFilePath := "/home/imran/Documents/data/scraperlinks/wooice.txt"
+	startingLine := 0
 
 	rand.Seed(time.Now().UnixNano())
 
-	client := http.Client{}
+	client := &http.Client{}
 
 	proxyConfig := utils.ProxyConfig{
 		Address:  "p.webshare.io:80",
@@ -67,10 +109,6 @@ func main() {
 	}
 
 	var st storage.FileStorage
-	var t1 *bigquery.Table
-	var t2 *bigquery.Table
-
-	productScraper := woocommerce.New(proxyConfig, client, t1, t2)
 
 	file, err := os.Open(linksFilePath)
 	if err != nil {
@@ -79,77 +117,86 @@ func main() {
 	}
 	defer file.Close()
 
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		storeURL := strings.TrimSpace(scanner.Text())
+	outputFile, err := os.OpenFile(outputFilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		fmt.Println("Error opening output file:", err)
+		return
+	}
+	defer outputFile.Close()
+	outputWriter := bufio.NewWriter(outputFile)
 
-		sc := site.New(&client, st)
-		a, err := sc.ScrapeOne(storeURL)
-		fmt.Println("Site Scrape Result:")
-		fmt.Println("********************")
-		fmt.Println("Site Data:", a)
-		fmt.Println("Error:", err)
+	lineScanner := bufio.NewScanner(file)
 
-		metaScraper := meta.New(&client, st)
-		data, err := metaScraper.ScrapeOne(storeURL)
-		fmt.Println("Meta Scrape Result:")
-		fmt.Println("********************")
-		fmt.Println("Data Length:", len(data))
-		fmt.Println("Error:", err)
+	var wg sync.WaitGroup
+	resultsChan := make(chan StoreResult)
+	doneChan := make(chan struct{})
 
-		if len(data) == 0 || err != nil {
-			fmt.Println("Skipping store due to no data or error:", storeURL)
-			continue
-		}
+	productScraper := woocommerce.New(proxyConfig, *client, nil, nil)
 
-		randomSample := randomSampleSlice(data, 5)
-		for _, l := range randomSample {
-			results, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
-				Url:        l,
-				Config:     config,
-			})
+	config := map[string]string{
+		"product_title":           "h1.product_title",
+		"add_to_cart_input":       "input[name='add-to-cart']",
+		"add_to_cart_button":      "button[name='add-to-cart']",
+		"form_variations":         "form.variations_form",
+		"summary_div":             "div.summary",
+		"price_amount":            "span.woocommerce-Price-amount.amount",
+		"sku":                     "span.sku",
+		"max_qty":                 "p.stock",
+		"quantity_input":          "input[name=quantity]",
+		"data_product_variations": ".variations_form",
+		"availability_html":       "availability_html",
+		"display_price":           "display_price",
+		"variation_sku":           "sku",
+		"variation_id":            "variation_id",
+		"image_src":               "image.src",
+		"attributes":              "attributes",
+	}
 
-			fmt.Println(fmt.Sprintf("Scraping Product: %s", l))
-			fmt.Println("***********************************************")
-			if err != nil {
-				fmt.Println("Error occurred during product scraping:", err)
-				continue
-			}
+	maxGoroutines := 32
+	concurrencyLimiter := make(chan struct{}, maxGoroutines)
 
-			for i, pd := range results.ProductData {
-				fmt.Println("ProductData:", i)
-				fmt.Println("-----------------------------")
-				fmt.Println("Name:", pd.Name)
-				fmt.Println("Description:", pd.Description)
-				fmt.Println("ImageURLs:", pd.ImageURLs)
-				fmt.Println("Attributes:", pd.Attributes)
-				fmt.Println("Categories:", pd.Categories)
-				fmt.Println("Tags:", pd.Tags)
-				fmt.Println("ProductIdentifier:", pd.ProductIdentifier)
-				fmt.Println("ProductID:", pd.ProductID)
-				fmt.Println("VariationID:", pd.VariationID)
-				fmt.Println("SKU:", pd.SKU)
-				fmt.Println("SiteIdentifier:", pd.SiteIdentifier)
-				fmt.Println("DateCreated:", pd.DateCreated)
-				fmt.Println()
-			}
-
-			for i, dp := range results.DataPoint {
-				fmt.Println("DataPoint:", i)
-				fmt.Println("-----------------------------")
-				fmt.Println("ProductIdentifier:", dp.ProductIdentifier)
-				fmt.Println("ProductID:", dp.ProductID)
-				fmt.Println("VariationID:", dp.VariationID)
-				fmt.Println("SKU:", dp.SKU)
-				fmt.Println("Price:", dp.Price)
-				fmt.Println("MaxQty:", dp.MaxQty)
-				fmt.Println("DateCreated:", dp.DateCreated)
-				fmt.Println()
-			}
+	for i := 0; i < startingLine; i++ {
+		if !lineScanner.Scan() {
+			fmt.Println("Starting line exceeds the number of lines in the file")
+			return
 		}
 	}
 
-	if err := scanner.Err(); err != nil {
+	go func() {
+		defer close(resultsChan)
+		for lineScanner.Scan() {
+			storeURL := "https://" + strings.TrimSpace(lineScanner.Text())
+
+			concurrencyLimiter <- struct{}{}
+
+			wg.Add(1)
+			go func(storeURL string) {
+				defer func() {
+					<-concurrencyLimiter
+				}()
+				scrapeStore(client, st, proxyConfig, storeURL, &wg, resultsChan, productScraper, outputWriter, config)
+			}(storeURL)
+		}
+		wg.Wait()
+		close(doneChan)
+	}()
+
+	totalMaxQty := 0
+	totalPrice := 0.0
+
+	go func() {
+		for result := range resultsChan {
+			totalPrice += result.TotalPrice
+			totalMaxQty++
+		}
+	}()
+
+	<-doneChan
+
+	fmt.Println("Total Stores:", totalMaxQty)
+	fmt.Println("Total Price:", totalPrice)
+
+	if err := lineScanner.Err(); err != nil {
 		fmt.Println("Error reading file:", err)
 	}
 }

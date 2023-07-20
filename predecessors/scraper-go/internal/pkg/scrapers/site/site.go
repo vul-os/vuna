@@ -61,23 +61,23 @@ func (s *SiteScraper) ScrapeOne(url string) (map[string]string, error) {
 	currencyCode := "ZAR"
 
 	name, image, technology := s.GetSiteInfo(url)
-	hostName, err := utils.GetHostName(url)
+	hostName, _, err := utils.GetHostName(url)
 	if err != nil {
 		return nil, err
 	}
-	hostIdentifier, _, err := utils.StringToIdentifier(url, nil)
+	hostIdentifier, _, err := utils.StringToSiteIdentifier(url, nil)
 	if err != nil {
 		return nil, err
 	}
 	items := []map[string]string{{
-		"site_identifier": hostIdentifier,
-		"name":            strings.TrimSpace(name),
-		"image":           strings.TrimSpace(image),
-		"currency":        currencyCode,
-		"technology":      technology,
-		"rate_limit":      "1/s",
-		"scraper":         technology,
-		"url":             hostName,
+		"siteidentifier": hostIdentifier,
+		"name":           strings.TrimSpace(name),
+		"image":          strings.TrimSpace(image),
+		"currency":       currencyCode,
+		"technology":     technology,
+		"ratelimit":      "1/s",
+		"scraper":        technology,
+		"url":            hostName,
 	}}
 	if s.FileStorage != nil {
 
@@ -97,6 +97,7 @@ func (s *SiteScraper) GetSiteInfo(url string) (string, string, string) {
 	response, err := s.Client.Get(url)
 	if err != nil {
 		// Handle the error
+		return "", "", ""
 	}
 
 	defer response.Body.Close()
@@ -105,12 +106,14 @@ func (s *SiteScraper) GetSiteInfo(url string) (string, string, string) {
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		// Handle the error
+		return "", "", ""
 	}
 
 	// Parse the HTML content using goquery
 	document, err := goquery.NewDocumentFromReader(strings.NewReader(string(body)))
 	if err != nil {
 		// Handle the error
+		return "", "", ""
 	}
 
 	// Extract the name of the website
@@ -131,13 +134,15 @@ func (s *SiteScraper) GetSiteInfo(url string) (string, string, string) {
 	if len(image) == 0 {
 		document.Find("link[rel='icon']").Each(func(i int, selection *goquery.Selection) {
 			iconURL, exists := selection.Attr("href")
-			if exists && strings.HasSuffix(iconURL, ".png") || strings.HasSuffix(iconURL, ".jpg") {
+			if exists && (strings.HasSuffix(iconURL, ".png") || strings.HasSuffix(iconURL, ".jpg")) {
 				image = iconURL
 				return
 			}
 		})
 	}
+
 	technology := Detect(response, body)
+
 	// Return the name, image, and technology of the website
 	return name, image, technology
 }
