@@ -97,6 +97,7 @@ func (s *SiteScraper) GetSiteInfo(url string) (string, string, string) {
 	response, err := s.Client.Get(url)
 	if err != nil {
 		// Handle the error
+		return "", "", ""
 	}
 
 	defer response.Body.Close()
@@ -105,12 +106,14 @@ func (s *SiteScraper) GetSiteInfo(url string) (string, string, string) {
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		// Handle the error
+		return "", "", ""
 	}
 
 	// Parse the HTML content using goquery
 	document, err := goquery.NewDocumentFromReader(strings.NewReader(string(body)))
 	if err != nil {
 		// Handle the error
+		return "", "", ""
 	}
 
 	// Extract the name of the website
@@ -131,13 +134,15 @@ func (s *SiteScraper) GetSiteInfo(url string) (string, string, string) {
 	if len(image) == 0 {
 		document.Find("link[rel='icon']").Each(func(i int, selection *goquery.Selection) {
 			iconURL, exists := selection.Attr("href")
-			if exists && strings.HasSuffix(iconURL, ".png") || strings.HasSuffix(iconURL, ".jpg") {
+			if exists && (strings.HasSuffix(iconURL, ".png") || strings.HasSuffix(iconURL, ".jpg")) {
 				image = iconURL
 				return
 			}
 		})
 	}
+
 	technology := Detect(response, body)
+
 	// Return the name, image, and technology of the website
 	return name, image, technology
 }
