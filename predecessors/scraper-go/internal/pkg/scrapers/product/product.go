@@ -60,6 +60,7 @@ type ProductScraper interface {
 type ScrapeOneRequest struct {
 	Url    string            `json:"url"`
 	Config map[string]string `json:"config"`
+	Save   bool              `json:"save"`
 }
 
 type ScrapeOneResponse struct {

@@ -61,11 +61,11 @@ func (s *SiteScraper) ScrapeOne(url string) (map[string]string, error) {
 	currencyCode := "ZAR"
 
 	name, image, technology := s.GetSiteInfo(url)
-	hostName, err := utils.GetHostName(url)
+	hostName, _, err := utils.GetHostName(url)
 	if err != nil {
 		return nil, err
 	}
-	hostIdentifier, _, err := utils.StringToIdentifier(url, nil)
+	hostIdentifier, _, err := utils.StringToSiteIdentifier(url, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -62,7 +62,7 @@ func scrapeStore(client *http.Client, st storage.FileStorage, proxyConfig utils.
 		return
 	}
 
-	randomSample := randomSampleSlice(data, 15)
+	randomSample := randomSampleSlice(data, 50)
 	totalMaxQty := 0
 	totalPrice := 0.0
 
@@ -70,8 +70,9 @@ func scrapeStore(client *http.Client, st storage.FileStorage, proxyConfig utils.
 		results, err := productScraper.ScrapeOne(product.ScrapeOneRequest{
 			Url:    l,
 			Config: config, // Pass the config here
+			Save:   false,
 		})
-
+		fmt.Println()
 		fmt.Println(fmt.Sprintf("Scraping Product: %s", l))
 		fmt.Println("***********************************************")
 		if err != nil {
@@ -79,27 +80,22 @@ func scrapeStore(client *http.Client, st storage.FileStorage, proxyConfig utils.
 			continue
 		}
 
+		fmt.Println(results)
+		fmt.Println(storeURL, totalPrice, totalMaxQty)
+		outputWriter.WriteString(fmt.Sprintf("%s\n", results))
+		outputWriter.Flush()
+
 		for _, dp := range results.DataPoint {
 			totalMaxQty += dp.MaxQty
 			totalPrice += dp.Price
 		}
 	}
 
-	fmt.Println(storeURL, totalPrice, totalMaxQty)
-	if totalMaxQty > 0 && totalPrice > 0 {
-		resultsChan <- StoreResult{
-			URL:         storeURL,
-			TotalPrice:  totalPrice,
-			TotalMaxQty: totalMaxQty,
-		}
-		outputWriter.WriteString(fmt.Sprintf("%s\n", storeURL))
-		outputWriter.Flush()
-	}
 }
 
 func main() {
-	linksFilePath := "/home/imran/Documents/data/scraperlinks/links1.txt"
-	outputFilePath := "/home/imran/Documents/data/scraperlinks/woo.txt"
+	linksFilePath := "/home/imran/Documents/data/scraperlinks/test_iceid.txt"
+	outputFilePath := "/home/imran/Documents/data/scraperlinks/wooice.txt"
 	startingLine := 0
 
 	rand.Seed(time.Now().UnixNano())
