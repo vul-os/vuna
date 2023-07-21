@@ -108,7 +108,7 @@ func scrapeProductWithoutVariations(productURL, productID, productName string, l
 	}
 
 	otherStringIds := []string{fmt.Sprintf("%v", sku), "default"}
-	hostIdentifier, productIdentifier, err := utils.StringToProductIdentifier(productURL, otherStringIds)
+	hostIdentifier, productIdentifier, err := utils.StringToIdentifier(productURL, otherStringIds)
 	if err != nil {
 		return product.ProductData{}, product.DataPoint{}, err
 	}
@@ -172,7 +172,7 @@ func scrapeProductWithVariations(productURL, productID, productName string, look
 		maxQtyInt, errq := utils.MaxQtyToInt(availabilityHTML)
 
 		otherStringIds := []string{fmt.Sprintf("%v", sku), fmt.Sprintf("%v", variationID)}
-		hostIdentifier, productIdentifier, err := utils.StringToProductIdentifier(productURL, otherStringIds)
+		hostIdentifier, productIdentifier, err := utils.StringToIdentifier(productURL, otherStringIds)
 		if err != nil {
 			continue
 		}

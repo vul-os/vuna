@@ -85,7 +85,7 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 		}
 
 		otherStringIds := []string{fmt.Sprintf("%v", variant.SKU), fmt.Sprintf("%v", variant.ID)}
-		hostIdentifier, productIdentifier, err := utils.StringToProductIdentifier(request.Url, otherStringIds)
+		hostIdentifier, productIdentifier, err := utils.StringToIdentifier(request.Url, otherStringIds)
 		if err != nil {
 			continue
 		}

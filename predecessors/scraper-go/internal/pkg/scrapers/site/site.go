@@ -65,7 +65,7 @@ func (s *SiteScraper) ScrapeOne(url string) (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	hostIdentifier, _, err := utils.StringToSiteIdentifier(url, nil)
+	hostIdentifier, _, err := utils.StringToIdentifier(url, nil)
 	if err != nil {
 		return nil, err
 	}
