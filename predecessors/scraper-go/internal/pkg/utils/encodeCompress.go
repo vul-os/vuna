@@ -36,25 +36,22 @@ func RemoveWWWPrefix(input string) string {
 	return output
 }
 
-func StringToSiteIdentifier(urlString string, otherStringIds []string) (string, string, error) {
+func StringToIdentifier(urlString string, otherStringIds []string) (string, string, error) {
 	// Fixed character combination
-	hostString, _, err := GetHostName(urlString)
+	hostString, productString, err := GetHostName(urlString)
 
 	if err != nil {
 		return "", "", err
 	}
-
-	return StringToXIdentifier(hostString, otherStringIds)
-}
-
-func StringToProductIdentifier(urlString string, otherStringIds []string) (string, string, error) {
-	// Fixed character combination
-	_, productString, err := GetHostName(urlString)
-
+	hostId, _, err := StringToXIdentifier(hostString, otherStringIds)
 	if err != nil {
 		return "", "", err
 	}
-	return StringToXIdentifier(productString, otherStringIds)
+	_, productId, err := StringToXIdentifier(productString, otherStringIds)
+	if err != nil {
+		return "", "", err
+	}
+	return hostId, productId, nil
 }
 
 func StringToXIdentifier(stringy string, otherStringIds []string) (string, string, error) {
