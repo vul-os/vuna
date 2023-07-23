@@ -43,18 +43,18 @@ func StringToIdentifier(urlString string, otherStringIds []string) (string, stri
 	if err != nil {
 		return "", "", err
 	}
-	hostId, _, err := StringToXIdentifier(hostString, otherStringIds)
+	hostId, err := StringToSiteIdentifier(hostString)
 	if err != nil {
 		return "", "", err
 	}
-	_, productId, err := StringToXIdentifier(productString, otherStringIds)
+	productId, err := StringToProductIdentifier(productString, otherStringIds)
 	if err != nil {
 		return "", "", err
 	}
 	return hostId, productId, nil
 }
 
-func StringToXIdentifier(stringy string, otherStringIds []string) (string, string, error) {
+func StringToProductIdentifier(stringy string, otherStringIds []string) (string, error) {
 	// Concatenate the strings with the fixed character combination
 	stringsToJoin := append(otherStringIds, stringy)
 	joinedString := strings.Join(stringsToJoin, CHAR_COMBO)
@@ -62,14 +62,17 @@ func StringToXIdentifier(stringy string, otherStringIds []string) (string, strin
 
 	encodedString, err := EncodeAndCompressString(encoded4URL)
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
+	return encodedString, nil
+}
 
+func StringToSiteIdentifier(stringy string) (string, error) {
 	encodedHostString, err := EncodeAndCompressString(stringy)
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
-	return encodedHostString, encodedString, nil
+	return encodedHostString, nil
 }
 
 func EncodeURL(urlStr string) string {
