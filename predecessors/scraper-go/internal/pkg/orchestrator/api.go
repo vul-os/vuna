@@ -232,7 +232,7 @@ func (o *OrchestratorAPI) Product(w http.ResponseWriter, r *http.Request) {
 	startTime := time.Now().UTC()
 	// 2 mins to load queue
 	startTime = startTime.Add(time.Second * time.Duration(120))
-	rateLimit := 1 // Number of requests per second
+	rateLimit := 3 // Number of requests per second
 
 	ctx := context.Background()
 
