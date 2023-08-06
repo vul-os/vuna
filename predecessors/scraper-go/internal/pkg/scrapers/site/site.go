@@ -16,31 +16,14 @@ import (
 // SiteData is a struct representing the site data
 type SiteData struct {
 	SiteIdentifier string `json:"site_identifier"`
-
-	Name  string `json:"name"`
-	Image string `json:"image"`
-
-	Currency string `json:"currency"`
-
-	Technology string `json:"technology"`
-	Scraper    string `json:"scraper"`
-
-	RateLimit string `json:"rate_limit"`
-
-	Url string `json:"url"`
+	Name           string `json:"name"`
+	Image          string `json:"image"`
+	Currency       string `json:"currency"`
+	Technology     string `json:"technology"`
+	Scraper        string `json:"scraper"`
+	RateLimit      string `json:"rate_limit"`
+	Url            string `json:"url"`
 }
-
-// func StructToMap(s SiteData) map[string]string {
-// 	return map[string]string{
-// 		"id":         s.ID,
-// 		"name":       s.Name,
-// 		"image":      s.Image,
-// 		"currency":   s.Currency,
-// 		"technology": s.Technology,
-// 		"scraper":    s.Scraper,
-// 		"rate_limit": s.RateLimit,
-// 	}
-// }
 
 type SiteScraper struct {
 	Client      *http.Client
@@ -58,14 +41,20 @@ func New(
 }
 
 func (s *SiteScraper) ScrapeOne(url string) (map[string]string, error) {
-	currencyCode := "ZAR"
-
-	name, image, technology := s.GetSiteInfo(url)
-	hostName, _, err := utils.GetHostName(url)
+	// Follow redirects and get the final URL
+	finalURL, err := s.GetRedirectURL(url)
 	if err != nil {
 		return nil, err
 	}
-	hostIdentifier, _, err := utils.StringToIdentifier(url, nil)
+
+	// Now that we have the final URL, extract the site info
+	currencyCode := "ZAR"
+	name, image, technology := s.GetSiteInfo(finalURL)
+	hostName, _, err := utils.GetHostName(finalURL)
+	if err != nil {
+		return nil, err
+	}
+	hostIdentifier, _, err := utils.StringToIdentifier(finalURL, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -90,6 +79,29 @@ func (s *SiteScraper) ScrapeOne(url string) (map[string]string, error) {
 		}
 	}
 	return items[0], nil
+}
+
+func (s *SiteScraper) GetRedirectURL(url string) (string, error) {
+	// Create a new request to follow redirects
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return "", err
+	}
+
+	// Use the client to follow redirects
+	resp, err := s.Client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	// Check if the final URL is different from the original URL
+	if resp.Request.URL.String() != url {
+		return resp.Request.URL.String(), nil
+	}
+
+	// If there were no redirects, return the original URL
+	return url, nil
 }
 
 func (s *SiteScraper) GetSiteInfo(url string) (string, string, string) {
