@@ -155,8 +155,8 @@ func scrapeProductWithVariations(productURL, productID, productName string, look
 	productDataList := []product.ProductData{}
 	dataPointList := []product.DataPoint{}
 
-	productVariations := doc.Find(lookup("form_variations")).
-		AttrOr(lookup("data-product_variations"), "")
+	productVariations := doc.Find(lookup("form_variations")).AttrOr(lookup("data_product_variations"), "")
+
 	variationsData := make([]map[string]interface{}, 0)
 	if err := json.Unmarshal([]byte(productVariations), &variationsData); err != nil {
 		fmt.Println("Error decoding variations data:", err)
