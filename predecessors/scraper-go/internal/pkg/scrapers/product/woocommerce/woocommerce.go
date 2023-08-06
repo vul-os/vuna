@@ -77,9 +77,6 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 		productDataList = append(productDataList, productData)
 		dataPointList = append(dataPointList, dataPoint)
 	}
-	if request.Save == false {
-		return &product.ScrapeOneResponse{DataPoint: dataPointList, ProductData: productDataList}, nil
-	}
 	err = product.Save(dataPointList, productDataList, s.DatapointTable, s.ProductTable)
 	if err != nil {
 		return nil, err

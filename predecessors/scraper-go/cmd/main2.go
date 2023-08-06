@@ -40,8 +40,8 @@ func scrapeProduct(client *http.Client, proxyConfig utils.ProxyConfig, productLi
 
 func main() {
 	// Set your store URL and product link here
-	storeURL := "https://klopperssport.co.za"                                                         // Replace with your store URL
-	productLink := "https://klopperssport.co.za/product/puma-ultra-pro-protect-rc-goalkeeper-gloves/" // Replace with your product link
+	storeURL := "https://mini-me.co.za"                             // Replace with your store URL
+	productLink := "https://mini-me.co.za/product/dark-peach-lips/" // Replace with your product link
 
 	config := map[string]string{
 		"product_title":           "h1.product_title",
