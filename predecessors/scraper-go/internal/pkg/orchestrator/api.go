@@ -3,6 +3,7 @@ package orchestrator
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"strings"
 	"time"
@@ -103,6 +104,13 @@ func (o *OrchestratorAPI) AllMetaProducts(w http.ResponseWriter, r *http.Request
 		fmt.Println("Error Allproducts: ", err)
 		return
 	}
+
+	// Shuffle the list of productsFilesPerSite randomly
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(productsFilesPerSite), func(i, j int) {
+		productsFilesPerSite[i], productsFilesPerSite[j] = productsFilesPerSite[j], productsFilesPerSite[i]
+	})
+
 	for _, productsFilePerSite := range productsFilesPerSite {
 		pFile := strings.ReplaceAll(productsFilePerSite, "meta", "")
 		pFile = strings.ReplaceAll(pFile, "/", "")
@@ -131,6 +139,7 @@ func (o *OrchestratorAPI) AllProducts(w http.ResponseWriter, r *http.Request) {
 		SiteIdentifier string
 	}
 
+	var siteIdentifiers []string
 	for {
 		var values row
 		err := it.Next(&values)
@@ -143,13 +152,24 @@ func (o *OrchestratorAPI) AllProducts(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = o.TaskCreator.CreateTaskOrchestrateProduct(values.SiteIdentifier)
+		siteIdentifiers = append(siteIdentifiers, values.SiteIdentifier)
+	}
+
+	// Shuffle the siteIdentifiers randomly
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(siteIdentifiers), func(i, j int) {
+		siteIdentifiers[i], siteIdentifiers[j] = siteIdentifiers[j], siteIdentifiers[i]
+	})
+
+	for _, siteIdentifier := range siteIdentifiers {
+		err = o.TaskCreator.CreateTaskOrchestrateProduct(siteIdentifier)
 		if err != nil {
 			http.Error(w, "Failed to create product task", http.StatusInternalServerError)
 			fmt.Println("Error AllProducts: ", err)
 			return
 		}
 	}
+
 	w.Write([]byte("hopefully created orchestrate scrape product"))
 }
 
