@@ -5,7 +5,7 @@ WITH diffs AS (
     Price,
     maxqty - LAG(maxqty) OVER (PARTITION BY ProductIdentifier ORDER BY DateCreated) AS difference
   FROM
-    `scrapers.datapoint_raw`
+    `scrapers.datapoint_partitioned`
 ), filtered_diffs AS (
   SELECT
     ProductIdentifier,

@@ -4,7 +4,7 @@ WITH diffs AS (
     ProductIdentifier,
     maxqty - LAG(maxqty) OVER (PARTITION BY ProductIdentifier ORDER BY DateCreated) AS difference
   FROM
-    `scrapers.datapoint_raw`
+    `scrapers.datapoint_partitioned`
   WHERE
     {{ if .ProductIdentifier }}
     ProductIdentifier = '{{ .ProductIdentifier }}'
@@ -29,7 +29,7 @@ WITH diffs AS (
   FROM
     the_query t
   JOIN
-    `scrapers.datapoint_raw` p ON t.ProductIdentifier = p.ProductIdentifier 
+    `scrapers.datapoint_partitioned` p ON t.ProductIdentifier = p.ProductIdentifier 
   GROUP BY t.ProductIdentifier, t.DateCreated
 )
 SELECT
