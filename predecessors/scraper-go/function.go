@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-    "cloud.google.com/go/bigquery"
+
+	"cloud.google.com/go/bigquery"
 
 	// metaScraper "scraper-go/internal/pkg/scrapers/meta"
 	// siteScraper "scraper-go/internal/pkg/scrapers/site"
@@ -39,7 +40,7 @@ func router(w http.ResponseWriter, r *http.Request) {
 	smallInstanceTargetUrl := "https://function-go-gizrqdvcaq-uc.a.run.app"
 
 	datasetId := "scrapers"
-	datapointTableName := "datapoint_raw"
+	datapointTableName := "datapoint_partitioned"
 	productTableName := "product_raw"
 
 	detailsMap := map[string]tasks.TaskCreatorDetails{
@@ -76,15 +77,15 @@ func router(w http.ResponseWriter, r *http.Request) {
 	}
 
 	bigqueryClient, err := bigquery.NewClient(ctx, projectId)
-    if err != nil {
+	if err != nil {
 		fmt.Sprintf("Failed to create client: %v", err)
 		return
-    }
-    
-    fmt.Printf("Client created for project: %s\n", projectId)
+	}
 
-    // Remember to close the client!
-    defer bigqueryClient.Close()
+	fmt.Printf("Client created for project: %s\n", projectId)
+
+	// Remember to close the client!
+	defer bigqueryClient.Close()
 
 	client, err := storage.NewClient(context.Background())
 	if err != nil {
