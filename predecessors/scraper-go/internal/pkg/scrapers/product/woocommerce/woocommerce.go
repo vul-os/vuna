@@ -77,10 +77,10 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 		productDataList = append(productDataList, productData)
 		dataPointList = append(dataPointList, dataPoint)
 	}
-	err = product.Save(dataPointList, productDataList, s.DatapointTable, s.ProductTable)
-	if err != nil {
-		return nil, err
-	}
+	// err = product.Save(dataPointList, productDataList, s.DatapointTable, s.ProductTable)
+	// if err != nil {
+	// 	return nil, err
+	// }
 	return &product.ScrapeOneResponse{DataPoint: dataPointList, ProductData: productDataList}, nil
 }
 
@@ -104,7 +104,7 @@ func scrapeProductWithoutVariations(productURL, productID, productName string, l
 		}
 	}
 
-	otherStringIds := []string{fmt.Sprintf("%v", sku), "default"}
+	otherStringIds := []string{fmt.Sprintf("%v", sku), fmt.Sprintf("%v", productID), "default"}
 	hostIdentifier, productIdentifier, err := utils.StringToIdentifier(productURL, otherStringIds)
 	if err != nil {
 		return product.ProductData{}, product.DataPoint{}, err
@@ -168,7 +168,7 @@ func scrapeProductWithVariations(productURL, productID, productName string, look
 		priceFloat, errp := utils.PriceToFloat(displayPrice)
 		maxQtyInt, errq := utils.MaxQtyToInt(availabilityHTML)
 
-		otherStringIds := []string{fmt.Sprintf("%v", sku), fmt.Sprintf("%v", variationID)}
+		otherStringIds := []string{fmt.Sprintf("%v", sku), fmt.Sprintf("%v", variationID), fmt.Sprintf("%v", productID)}
 		hostIdentifier, productIdentifier, err := utils.StringToIdentifier(productURL, otherStringIds)
 		if err != nil {
 			continue
