@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 func ExtractCurrencyNumbers(str string) []string {
@@ -20,10 +21,19 @@ func ExtractCurrencyNumbers(str string) []string {
 }
 
 func PriceToFloat(price interface{}) (float64, error) {
+	stringToFloat := func(s string) (float64, error) {
+		// If there are no "." in the string, replace "," with "."
+		if !strings.Contains(s, ".") {
+			s = strings.Replace(s, ",", ".", 1)
+		}
+		return strconv.ParseFloat(s, 64)
+	}
+
 	switch v := price.(type) {
 	case string:
 		priceRange := ExtractCurrencyNumbers(v)
 		var lowerValue float64
+		fmt.Println(priceRange)
 		for _, p := range priceRange {
 			price, err := stringToFloat(p)
 			if err != nil {
