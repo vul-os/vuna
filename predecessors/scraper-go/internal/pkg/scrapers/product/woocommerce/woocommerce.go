@@ -77,10 +77,10 @@ func (s *scraper) ScrapeOne(request product.ScrapeOneRequest) (*product.ScrapeOn
 		productDataList = append(productDataList, productData)
 		dataPointList = append(dataPointList, dataPoint)
 	}
-	// err = product.Save(dataPointList, productDataList, s.DatapointTable, s.ProductTable)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	err = product.Save(dataPointList, productDataList, s.DatapointTable, s.ProductTable)
+	if err != nil {
+		return nil, err
+	}
 	return &product.ScrapeOneResponse{DataPoint: dataPointList, ProductData: productDataList}, nil
 }
 
