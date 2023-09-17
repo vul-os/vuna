@@ -6,7 +6,7 @@ app = Celery('tasks', broker='redis://localhost:6379/0')
 
 @app.task
 def create_task(url, key, json_payload=None, scheduled_time=None):
-    headers = {"Key": key}
+    headers = {}
 
     if scheduled_time:
         create_task.apply_async(args=[url, key, json_payload], eta=scheduled_time)
