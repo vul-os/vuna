@@ -140,6 +140,35 @@ func (s *SitePermissionService) getProductCountForSites(siteIdentifiers []string
 	return productCount, nil
 }
 
+func (s *SitePermissionService) fetchPermissions(userID string) ([]string, error) {
+	query := s.client.Query(fmt.Sprintf(`
+		SELECT permission FROM permissions_table
+		WHERE user_id = "%s"`, userID))
+
+	it, err := query.Read(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	var permissions []string
+	for {
+		var result struct {
+			Permission string `bigquery:"permission"`
+		}
+		err := it.Next(&result)
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		permissions = append(permissions, result.Permission)
+	}
+
+	return permissions, nil
+}
+
 func (s *SitePermissionService) updateSitePermissionsTable(userID string, siteIdentifiers []string) error {
 	ctx := context.Background()
 
@@ -167,4 +196,5 @@ func (s *SitePermissionService) updateSitePermissionsTable(userID string, siteId
 	}
 
 	return nil
+
 }
