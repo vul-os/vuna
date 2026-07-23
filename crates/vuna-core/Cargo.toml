@@ -1,0 +1,13 @@
+[package]
+name = "vuna-core"
+description = "Vuna frozen contract — shared types + traits for the crawl→extract→index engine. No heavy deps; compiles offline."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
