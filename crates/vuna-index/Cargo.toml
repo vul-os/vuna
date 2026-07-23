@@ -1,5 +1,6 @@
 [package]
 name = "vuna-index"
+description = "Vuna node-local index: tantivy keyword (BM25) + per-space HNSW vectors + link graph. Implements vuna_core::index::{Index, Embedder}."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -11,3 +12,13 @@ vuna-core = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
+# Keyword (BM25) search over url/title/snippet/body.
+tantivy = "0.22"
+# Pure-Rust HNSW for the per-space vector index — no BLAS/C toolchain, stays offline-buildable.
+instant-distance = "0.6"
+
+[features]
+# Real transformer embedder (candle) is deliberately a stub for now (see src/embed.rs) — it adds
+# no dependency yet, so turning this on costs nothing until the ONNX/candle binding is written.
+# The default embedder (`embed::HashingEmbedder`) needs no model download and is what tests use.
+candle = []

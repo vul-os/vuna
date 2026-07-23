@@ -11,3 +11,6 @@ vuna-core = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
+reqwest = { version = "0.13.3", default-features = false, features = ["blocking", "rustls"] }
+url = "2.5.8"
+texting_robots = "0.2.2"

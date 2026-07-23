@@ -11,3 +11,5 @@ vuna-core = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
+scraper = "0.27.0"
+url = "2.5.8"

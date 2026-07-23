@@ -1,0 +1,74 @@
+# Vuna retail adapter — Shopify storefront product JSON.
+#
+# Every Shopify storefront serves a machine-readable JSON twin of each product page at the same
+# path, no auth, no separate API key: https://{store}/products/{handle}.js
+# This is the highest-signal, lowest-cost retail source Vuna has — it's a JSON endpoint that
+# already exists for every Shopify merchant, so there is no HTML-scraping heuristic involved
+# (method = "json_endpoint", not "html").
+#
+# See ../README.md for the manifest format this file is written against.
+
+[adapter]
+name           = "shopify-products-json"
+version        = 1
+extractor_kind = "retail"
+method         = "json_endpoint"
+
+[match]
+url_pattern  = "https://{store}/products/{handle}.js"
+content_type = "application/json"
+
+[fetch]
+endpoint    = "https://{store}/products/{handle}.js"
+http_method = "GET"
+format      = "json"
+# Public storefront data — no auth header, no rate-limit exemption. Crawl politely (vuna-crawl's
+# per-host rate limiter applies here exactly like any other host).
+
+[iterate]
+# One RetailObservation per variant — a single Shopify product page can list many SKUs (size,
+# color, etc.), each with its own price and availability.
+path = "variants[]"
+
+[fields]
+store               = "url:{store}"
+sku                 = "json:$.sku"
+# Shopify lets merchants leave `sku` blank. When it's empty, fall back to a synthetic id built
+# from the numeric variant id, which Shopify always populates.
+sku_fallback        = "json:$.id"
+availability        = "json:$.available"
+quantity            = "json:$.inventory_quantity"
+price_minor         = "json:$.price"
+price_representation = "minor_int"
+currency            = "const:UNKNOWN"
+
+[availability_map]
+# `available` is already a JSON boolean, not a string vocabulary — this is a direct bool->enum
+# mapping, included for completeness/consistency with the other adapters' [availability_map].
+"true"  = "in_stock"
+"false" = "out_of_stock"
+
+[notes]
+inventory_quantity = """
+Many Shopify merchants disable exact inventory counts in the public payload (competitive-intel /
+privacy setting on the merchant's side) — when disabled, `inventory_quantity` is simply absent
+from the response. RetailObservation.quantity is Option<u64>, so this resolves to None, which is
+the honest outcome: the network should report "don't know the count," never fabricate one from
+`available` alone.
+"""
+
+currency = """
+NOT present anywhere in this endpoint's response — currency is a store-level setting (found in the
+storefront's /meta.json or theme locale, not per-product). The `const:UNKNOWN` placeholder above is
+a real gap, not a design choice: a working deployment needs either (a) a per-store currency
+override supplied at subscription time, alongside the store's entry in the URL list, or (b) a
+one-time secondary fetch resolved and cached per store. The manifest format doesn't express (b)
+yet — see adapters/README.md, "What this does not (yet) handle."
+"""
+
+sku_fallback = """
+The interpreter should try `sku` first and only fall back to a synthetic `shopify:{store}:{id}`
+identifier when `sku` is an empty string, so the same physical SKU stays comparable across a
+re-crawl even if the merchant later fills in a real SKU value (which would otherwise look like a
+brand-new SKU with no history).
+"""

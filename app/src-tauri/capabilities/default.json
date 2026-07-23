@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Capability for the main Vuna window. Custom commands (search/node_status/stats) are app-owned and not gated by this ACL; this only grants the core window/app permissions the shell chrome needs. No fs/shell/http/etc. plugin permissions are granted — this app has no plugins.",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}

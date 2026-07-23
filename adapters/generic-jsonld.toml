@@ -1,0 +1,90 @@
+# Vuna retail adapter — generic schema.org Product/Offer JSON-LD.
+#
+# The fallback adapter for any storefront that isn't a recognized platform: most e-commerce
+# templates (WooCommerce, Magento, BigCommerce, hand-rolled sites, and Shopify pages too, as it
+# happens) embed a schema.org Product/Offer block as JSON-LD for SEO rich-results, whether or not
+# they expose a dedicated JSON endpoint. This is the widest-coverage, lowest-precision adapter —
+# it's markup already published for search engines, so parsing it is not scraping (method =
+# "structured_data", per extract::RetailMethod), but coverage/correctness depends entirely on how
+# carefully the site's template populated the block.
+#
+# See ../README.md for the manifest format this file is written against.
+
+[adapter]
+name           = "generic-jsonld"
+version        = 1
+extractor_kind = "retail"
+method         = "structured_data"
+
+[match]
+content_type = "text/html"
+requires     = ["script[type=\"application/ld+json\"] containing @type == \"Product\""]
+# Selection note: a page MAY embed multiple JSON-LD blocks (reviews, breadcrumbs, organization,
+# etc.) or wrap several objects in an @graph array. The interpreter should take the FIRST block
+# whose @type is "Product" (or that appears inside an @graph entry with that @type) and ignore the
+# rest — this manifest does not attempt to merge multiple Product blocks on one page.
+
+[fetch]
+endpoint    = "{page_url}"
+http_method = "GET"
+format      = "html"
+
+[fields]
+# No [iterate]: this adapter assumes one Product -> one Offer per page. A page whose Product has
+# an AggregateOffer (a price *range* across variants, not a single price) is out of scope for this
+# manifest — see adapters/README.md, "What this does not (yet) handle."
+store                = "url:{host}"
+sku                  = "json:$.sku"
+sku_fallback         = "json:$.productID"
+availability         = "json:$.offers.availability"
+quantity             = "const:none"
+price_minor          = "json:$.offers.price"
+currency             = "json:$.offers.priceCurrency"
+price_representation = "major_decimal"
+
+[availability_map]
+# schema.org's ItemAvailability has 11 values; Vuna's Availability enum has 4. This is a lossy,
+# opinionated collapse, not a 1:1 mapping — reviewers of new adapters should sanity-check this
+# table rather than assume it's settled.
+"https://schema.org/InStock"             = "in_stock"
+"https://schema.org/InStoreOnly"         = "in_stock"
+"https://schema.org/OnlineOnly"          = "in_stock"
+"https://schema.org/InStockAndOnline"    = "in_stock"
+"https://schema.org/LimitedAvailability" = "low_stock"
+"https://schema.org/OutOfStock"          = "out_of_stock"
+"https://schema.org/SoldOut"             = "out_of_stock"
+"https://schema.org/Discontinued"        = "out_of_stock"
+"https://schema.org/BackOrder"           = "out_of_stock"
+"https://schema.org/PreOrder"            = "unknown"
+"https://schema.org/PreSale"             = "unknown"
+# Anything else (a site using the bare word "InStock" without the schema.org URL prefix, a typo,
+# a custom vocabulary) also resolves to "unknown" by default — never guessed toward in_stock.
+
+[currency_exponents]
+# major_decimal conversion assumes 2 decimal places (cents) unless listed here. Real currencies
+# break this assumption in both directions — this table exists because "just multiply by 100" is
+# wrong often enough to matter.
+JPY = 0
+KRW = 0
+BHD = 3
+KWD = 3
+OMR = 3
+
+[notes]
+quantity = """
+schema.org's Offer has no standard exact-count field (some sites bolt on a nonstandard
+`inventoryLevel`, but it's not part of the vocabulary this adapter targets), so `quantity` is a
+hard `const:none` here rather than a best-effort path — there's nothing reliable to point at.
+Contrast shopify-products-json.toml, where a real (if often-hidden) field exists.
+"""
+
+precision = """
+This is the lowest-precision adapter in this directory by construction: it works on any site that
+bothered to add SEO-motivated markup, correctly or not. A site with a stale or wrong JSON-LD block
+(common — marketing teams update product pages without updating the structured data) will produce
+a confidently wrong RetailObservation with no signal that anything is off. This is exactly why
+quorum::reconcile requires k distinct observers to agree before anything is surfaced — a single
+generic-jsonld read should never be trusted alone, and a shopify-products-json or
+woocommerce-store-api read (closer to the platform's own source of truth) should be preferred over
+this adapter whenever both are available for the same store.
+"""

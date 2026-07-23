@@ -1,0 +1,73 @@
+# Vuna retail adapter — WooCommerce Store API.
+#
+# WooCommerce (WordPress's e-commerce plugin) ships a public, unauthenticated REST API for its
+# storefront block-theme cart/checkout UI. It's queried by SKU rather than a per-product path, and
+# unlike the other two adapters in this directory, it states its own currency minor-unit exponent
+# in the response instead of leaving it to be inferred — the cleanest of the three sources for
+# price handling, at the cost of being a query-param-keyed collection endpoint rather than a
+# per-product page.
+#
+# See ../README.md for the manifest format this file is written against.
+
+[adapter]
+name           = "woocommerce-store-api"
+version        = 1
+extractor_kind = "retail"
+method         = "json_endpoint"
+
+[match]
+url_pattern  = "https://{site}/wp-json/wc/store/v1/products?sku={sku}"
+content_type = "application/json"
+
+[fetch]
+endpoint    = "https://{site}/wp-json/wc/store/v1/products?sku={sku}"
+http_method = "GET"
+format      = "json"
+# Returns a JSON ARRAY directly (not wrapped in a `{"products": [...]}` envelope) — a SKU query
+# normally resolves to zero or one element, but the interpreter must not assume exactly one.
+
+[iterate]
+path = "$[]"
+# Iterate the top-level array itself (not a nested field) — see note above.
+
+[fields]
+store                 = "url:{site}"
+sku                   = "json:$.sku"
+sku_fallback          = "json:$.id"
+availability          = "json:$.is_in_stock"
+quantity              = "json:$.stock_quantity"
+price_minor           = "json:$.prices.price"
+currency              = "json:$.prices.currency_code"
+price_representation  = "minor_int_with_exponent"
+price_exponent        = "json:$.prices.currency_minor_unit"
+
+[availability_map]
+# `is_in_stock` is a plain JSON boolean, as with Shopify's `available` — included for consistency
+# with the other manifests' explicit [availability_map] block.
+"true"  = "in_stock"
+"false" = "out_of_stock"
+
+[notes]
+stock_quantity = """
+`stock_quantity` is nullable in the Store API even when `manage_stock` is enabled on the product —
+WooCommerce returns `null` for stock-managed products above a merchant-configured "don't show
+below N" threshold on some setups, and always `null` when stock management is off entirely for
+that product. Same handling as Shopify's inventory_quantity: absent/null maps to
+RetailObservation.quantity = None, not a guess.
+"""
+
+price_exponent = """
+This is the one adapter in this directory where the source states its own decimal exponent
+explicitly (`currency_minor_unit`) rather than requiring a currency-code lookup table. Prefer this
+pattern (price_representation = "minor_int_with_exponent") over generic-jsonld.toml's
+currency-table approach whenever the source actually provides it — a stated exponent is strictly
+more reliable than an assumed one, especially for the handful of currencies (JPY, BHD, etc.) where
+assuming 2 decimal places is wrong.
+"""
+
+query_param_matching = """
+Unlike shopify-products-json.toml and generic-jsonld.toml (both path-template or whole-page
+matches), this adapter keys off a query parameter (?sku=) rather than a path segment. Included
+deliberately as the third distinct fetch shape in this directory — see adapters/README.md's
+comparison table.
+"""

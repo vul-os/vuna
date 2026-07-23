@@ -1,0 +1,39 @@
+# Empty table: opts this crate OUT of the workspace at /Users/pc/code/vulos/vuna/Cargo.toml.
+# Cargo would otherwise auto-detect that root workspace since this directory is nested under it;
+# this keeps `app/` a fully separate cargo project with its own Cargo.lock/target, per the brief.
+[workspace]
+
+[package]
+name = "vuna-app"
+version = "0.0.1"
+description = "Vuna desktop node — the downloadable app that makes every user run their own crawl/extract/index node."
+authors = ["Vulos"]
+edition = "2021"
+rust-version = "1.75"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/vul-os/vuna"
+
+# NOTE: this is a standalone Tauri app crate, deliberately NOT a member of the workspace
+# Cargo.toml at the repo root (see /Users/pc/code/vulos/vuna/Cargo.toml comment: "the desktop
+# app wraps [the node]"). It has its own Cargo.lock / target dir. Commands here return mock data
+# today; real wiring swaps the mock generators in `commands.rs` for calls into `vuna-node` (see
+# the doc comment at the top of that file for the exact mapping).
+
+[lib]
+name = "vuna_app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true

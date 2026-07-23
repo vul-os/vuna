@@ -10,4 +10,15 @@ repository.workspace = true
 vuna-core = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-thiserror = { workspace = true }
+# Pure-Rust embedded, transactional, single-file KV store — the node-local persistent frontier.
+# No C toolchain (unlike sqlite/rocksdb), matching vuna-core's "compiles offline" ethos.
+redb = "2"
+# BLAKE3-256 — the same content-addressing hash KOTVA uses, so UrlIds interoperate with the
+# rest of the substrate without inventing a second hash scheme.
+blake3 = "1"
+# WHATWG URL parsing for canonicalization (host lowercasing, default-port/fragment handling) —
+# far less error-prone than hand-rolled string surgery.
+url = "2"
+
+[dev-dependencies]
+tempfile = "3"
