@@ -138,4 +138,11 @@ cargo tauri dev               # or: npm run tauri dev
 
 ## License
 
-MIT OR Apache-2.0.
+[MIT](LICENSE-MIT) OR [Apache-2.0](LICENSE-APACHE) — © VulOS. Vuna is a VulOS
+project; source and issues at [github.com/vul-os/vuna](https://github.com/vul-os/vuna).
+
+---
+
+<p align="center">
+  <sub><a href="https://vulos.org"><b>vulos</b></a> — open by design</sub>
+</p>
