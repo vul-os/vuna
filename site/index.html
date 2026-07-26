@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vuna — Reap the open web. A decentralized crawl → extract → index engine.</title>
+<meta name="description" content="Vuna is a v0-preview decentralized crawl → extract → index/graph engine on the KOTVA substrate. It stores the index, not the pages — one engine, pluggable web-search/RAG and retail-radar extractors, opt-in embedding-model spaces, a distributed subscribable URL frontier, ~2 GB/node at billion-page scale. No token.">
+<link rel="icon" href="./vuna-icon.svg">
+<style>*,*::before,*::after{box-sizing:border-box}
+:root{
+  --bg:#0F0A08; --bg-soft:#150F0C; --panel:#1B140F; --panel-2:#211812;
+  --border:rgba(255,255,255,.08); --border-2:rgba(255,255,255,.13);
+  --text:#FAF6F1; --muted:#B8A99A; --faint:#8A7A6C;
+  --radius:16px; --max:1120px;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono","Geist Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:var(--sans);background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased;font-size:16px}
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:
+  radial-gradient(1100px 600px at 80% -10%, color-mix(in srgb,var(--accent) 13%, transparent), transparent 60%),
+  radial-gradient(900px 500px at -10% 10%, color-mix(in srgb,var(--accent-2) 10%, transparent), transparent 55%),
+  var(--bg);}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 24px}
+.accent{color:var(--accent)}
+
+/* Header */
+.site-header{position:sticky;top:0;z-index:50;backdrop-filter:blur(12px);background:color-mix(in srgb,var(--bg) 72%, transparent);border-bottom:1px solid var(--border)}
+.nav{display:flex;align-items:center;gap:18px;height:64px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:600;font-size:18px;letter-spacing:-.03em}
+.brand .tile{width:34px;height:34px;border-radius:9px;overflow:hidden;box-shadow:0 1px 0 rgba(255,255,255,.12) inset, 0 4px 14px rgba(0,0,0,.35)}
+.brand .tile img{width:100%;height:100%;object-fit:contain}
+.brand .hl{color:var(--accent)}
+.nav-spacer{flex:1}
+.nav-links{display:flex;align-items:center;gap:22px}
+.nav-links a{color:var(--muted);font-size:14.5px;font-weight:500;transition:color .15s}
+.nav-links a:hover{color:var(--text)}
+.vulos-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid var(--border-2);border-radius:999px;font-size:13px;color:var(--muted);transition:border-color .15s,color .15s}
+.vulos-badge:hover{border-color:var(--accent);color:var(--text)}
+.vulos-badge img{width:16px;height:16px;border-radius:4px}
+@media(max-width:760px){.nav-links{display:none}}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:9px;padding:12px 20px;border-radius:11px;font-weight:600;font-size:15px;border:1px solid transparent;cursor:pointer;transition:transform .12s,box-shadow .2s,background .2s,border-color .2s}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#2B0F07;box-shadow:0 8px 26px -8px color-mix(in srgb,var(--accent) 60%, transparent)}
+.btn-primary:hover{box-shadow:0 12px 34px -8px color-mix(in srgb,var(--accent) 75%, transparent)}
+.btn-ghost{background:var(--panel);border-color:var(--border-2);color:var(--text)}
+.btn-ghost:hover{border-color:var(--accent)}
+
+/* Hero */
+.hero{padding:84px 0 56px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;letter-spacing:.02em;color:var(--accent);background:color-mix(in srgb,var(--accent) 10%, transparent);border:1px solid color-mix(in srgb,var(--accent) 28%, transparent);padding:6px 13px;border-radius:999px}
+.hero .wordmark{margin:26px 0 0;height:clamp(46px,7vw,68px);width:auto}
+.hero .tagline{font-size:clamp(18px,2.4vw,23px);color:var(--text);margin:18px 0 0;max-width:740px;font-weight:500}
+.hero .blurb{font-size:16.5px;color:var(--muted);margin:18px 0 0;max-width:680px}
+.cta-row{display:flex;flex-wrap:wrap;gap:13px;margin-top:30px}
+.hero-visual{margin-top:54px;border-radius:var(--radius);border:1px solid var(--border-2);overflow:hidden;box-shadow:0 40px 80px -30px rgba(0,0,0,.7);background:var(--panel)}
+.hero-visual img{width:100%;display:block}
+
+/* Sections */
+.section{padding:64px 0}
+.section h2{font-size:clamp(26px,4vw,36px);letter-spacing:-.03em;margin:0 0 8px;font-weight:800}
+.section .lead{color:var(--muted);margin:0 0 38px;font-size:17px;max-width:660px}
+
+/* Disciplines strip */
+.rail{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:0 0 8px}
+@media(max-width:900px){.rail{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.rail{grid-template-columns:1fr}}
+.rail .chip{border:1px solid var(--border);border-radius:12px;background:linear-gradient(180deg,var(--panel),var(--bg-soft));padding:16px}
+.rail .chip b{display:block;font-size:14.5px;letter-spacing:-.01em}
+.rail .chip span{color:var(--muted);font-size:12.5px}
+.rail .chip .k{color:var(--accent);font-weight:700;font-size:12px;letter-spacing:.02em}
+
+/* Features */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:900px){.grid{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.grid{grid-template-columns:1fr}}
+.card{background:linear-gradient(180deg,var(--panel),var(--bg-soft));border:1px solid var(--border);border-radius:var(--radius);padding:24px;transition:border-color .2s,transform .2s}
+.card:hover{border-color:color-mix(in srgb,var(--accent) 45%, var(--border));transform:translateY(-2px)}
+.card .dot{width:34px;height:34px;border-radius:9px;background:color-mix(in srgb,var(--accent) 13%, transparent);border:1px solid color-mix(in srgb,var(--accent) 32%, transparent);display:grid;place-items:center;margin-bottom:15px}
+.card .dot::after{content:"";width:11px;height:11px;border-radius:3px;background:var(--accent)}
+.card h3{margin:0 0 8px;font-size:17.5px;letter-spacing:-.01em}
+.card p{margin:0;color:var(--muted);font-size:14.5px}
+.card code{font-family:var(--mono);font-size:.86em;background:rgba(255,255,255,.06);padding:1px 5px;border-radius:5px;color:var(--text)}
+
+/* Status grid (honest v0 state, per crate) */
+.statusgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:900px){.statusgrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.statusgrid{grid-template-columns:1fr}}
+.stat{border:1px solid var(--border);border-radius:12px;background:var(--panel);padding:16px}
+.stat .name{font-family:var(--mono);font-size:13.5px;color:var(--text);font-weight:600}
+.stat .desc{color:var(--muted);font-size:12.5px;margin-top:5px;line-height:1.5}
+.badge{display:inline-flex;margin-top:12px;font-size:11px;font-weight:700;letter-spacing:.03em;padding:3px 9px;border-radius:999px}
+.badge.done{background:color-mix(in srgb,#6A994E 18%, transparent);color:#9BD98A;border:1px solid color-mix(in srgb,#6A994E 45%, transparent)}
+.badge.stub{background:color-mix(in srgb,var(--accent-2) 16%, transparent);color:var(--accent-2);border:1px solid color-mix(in srgb,var(--accent-2) 40%, transparent)}
+.badge.mock{background:rgba(255,255,255,.06);color:var(--muted);border:1px solid var(--border-2)}
+
+/* Storage math table */
+.storage-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14.5px}
+.storage-table th,.storage-table td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--border)}
+.storage-table th{color:var(--faint);font-weight:600;font-size:12.5px;letter-spacing:.03em;text-transform:uppercase}
+.storage-table td{color:var(--muted)}
+.storage-table td b{color:var(--text)}
+.storage-table tr:last-child td{border-bottom:none}
+
+/* Screenshot gallery */
+.shots{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:760px){.shots{grid-template-columns:1fr}}
+.shot{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--panel)}
+.shot img{width:100%;display:block}
+.shot .cap{padding:14px 18px;color:var(--muted);font-size:13.5px;border-top:1px solid var(--border)}
+.shot .cap b{color:var(--text);font-weight:600}
+
+/* Quickstart */
+.quick{display:grid;grid-template-columns:1.1fr 1fr;gap:34px;align-items:center}
+@media(max-width:820px){.quick{grid-template-columns:1fr}}
+.codeblock{background:#100B08;border:1px solid var(--border-2);border-radius:var(--radius);overflow:hidden}
+.codeblock .bar{display:flex;align-items:center;gap:7px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.codeblock .bar i{width:11px;height:11px;border-radius:50%;background:#2b2019;display:inline-block}
+.codeblock pre{margin:0;padding:18px 20px;overflow:auto;font-family:var(--mono);font-size:13.5px;line-height:1.75;color:#E7DCD1}
+.codeblock .c{color:var(--faint)}
+.codeblock .a{color:var(--accent)}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:16px}
+.steps li{display:flex;gap:14px;align-items:flex-start}
+.steps .num{flex:none;width:28px;height:28px;border-radius:8px;background:color-mix(in srgb,var(--accent) 13%, transparent);border:1px solid color-mix(in srgb,var(--accent) 32%, transparent);color:var(--accent);font-weight:700;display:grid;place-items:center;font-size:14px}
+.steps b{display:block;font-size:15.5px}
+.steps span{color:var(--muted);font-size:14px}
+
+/* Decentralized band */
+.decent{background:linear-gradient(120deg,var(--panel),var(--bg-soft));border:1px solid var(--border);border-radius:var(--radius);padding:40px}
+.decent h2{margin-top:0}
+.decent .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;margin-top:28px}
+@media(max-width:820px){.decent .cols{grid-template-columns:1fr}}
+.decent h4{margin:0 0 6px;font-size:16px;letter-spacing:-.01em}
+.decent h4::before{content:"/ ";color:var(--accent);font-weight:700}
+.decent p{margin:0;color:var(--muted);font-size:14.5px}
+
+/* Vulos band */
+.vulos-band{margin:24px 0;background:linear-gradient(120deg,var(--panel),var(--bg-soft));border:1px solid var(--border);border-radius:var(--radius);padding:40px;display:flex;gap:26px;align-items:center}
+@media(max-width:680px){.vulos-band{flex-direction:column;text-align:center}}
+.vulos-band img{width:60px;height:60px;border-radius:14px;flex:none}
+.vulos-band h3{margin:0 0 6px;font-size:21px}
+.vulos-band p{margin:0;color:var(--muted);max-width:680px}
+.vulos-band .more{margin-top:14px;display:inline-flex;color:var(--accent);font-weight:600;font-size:15px}
+
+/* Footer */
+.site-footer{border-top:1px solid var(--border);margin-top:40px;padding:40px 0}
+.foot{display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:space-between}
+.foot .left{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px}
+.foot .left img{width:20px;height:20px;border-radius:5px}
+.foot .links{display:flex;gap:20px;flex-wrap:wrap}
+.foot .links a{color:var(--muted);font-size:14px}
+.foot .links a:hover{color:var(--text)}
+</style>
+<style>:root{--accent:#E07A5F;--accent-2:#E9A23B}</style>
+</head>
+<body>
+<header class="site-header"><div class="wrap nav">
+    <a class="brand" href="./index.html"><span class="tile"><img src="./vuna-icon.svg" alt="Vuna mark"></span>Vu<span class="hl">na</span></a>
+    <div class="nav-spacer"></div>
+    <nav class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#status">Status</a>
+      <a href="#screenshots">Screenshots</a>
+      <a href="#decentralized">Decentralized</a>
+      <a href="./docs.html">Docs</a>
+      <a href="https://github.com/vul-os/vuna" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+    <a class="vulos-badge" href="https://vulos.org/products" target="_blank" rel="noopener" title="Back to the Vulos suite" aria-label="Back to Vulos">
+      <img src="./assets/vulos-icon-32.png" alt="" aria-hidden="true" width="16" height="16">Part of Vulos
+    </a>
+  </div></header>
+<main>
+  <section class="hero"><div class="wrap">
+    <span class="eyebrow">No token · No page archive · v0 preview</span>
+    <h1 style="margin:0"><img class="wordmark" src="./wordmark-dark.svg" alt="Vuna"></h1>
+    <p class="tagline">Reap the open web — a decentralized crawl → extract → index engine that stores the index, not the pages.</p>
+    <p class="blurb">Vuna is a network of volunteer nodes that crawl a <strong>distributed, subscribable list of URLs</strong>, run <strong>pluggable extractors</strong> over each page, and contribute the result — keyword postings, vector embeddings, link/knowledge-graph edges, a snippet, and a pointer back to the live URL — into a shared index replicated across the network. <em>Pages themselves are never archived</em>, which is what collapses storage from datacenter scale to roughly <strong>2 GB per volunteer node</strong> at billion-page scale. One engine, two verticals so far — web search/RAG and retail price-radar — riding the <a href="https://vulos.org/kotva" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">KOTVA</a> substrate's identity, PUB, DHT and SEARCH primitives. No token, no new crypto.</p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="#quickstart">Get started</a>
+      <a class="btn btn-ghost" href="./docs.html">Read the docs</a>
+      <a class="btn btn-ghost" href="https://github.com/vul-os/vuna" target="_blank" rel="noopener">View on GitHub</a>
+    </div>
+    <div class="hero-visual">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="./shots/search-dark.png">
+        <img src="./shots/search-light.png" alt="The Vuna desktop app — a search box returning local and peer results with source chips and relevance scores, next to a node panel showing docs indexed, storage used, peers, embedding spaces served, and subscribed URL lists" loading="lazy">
+      </picture>
+    </div>
+    <p style="font-size:12px;opacity:.7;margin-top:8px">Shown: the desktop app's search view. <strong>All data shown is mock</strong> — <code>vuna-query</code> and <code>vuna-node</code> are Wave-2 stubs (see <a href="#status" style="text-decoration:underline">status</a>). Every screen is in the <a href="#screenshots" style="text-decoration:underline">gallery below</a>.</p>
+  </div></section>
+
+  <!-- Disciplines rail -->
+  <section class="section" style="padding-top:8px"><div class="wrap">
+    <div class="rail">
+      <div class="chip"><span class="k">01</span><b>Index, not pages</b><span>Keyword postings, vectors and graph edges are kept; the page itself is never archived — the author's copy stays the only copy.</span></div>
+      <div class="chip"><span class="k">02</span><b>Opt-in model spaces</b><span>Every embedding model is its own parallel space, adopted node-by-node — never a fleet-wide re-embed.</span></div>
+      <div class="chip"><span class="k">03</span><b>Pluggable verticals</b><span>Web search/RAG and retail radar are extractors over one crawl/frontier/index stack — a new vertical is a new extractor.</span></div>
+      <div class="chip"><span class="k">04</span><b>Distributed frontier</b><span>URL lists are published and subscribed like ad-filter lists — no single operator owns the crawl queue.</span></div>
+      <div class="chip"><span class="k">05</span><b>Honest about v0</b><span>63 tests green in four of six crates; query and the node daemon are stubs, and the app runs on mock data.</span></div>
+    </div>
+  </div></section>
+
+  <section class="section" id="features" style="padding-top:24px"><div class="wrap">
+    <h2>One engine, pluggable everything</h2>
+    <p class="lead">Crawl, extract and index are three separable stages joined by seam traits in <code>vuna-core</code> — so a new embedding model, a new vertical, or a new ranking strategy is a new implementation of an existing trait, not a fork of the engine.</p>
+    <div class="grid">
+      <div class="card"><div class="dot"></div><h3>Crawl → extract → index</h3><p>A polite crawler (robots.txt, per-host rate limits, body caps) hands pages to pluggable extractors, which hand structured output to a keyword + vector + graph index — one pipeline, swappable at every joint.</p></div>
+      <div class="card"><div class="dot"></div><h3>Index, not pages</h3><p>Keyword postings, embeddings, link/graph edges, a snippet, and a pointer back to the live URL — never the page body. That single decision is what turns a petabyte-scale archive into single-digit gigabytes per volunteer.</p></div>
+      <div class="card"><div class="dot"></div><h3>Multi-model spaces</h3><p>Each embedding model is an independent, parallel vector <em>space</em>; the keyword index and link graph stay shared and model-agnostic. Shards keep chunk text, so adopting a new space is local recompute — never a re-crawl.</p></div>
+      <div class="card"><div class="dot"></div><h3>Web search/RAG extractor</h3><p>Emits chunks and links from a page for full-text search and retrieval-augmented generation — the default vertical, and the one most of the test suite exercises today.</p></div>
+      <div class="card"><div class="dot"></div><h3>Retail radar extractor</h3><p>Reads a store's own JSON-LD/OpenGraph data for price and stock observations. The store signs nothing, so <code>vuna-core</code>'s quorum reconciler treats agreement across <em>k</em> distinct, anchored observers as the only ground truth.</p></div>
+      <div class="card"><div class="dot"></div><h3>Distributed URL frontier</h3><p>A subscribable list of URLs, deduplicated and DHT-assigned across nodes — the ad-filter-list model applied to a crawl queue, so no single operator owns what gets crawled next.</p></div>
+    </div>
+  </div></section>
+
+  <section class="section" id="status"><div class="wrap">
+    <h2>v0 preview — honest about what's real</h2>
+    <p class="lead">63 tests passing describes what compiles and behaves against its own fixtures, not 63 features shipped. There are zero live nodes and zero real users today — read this table before the pitch above.</p>
+    <div class="statusgrid">
+      <div class="stat"><div class="name">vuna-core</div><div class="desc">Frozen contract — types, seam traits, the retail quorum reconciler.</div><span class="badge done">done · tested</span></div>
+      <div class="stat"><div class="name">vuna-crawl</div><div class="desc">Polite fetch — robots.txt, per-host rate limiting, body caps.</div><span class="badge done">24 tests</span></div>
+      <div class="stat"><div class="name">vuna-extract</div><div class="desc"><code>web</code> (chunks + links) and <code>retail</code> (JSON-LD/OG) extractors.</div><span class="badge done">13 tests</span></div>
+      <div class="stat"><div class="name">vuna-index</div><div class="desc">Tantivy BM25 + per-space HNSW vectors + link graph.</div><span class="badge done">9 tests</span></div>
+      <div class="stat"><div class="name">vuna-frontier</div><div class="desc">Distributed URL lists, dedup, DHT assignment.</div><span class="badge done">12 tests</span></div>
+      <div class="stat"><div class="name">vuna-query</div><div class="desc">SEARCH read path — local-first fan-out + Min-PPR ranking.</div><span class="badge stub">stub · Wave 2</span></div>
+      <div class="stat"><div class="name">vuna-node</div><div class="desc">The daemon that binds <code>kotva-core</code> — crawl→index→publish loop.</div><span class="badge stub">stub · Wave 2</span></div>
+      <div class="stat"><div class="name">app/</div><div class="desc">Tauri v2 desktop shell (React) — builds and runs today.</div><span class="badge mock">mock data</span></div>
+    </div>
+    <p style="color:var(--faint);font-size:13px;margin-top:18px">It does not yet crawl-to-query end to end. See the <a href="./docs.html#architecture" style="color:var(--accent);font-weight:600">architecture</a> chapter for the crate-by-crate detail and <a href="./docs.html#viability" style="color:var(--accent);font-weight:600">viability</a> for the two open risks — compute-volunteer supply and small-network Sybil resistance — neither of which this design claims to have solved.</p>
+  </div></section>
+
+  <section class="section" id="screenshots"><div class="wrap">
+    <h2>Every surface</h2>
+    <p class="lead">The desktop app is a single screen today: a search box over local + peer results, and a node panel that surfaces exactly what your box is doing — no hidden telemetry. Real product screenshots, running on a mock corpus.</p>
+    <div class="shots">
+      <div class="shot">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="./shots/search-dark.png">
+          <img src="./shots/search-light.png" alt="Search view: a filled query returning local and peer results with source chips, snippets and relevance scores" loading="lazy">
+        </picture>
+        <div class="cap"><b>Search.</b> Local-shard + peer results with source chips and per-result scores — index only, pages stay where they live.</div>
+      </div>
+      <div class="shot">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="./shots/dashboard-dark.png">
+          <img src="./shots/dashboard-light.png" alt="Node panel: docs indexed, storage used, peer count, embedding spaces served, extractors enabled, subscribed URL lists, and a query-visibility disclosure" loading="lazy">
+        </picture>
+        <div class="cap"><b>Your node.</b> Docs indexed, storage used, spaces served, extractors enabled and lists subscribed — plus an explicit query-visibility disclosure.</div>
+      </div>
+    </div>
+  </div></section>
+
+  <section class="section" id="quickstart"><div class="wrap">
+    <h2>Quick start</h2>
+    <p class="lead">One Cargo workspace for the engine, one Tauri + React app for the desktop shell. No Docker, no database server, no external service required to run the tests.</p>
+    <div class="quick">
+      <div class="codeblock">
+        <div class="bar"><i></i><i></i><i></i></div>
+        <pre>git clone https://github.com/vul-os/vuna
+cd vuna
+
+<span class="c"># run the whole engine test suite — offline, no network, no keys</span>
+<span class="a">cargo test --workspace</span>        <span class="c"># 63 tests green</span>
+
+<span class="c"># build every crate</span>
+<span class="a">cargo build --workspace</span>
+
+<span class="c"># desktop app — mock data today, real UI</span>
+cd app &amp;&amp; npm install
+<span class="a">npm run tauri dev</span>              <span class="c"># or: npm run dev (plain Vite, no Tauri)</span></pre>
+      </div>
+      <ol class="steps">
+        <li><span class="num">1</span><div><b>Build</b><span>A Rust toolchain (1.75+) plus Node for the desktop shell. <code>vuna-core</code> has minimal deps; heavy dependencies — tantivy, HNSW, reqwest, embedding runtimes — live only in the crate that needs them.</span></div></li>
+        <li><span class="num">2</span><div><b>Test the engine</b><span><code>cargo test --workspace</code> runs all 63 tests across core, crawl, extract, index and frontier. <code>vuna-query</code> and <code>vuna-node</code> are stubs — not exercised end to end yet.</span></div></li>
+        <li><span class="num">3</span><div><b>Preview the app</b><span>The Tauri desktop shell builds and runs today against a mock corpus — <code>app/lib/api.ts</code> falls back to it when there is no live daemon, so the UI can be built and previewed on its own.</span></div></li>
+      </ol>
+    </div>
+  </div></section>
+
+  <section class="section" id="decentralized"><div class="wrap">
+    <div class="decent">
+      <h2>Index, not pages — and why that's the whole idea</h2>
+      <p class="lead" style="margin-bottom:0">Storing only the derived index instead of the pages collapses storage from datacenter-operator scale — hundreds of petabytes, for a "reliable" open-web archive — to single-digit gigabytes per volunteer node, even at billion-page scale. Compute, not storage, becomes the recurring cost — and it's embarrassingly parallel.</p>
+      <div class="cols">
+        <div><h4>No page archive</h4><p>Vuna never stores the page body — only keyword postings, vectors, graph edges, a snippet and a pointer back to the live URL. The author's copy stays the only copy; the index is derived and rebuildable, never authoritative.</p></div>
+        <div><h4>Distributed frontier, DHT-assigned</h4><p>URL lists are published and subscribed like ad-filter lists. Assignment across nodes runs over KOTVA's DHT, so no single operator holds the crawl queue and redundancy is a replication factor, not a backup job.</p></div>
+        <div><h4>KOTVA substrate, not new crypto</h4><p>Identity, PUB, DHT and SEARCH all come from KOTVA — the same substrate Envoir speaks. <code>vuna-node</code> is the one crate that binds it; every other crate compiles and tests fully offline.</p></div>
+      </div>
+      <table class="storage-table">
+        <thead><tr><th>Corpus</th><th>1 copy</th><th>×3 redundant / 10k nodes</th></tr></thead>
+        <tbody>
+          <tr><td>1B pages</td><td>~6 TB</td><td><b>~1.8 GB / node</b></td></tr>
+          <tr><td>10B pages (Google-ish)</td><td>~60 TB</td><td>~18 GB / node</td></tr>
+        </tbody>
+      </table>
+      <p style="color:var(--faint);font-size:13px;margin-top:14px">~6 KB/page: keyword ~2 KB · embeddings (int8) ~2.5 KB · graph ~0.3 KB · metadata ~0.7 KB. The honest trade-offs — compute-vs-disk volunteer economics, Sybil resistance at small scale, freshness — are in the <a href="./docs.html#viability" style="color:var(--accent);font-weight:600">viability</a> chapter. Read it before believing the pitch.</p>
+    </div>
+  </div></section>
+
+  <section class="section" style="padding-top:0"><div class="wrap">
+    <div class="vulos-band">
+      <img src="./assets/vulos-icon-128.png" alt="Vulos logo">
+      <div>
+        <h3>Part of Vulos</h3>
+        <p><a href="https://vulos.org/products" target="_blank" rel="noopener" style="color:var(--text);font-weight:600">Vulos</a> is a family of open, self-hostable apps. Vuna is fully standalone — it never requires Vulos infrastructure to run a node or the desktop app — and it shares its identity/DHT/PUB substrate, <a href="https://vulos.org/kotva" target="_blank" rel="noopener" style="color:var(--text)">KOTVA</a>, with siblings like <a href="https://vulos.org/products/envoir" target="_blank" rel="noopener" style="color:var(--text)">envoir</a>. No hub, no account, no coupling.</p>
+        <a class="more" href="https://vulos.org/products" target="_blank" rel="noopener">Explore Vulos →</a>
+      </div>
+    </div>
+  </div></section>
+</main>
+<footer class="site-footer"><div class="wrap foot">
+    <div class="left"><img src="./assets/vulos-icon-32.png" alt="Vulos"> <span>Part of <a href="https://vulos.org/products" target="_blank" rel="noopener" style="color:var(--text)">Vulos</a> — open, self-hostable apps. Standalone by design.</span></div>
+    <div class="links">
+      <a href="./docs.html">Docs</a>
+      <a href="https://github.com/vul-os/vuna" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/vul-os/vuna/blob/main/LICENSE-MIT" target="_blank" rel="noopener">License</a>
+      <a href="https://vulos.org" target="_blank" rel="noopener">vulos.org</a>
+    </div>
+  </div></footer>
+</body>
+</html>

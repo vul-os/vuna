@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 76" width="300" height="76" role="img" aria-label="Vuna">
+  <defs>
+    <linearGradient id="vw-gold" x1="30" y1="16" x2="46" y2="42" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f0cd7e"/>
+      <stop offset="1" stop-color="#c68f2e"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="68" height="68" rx="16" fill="#2a1810"/>
+  <path d="M36 18 L44 44 L28 44 Z" fill="url(#vw-gold)"/>
+  <path d="M18 26 L34 48 L21 50 Z" fill="#e2762f"/>
+  <path d="M54 26 L38 48 L51 50 Z" fill="#e2762f"/>
+  <ellipse cx="36" cy="60" rx="18" ry="9" fill="#7a3a0b"/>
+  <path d="M19 56 A18 9 0 0 0 36 67" stroke="#f0cd7e" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0.85"/>
+  <text x="90" y="52" font-family="Georgia, 'Fraunces', 'Times New Roman', serif" font-size="44" font-weight="600" fill="#FAFAFA" letter-spacing="-0.01em">Vuna</text>
+</svg>
