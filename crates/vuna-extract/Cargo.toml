@@ -12,4 +12,6 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 scraper = "0.27.0"
+# Reads the declarative `adapters/*.toml` manifests (see src/adapter). Parsing only — no writer.
+toml = { version = "0.8", default-features = false, features = ["parse"] }
 url = "2.5.8"

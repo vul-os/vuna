@@ -2,13 +2,21 @@
 //! First two verticals: `web` (chunks+links+snippet) and `retail` (JSON-LD/OpenGraph → observations).
 //! [`ExtractorRegistry`] is how `vuna-node` wires up "which extractors run on which pages" — the
 //! same opt-in plurality as embedding spaces (see `vuna-core` crate docs).
+//!
+//! The retail vertical has a second, declarative surface: [`adapter`] interprets an
+//! `adapters/*.toml` manifest as an [`Extractor`](vuna_core::extract::Extractor), so covering a new
+//! storefront platform is a reviewed data change rather than a new Rust impl. Those adapters are
+//! opt-in — [`ExtractorRegistry::with_defaults`] is filesystem-free and this crate builds and
+//! passes its tests with no `adapters/` directory present.
 
 use vuna_core::extract::FetchedPage;
 
+pub mod adapter;
 pub mod registry;
 pub mod retail;
 pub mod web;
 
+pub use adapter::{AdapterExtractor, AdapterManifest};
 pub use registry::ExtractorRegistry;
 pub use retail::RetailExtractor;
 pub use web::WebExtractor;

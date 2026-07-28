@@ -12,7 +12,7 @@
 //! | Stage | Crate | Key trait(s) here |
 //! |-------|-------|-------------------|
 //! | distributed URL lists | `vuna-frontier` | [`frontier::Frontier`] |
-//! | polite fetch | `vuna-crawl` | [`crawl::Fetcher`] |
+//! | polite fetch | `vuna-crawl` | `Fetcher` (defined there — core has no fetch trait) |
 //! | pluggable extractors | `vuna-extract` | [`extract::Extractor`] |
 //! | keyword + vector + graph index | `vuna-index` | [`index::Index`], [`index::Embedder`] |
 //! | query fan-out + ranking | `vuna-query` | [`query::QueryEngine`] |

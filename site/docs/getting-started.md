@@ -42,12 +42,12 @@ DHT, and SEARCH primitives.
 | Piece | State |
 |---|---|
 | `vuna-core` (frozen contract: types + seam traits) | Compiles offline, unit-tested |
-| `vuna-frontier`, `vuna-crawl`, `vuna-extract`, `vuna-index` | Building out — real logic landing, not yet wired end to end |
+| `vuna-frontier`, `vuna-crawl`, `vuna-extract`, `vuna-index` | Implemented and unit-tested individually — not yet wired end to end |
 | `vuna-query`, `vuna-node` (the daemon that binds the KOTVA substrate) | Stubs |
 | `app/` — the Tauri desktop shell | Builds and runs, **against a mock corpus** (no live daemon behind it yet) |
-| Test suite | 63 tests, concentrated in the frontier/crawl/extract/index/core layer |
+| Test suite | 132 tests, concentrated in the frontier/crawl/extract/index/core layer, run in CI |
 
-**63 tests passing does not mean 63 features shipped.** It means the parts that are wired compile
+**132 tests passing does not mean 132 features shipped.** It means the parts that are wired compile
 and behave as designed against their own fixtures — there are zero live nodes and zero real users
 today. See [Architecture](/products/vuna/docs/architecture) for the crate-level detail.
 

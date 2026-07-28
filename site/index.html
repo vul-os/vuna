@@ -200,7 +200,7 @@ img{max-width:100%;display:block}
       <div class="chip"><span class="k">02</span><b>Opt-in model spaces</b><span>Every embedding model is its own parallel space, adopted node-by-node — never a fleet-wide re-embed.</span></div>
       <div class="chip"><span class="k">03</span><b>Pluggable verticals</b><span>Web search/RAG and retail radar are extractors over one crawl/frontier/index stack — a new vertical is a new extractor.</span></div>
       <div class="chip"><span class="k">04</span><b>Distributed frontier</b><span>URL lists are published and subscribed like ad-filter lists — no single operator owns the crawl queue.</span></div>
-      <div class="chip"><span class="k">05</span><b>Honest about v0</b><span>63 tests green in four of six crates; query and the node daemon are stubs, and the app runs on mock data.</span></div>
+      <div class="chip"><span class="k">05</span><b>Honest about v0</b><span>132 tests green in four of six crates; query and the node daemon are stubs, and the app runs on mock data.</span></div>
     </div>
   </div></section>
 
@@ -219,11 +219,11 @@ img{max-width:100%;display:block}
 
   <section class="section" id="status"><div class="wrap">
     <h2>v0 preview — honest about what's real</h2>
-    <p class="lead">63 tests passing describes what compiles and behaves against its own fixtures, not 63 features shipped. There are zero live nodes and zero real users today — read this table before the pitch above.</p>
+    <p class="lead">132 tests passing describes what compiles and behaves against its own fixtures, not 132 features shipped. There are zero live nodes and zero real users today — read this table before the pitch above.</p>
     <div class="statusgrid">
       <div class="stat"><div class="name">vuna-core</div><div class="desc">Frozen contract — types, seam traits, the retail quorum reconciler.</div><span class="badge done">done · tested</span></div>
       <div class="stat"><div class="name">vuna-crawl</div><div class="desc">Polite fetch — robots.txt, per-host rate limiting, body caps.</div><span class="badge done">24 tests</span></div>
-      <div class="stat"><div class="name">vuna-extract</div><div class="desc"><code>web</code> (chunks + links) and <code>retail</code> (JSON-LD/OG) extractors.</div><span class="badge done">13 tests</span></div>
+      <div class="stat"><div class="name">vuna-extract</div><div class="desc"><code>web</code> (chunks + links) and <code>retail</code> (JSON-LD/OG) extractors, plus the interpreter that runs declarative <code>adapters/*.toml</code> manifests.</div><span class="badge done">67 tests</span></div>
       <div class="stat"><div class="name">vuna-index</div><div class="desc">Tantivy BM25 + per-space HNSW vectors + link graph.</div><span class="badge done">9 tests</span></div>
       <div class="stat"><div class="name">vuna-frontier</div><div class="desc">Distributed URL lists, dedup, DHT assignment.</div><span class="badge done">12 tests</span></div>
       <div class="stat"><div class="name">vuna-query</div><div class="desc">SEARCH read path — local-first fan-out + Min-PPR ranking.</div><span class="badge stub">stub · Wave 2</span></div>
@@ -264,7 +264,7 @@ img{max-width:100%;display:block}
 cd vuna
 
 <span class="c"># run the whole engine test suite — offline, no network, no keys</span>
-<span class="a">cargo test --workspace</span>        <span class="c"># 63 tests green</span>
+<span class="a">cargo test --workspace</span>        <span class="c"># 132 tests green</span>
 
 <span class="c"># build every crate</span>
 <span class="a">cargo build --workspace</span>
@@ -275,7 +275,7 @@ cd app &amp;&amp; npm install
       </div>
       <ol class="steps">
         <li><span class="num">1</span><div><b>Build</b><span>A Rust toolchain (1.75+) plus Node for the desktop shell. <code>vuna-core</code> has minimal deps; heavy dependencies — tantivy, HNSW, reqwest, embedding runtimes — live only in the crate that needs them.</span></div></li>
-        <li><span class="num">2</span><div><b>Test the engine</b><span><code>cargo test --workspace</code> runs all 63 tests across core, crawl, extract, index and frontier. <code>vuna-query</code> and <code>vuna-node</code> are stubs — not exercised end to end yet.</span></div></li>
+        <li><span class="num">2</span><div><b>Test the engine</b><span><code>cargo test --workspace</code> runs all 132 tests across core, crawl, extract, index and frontier. <code>vuna-query</code> and <code>vuna-node</code> are stubs — not exercised end to end yet.</span></div></li>
         <li><span class="num">3</span><div><b>Preview the app</b><span>The Tauri desktop shell builds and runs today against a mock corpus — <code>app/lib/api.ts</code> falls back to it when there is no live daemon, so the UI can be built and previewed on its own.</span></div></li>
       </ol>
     </div>

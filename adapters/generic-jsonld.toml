@@ -18,16 +18,21 @@ method         = "structured_data"
 
 [match]
 content_type = "text/html"
-requires     = ["script[type=\"application/ld+json\"] containing @type == \"Product\""]
-# Selection note: a page MAY embed multiple JSON-LD blocks (reviews, breadcrumbs, organization,
-# etc.) or wrap several objects in an @graph array. The interpreter should take the FIRST block
-# whose @type is "Product" (or that appears inside an @graph entry with that @type) and ignore the
-# rest — this manifest does not attempt to merge multiple Product blocks on one page.
+requires     = ["application/ld+json", "\"Product\""]
+# `requires` is a cheap literal-substring pre-filter over the head of the body, not a parse — it
+# only decides whether the adapter is worth applying. The real selection is `[fetch].embedded`
+# below.
 
 [fetch]
 endpoint    = "{page_url}"
 http_method = "GET"
 format      = "html"
+embedded    = "jsonld:Product"
+# A page MAY embed multiple JSON-LD blocks (reviews, breadcrumbs, organization) or wrap several
+# objects in an @graph array. `jsonld:Product` takes the FIRST node, in document order, whose
+# @type is (or includes) "Product" — inside an @graph or not — and ignores the rest. This manifest
+# does not attempt to merge multiple Product blocks on one page. Blocks that are not valid JSON
+# are skipped rather than failing the page.
 
 [fields]
 # No [iterate]: this adapter assumes one Product -> one Offer per page. A page whose Product has

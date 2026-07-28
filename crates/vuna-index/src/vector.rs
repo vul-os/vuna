@@ -1,4 +1,4 @@
-//! Per-space vector index: one of these per served [`SpaceId`], holding one point per document
+//! Per-space vector index: one of these per served [`SpaceId`](vuna_core::space::SpaceId), holding one point per document
 //! (a document's chunk vectors are averaged into a single doc-level point — good enough for v0
 //! nearest-neighbor recall; per-chunk retrieval can split this later without touching the trait).
 //!

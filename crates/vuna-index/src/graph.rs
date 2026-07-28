@@ -1,4 +1,4 @@
-//! A minimal link/knowledge graph: `url -> out-neighbor urls`. Keyed by URL (not [`ContentId`])
+//! A minimal link/knowledge graph: `url -> out-neighbor urls`. Keyed by URL (not [`ContentId`](vuna_core::ContentId))
 //! because a link's *target* may not be crawled/indexed yet — the edge should still be recordable.
 //! In-memory, with JSON save/load; enough surface for Min-PPR ranking in `vuna-query` later.
 

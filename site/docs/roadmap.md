@@ -3,20 +3,24 @@
 Vuna is a v0 scaffold. This page is ordered by what has to be true before the next thing is worth
 building — not a marketing timeline.
 
-## Now: wire the stage crates
+## Now: wire the stage crates to each other
 
-`vuna-core` is frozen and tested. The next work is making `vuna-frontier`, `vuna-crawl`,
-`vuna-extract`, and `vuna-index` real against each other — the crate map already fixes the seam
-traits (`Frontier`, `Fetcher`, `Extractor`, `Index`, `Embedder`), so this is filling in
-implementations behind traits that already compile, not redesigning the shape.
+`vuna-core` is frozen and tested, and the four stage crates behind it are each implemented and
+unit-tested on their own:
 
-- `vuna-frontier`: real DHT-assignment and K× replication of `UrlEntry`, not just the in-memory
-  contract.
-- `vuna-crawl`: a polite fetcher — reqwest + optional headless rendering, robots.txt, per-host rate
-  limiting.
-- `vuna-extract`: the `web` extractor (chunking + link extraction) and the first `retail` adapters
-  (declarative `adapters/*.toml`, so growing site coverage is a data change, not a new Rust impl).
+- `vuna-frontier`: a redb-backed persistent frontier, URL canonicalization, and DHT crawl-assignment
+  behind a trait.
+- `vuna-crawl`: a polite fetcher — reqwest, robots.txt, per-host rate limiting, hard body cap.
+- `vuna-extract`: the `web` extractor (chunking + link extraction), the `retail` extractor, and the
+  interpreter for declarative `adapters/*.toml` manifests — so growing site coverage is a reviewed
+  data change, not a new Rust impl.
 - `vuna-index`: tantivy keyword index + per-space HNSW vectors + the link/knowledge graph.
+
+What does **not** exist is the wiring. Nothing yet runs crawl → extract → index end to end, because
+that loop lives in `vuna-node`, which is still a stub. The specific pieces still missing behind the
+seam traits are the real libp2p/Kademlia assignment binding and K× replication of `UrlEntry`,
+optional headless rendering for pages that need it, and a real transformer embedder in place of
+`vuna-index`'s hashing stand-in.
 
 ## Next: `vuna-query` and `vuna-node`
 

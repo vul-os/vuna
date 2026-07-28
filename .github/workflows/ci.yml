@@ -1,0 +1,88 @@
+# Vuna CI — the gate the README's test count is allowed to cite.
+#
+# Two jobs, matching the two things this repo actually builds: the Rust engine workspace, and the
+# Tauri desktop app's frontend. The app's *Rust* half (app/src-tauri) is deliberately not built
+# here: it is a separate cargo project outside the workspace, and a Tauri build pulls in system
+# webkit/GTK toolchains that would make this workflow slow and flaky without testing any Vuna
+# logic. That gap is stated rather than papered over — the engine is what has tests.
+#
+# `cargo fmt --check` is likewise not a gate: this codebase is laid out by hand at a wider column
+# than any rustfmt profile matches, and turning it on would mean reformatting every file rather
+# than checking anything. Clippy at `-D warnings` is the lint gate instead.
+
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  engine:
+    name: engine (cargo)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      # --locked: Cargo.lock is authoritative. A PR that needs a dependency bump has to say so in
+      # the lockfile rather than resolving to something different in CI than on the contributor's
+      # machine.
+      - name: Build
+        run: cargo build --workspace --locked --all-targets
+
+      - name: Clippy
+        run: cargo clippy --workspace --locked --all-targets -- -D warnings
+
+      # Includes the adapter corpus test, which asserts that every adapters/*.toml is exercised by
+      # a fixture — the corpus cannot grow while the suite quietly keeps checking the old files.
+      - name: Test
+        run: cargo test --workspace --locked
+
+      # These crates document themselves heavily and cross-link constantly; a broken intra-doc link
+      # is a doc that quietly lies about where a type lives.
+      - name: Docs
+        run: cargo doc --workspace --locked --no-deps
+        env:
+          RUSTDOCFLAGS: -D warnings
+
+      # vuna-core is the frozen contract and carries the retail quorum reconciler. It is the one
+      # crate that must build with no network, no substrate, and no heavy dependency present, so
+      # that property is checked on its own rather than assumed from the workspace build.
+      - name: vuna-core builds standalone and offline
+        run: cargo build --locked --offline -p vuna-core
+
+  frontend:
+    name: desktop app (frontend)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      # `npm run build` is `tsc -b && vite build`: a type error in the app fails this job.
+      - name: Type-check and build
+        run: npm run build

@@ -13,7 +13,7 @@ on the [KOTVA](https://vulos.org) substrate. *Vuna* is Swahili for **to harvest 
 [![Tauri](https://img.shields.io/badge/Tauri-2-E9A23B?logo=tauri&logoColor=white)](https://tauri.app)
 [![Substrate](https://img.shields.io/badge/substrate-KOTVA-14B8A6)](https://vulos.org)
 [![Status](https://img.shields.io/badge/status-v0%20preview-E07A5F)](#status)
-[![Tests](https://img.shields.io/badge/tests-63%20passing-6A994E)](#build--run)
+[![Tests](https://img.shields.io/badge/tests-132%20passing-6A994E)](#build--run)
 
 [**Design**](docs/01-design.md) · [**Architecture**](docs/02-architecture.md) · [**Viability**](docs/00-viability.md) · [**Product page**](https://vulos.org/products/vuna)
 
@@ -33,14 +33,14 @@ on the [KOTVA](https://vulos.org) substrate. *Vuna* is Swahili for **to harvest 
 ## Status
 
 **v0 preview — honest about what's real.** The substrate contract and four of the six
-stage crates are implemented and tested (**63 tests green**); the desktop app builds and
-runs on **mock data**. It does not yet crawl-to-query end to end.
+stage crates are implemented and tested (**132 tests green**, run in CI); the desktop app builds
+and runs on **mock data**. It does not yet crawl-to-query end to end.
 
 | Component | State |
 |---|---|
-| `vuna-core` — frozen contract (types, seam traits, retail **quorum** reconciler) | ✅ done, tested |
+| `vuna-core` — frozen contract (types, seam traits, retail **quorum** reconciler) | ✅ done (19 tests) |
 | `vuna-crawl` — polite fetch (robots.txt, per-host rate-limit, body cap) | ✅ done (24 tests) |
-| `vuna-extract` — `web` (chunks+links) + `retail` (JSON-LD/OG) extractors | ✅ done (13 tests) |
+| `vuna-extract` — `web` (chunks+links) + `retail` (JSON-LD/OG) extractors + the `adapters/*.toml` interpreter | ✅ done (67 tests) |
 | `vuna-index` — tantivy BM25 + per-space HNSW vectors + link graph | ✅ done (9 tests) |
 | `vuna-frontier` — distributed URL lists, dedup, DHT assignment | ✅ done (12 tests) |
 | `vuna-query` — SEARCH read path (local-first + fan-out + Min-PPR) | 🚧 Wave 2 stub |
@@ -120,7 +120,7 @@ The honest trade-offs (compute vs. disk volunteers, Sybil at small scale, freshn
 
 ```bash
 # engine (workspace)
-cargo test --workspace        # 63 tests green
+cargo test --workspace        # 132 tests green
 cargo build --workspace
 
 # desktop app (mock data today)
@@ -131,8 +131,11 @@ cargo tauri dev               # or: npm run tauri dev
 ## Roadmap
 
 - **Wave 2** — `vuna-query` (local-first fan-out + Min-PPR ranking) and `vuna-node`
-  (crawl→extract→index→publish loop, `kotva-core` binding) to close the end-to-end path.
-- **Declarative adapters** — the long tail of sites as `adapters/*.toml`, not Rust.
+  (crawl→extract→index→publish loop, `kotva-core` binding) to close the end-to-end path. Until
+  `vuna-node` lands, nothing here is fed by a live crawl — including the adapters.
+- **Wider adapter coverage** — the interpreter for `adapters/*.toml` ships (three worked
+  manifests); the format still can't express secondary lookups, derived fetches, or multi-offer
+  aggregation. See [`adapters/README.md`](adapters/README.md) for the exact boundary.
 - **Roadmap app** — an opt-in browser extension contributing URLs-you-visit to the frontier
   (Mwmbl's proven model), off by default.
 

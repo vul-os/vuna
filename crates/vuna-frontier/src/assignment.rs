@@ -1,5 +1,5 @@
 //! DHT crawl-assignment, behind a trait — so the real Kademlia binding (in `vuna-node`, once it
-//! wires libp2p) drops in later without this crate ever depending on libp2p. [`FrontierStore::due`]
+//! wires libp2p) drops in later without this crate ever depending on libp2p. [`Frontier::due`](vuna_core::frontier::Frontier::due)
 //! filters candidates down to entries this node *owns* via whatever [`Assignment`] it was built
 //! with.
 

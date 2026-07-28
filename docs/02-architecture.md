@@ -4,12 +4,14 @@
 > (the *should we*). This document is the *how*: the crate map, the data flow, the object
 > lifecycle, the KOTVA seam, and the storage math the "index, not pages" claim rests on.
 
-**Status as of this writing:** `vuna-core` (the contract) compiles and is unit-tested —
-`quorum.rs`'s reconciliation logic is real and covered; everything else is typed but not wired.
-Every other crate (`vuna-frontier`, `vuna-crawl`, `vuna-extract`, `vuna-index`, `vuna-query`,
-`vuna-node`) is a stub: a module doc comment, `#![allow(dead_code)]`, and a `TODO(agent)`. `app/`
-does not exist yet — no Tauri scaffold has been generated. Read everything below as the designed
-shape, not a description of running code.
+**Status as of this writing:** `vuna-core` (the contract) compiles and is unit-tested, and
+`quorum.rs`'s reconciliation logic is real and covered. `vuna-frontier`, `vuna-crawl`,
+`vuna-extract`, and `vuna-index` are each implemented and unit-tested behind their seam traits —
+but **not wired to each other**, because the crate that would wire them (`vuna-node`) and the read
+path (`vuna-query`) are both still stubs: a module doc comment and a `TODO(agent)`. `app/` is
+scaffolded and builds, running against an in-process mock corpus rather than a live daemon. Read
+the data-flow and lifecycle sections below as the designed shape, not as a description of a
+running pipeline.
 
 ---
 
@@ -28,19 +30,23 @@ shape, not a description of running code.
                              vuna-node  (daemon: wiring + kotva-core binding)
                                   │
                                   ▼
-                                 app/  (Tauri shell — not yet scaffolded)
+                                 app/  (Tauri shell — builds, mock data)
 ```
 
 | Crate | Depends on | Implements (from `vuna-core`) | Role | Status |
 |---|---|---|---|---|
-| **vuna-core** | — | — | Frozen contract: shared types + seam traits. No tantivy/libp2p/reqwest/crypto — always compiles offline. | Compiles, tested |
-| **vuna-frontier** | `vuna-core` | `frontier::Frontier` | Distributed URL lists: subscribe, dedup, DHT crawl-assignment, K× replication of `UrlEntry`. | Stub |
-| **vuna-crawl** | `vuna-core` | `crawl::Fetcher` (planned) | Polite fetch: reqwest + optional headless, robots.txt, per-host rate limits. Produces `FetchedPage`. | Stub |
-| **vuna-extract** | `vuna-core` | `extract::Extractor` | Pluggable extractors. First two: `web` (chunks+links+snippet) and `retail` (declarative JSON-LD/JSON-endpoint adapters — see [`adapters/`](../adapters/)). | Stub |
-| **vuna-index** | `vuna-core` | `index::Index`, `index::Embedder` | Tantivy keyword index + per-space HNSW vectors + link/knowledge graph. | Stub |
+| **vuna-core** | — | — | Frozen contract: shared types + seam traits. No tantivy/libp2p/reqwest/crypto — always compiles offline. | Done, tested |
+| **vuna-frontier** | `vuna-core` | `frontier::Frontier` | Distributed URL lists: subscribe, dedup, DHT crawl-assignment, K× replication of `UrlEntry`. | Done, tested |
+| **vuna-crawl** | `vuna-core` | `crawl::Fetcher` | Polite fetch: robots.txt, per-host rate limits, body cap. Produces `FetchedPage`. | Done, tested |
+| **vuna-extract** | `vuna-core` | `extract::Extractor` | Pluggable extractors: `web` (chunks+links+snippet), `retail` (JSON-LD/Open Graph), and the interpreter for declarative manifests — see [`adapters/`](../adapters/). | Done, tested |
+| **vuna-index** | `vuna-core` | `index::Index`, `index::Embedder` | Tantivy keyword index + per-space HNSW vectors + link/knowledge graph. | Done, tested |
 | **vuna-query** | `vuna-core` | `query::QueryEngine` | KOTVA SEARCH read path: local-first search, optional peer/indexer fan-out, Min-PPR merge. | Stub |
 | **vuna-node** | `vuna-core`, `kotva-core` (tag-pinned) | `kotva::NodeIdentity`, `kotva::Publisher`, `kotva::ContentAddresser` | The daemon: roles, the crawl→extract→index→publish loop, and the **only** crate that touches `kotva-core`. | Stub |
-| **app/** | `vuna-node` | — | Tauri desktop app (Rust backend + React) — the downloadable node every user runs. | Not scaffolded |
+| **app/** | `vuna-node` | — | Tauri desktop app (Rust backend + React) — the downloadable node every user runs. | Builds, mock data |
+
+"Done, tested" means the crate implements its seam trait and has unit tests; it does **not** mean
+the stages are wired to each other. `vuna-node` is the crate that would do that wiring, and it is
+still a stub — nothing in this workspace yet runs crawl → extract → index → query end to end.
 
 **Why `vuna-core` has no heavy deps:** every other crate builds *against* the trait objects it
 declares, never against each other directly. `vuna-index` doesn't know `vuna-crawl` exists; it
@@ -140,8 +146,9 @@ Extraction::Retail(Vec<RetailObservation> { store, sku, availability, quantity,
    ▼
 quorum::reconcile(observers: &[(IdentityKey, RetailObservation)], now, QuorumParams { k, window_secs, qty_tolerance })
    │  1. one latest in-window vote per distinct IdentityKey (ballot-stuffing floor)
-   │  2. availability by plurality, accepted only if support ≥ k
-   │  3. quantity = median of agreeing observers, accepted only if ≥ k agree within tolerance
+   │  2. availability by plurality, accepted only if support ≥ k AND no other value ties it
+   │  3. quantity = median (upper, for even n) of agreeing observers who reported a count,
+   │     accepted only if ≥ k of them fall within qty_tolerance of that median
    ▼
 Option<Agreed { availability, quantity, support, dissent }>
 ```
@@ -216,9 +223,14 @@ pub struct NodeDescriptor {
   vertical) work the same way: `web` and `retail` are the first two `Extractor` impls; a
   `NodeDescriptor.extractors` list is exactly analogous to `served_spaces` — opt in, run
   independently, no coordination with nodes that haven't adopted it. The retail vertical goes
-  further and pushes *most* of its per-site variation out of Rust entirely into declarative
-  adapter manifests (`adapters/*.toml` — see [`adapters/README.md`](../adapters/README.md)), so
-  that growing site coverage doesn't even require a new `Extractor` impl, just a new file.
+  further and pushes its per-site variation out of Rust entirely into declarative adapter
+  manifests (`adapters/*.toml` — see [`adapters/README.md`](../adapters/README.md)): one
+  interpreter in `vuna-extract` reads a manifest and *is* an `Extractor`, so growing site coverage
+  is a reviewed data change rather than a new Rust impl. What a manifest can express is bounded on
+  purpose — no derived fetches, no secondary lookups, no multi-offer aggregation — and a manifest
+  that exceeds those bounds is rejected at load with a reason, not silently degraded. Adapters are
+  additive and opt-in: `ExtractorRegistry::with_defaults()` never reads the directory, and the
+  workspace builds and tests with `adapters/` deleted.
 
 `NodeDescriptor::default_participant` is the floor: one list, the default space, the `web`
 extractor, `Terminating` query visibility. A node running exactly that is already a complete,

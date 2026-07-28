@@ -16,7 +16,6 @@
 //! pure functions/structs with no network or clock dependency, so they're unit-tested directly;
 //! `HttpFetcher` is thin glue over them plus the actual HTTP calls, which is why this crate's
 //! tests never touch the network (see each module's own tests).
-#![allow(dead_code)]
 
 pub mod body;
 pub mod config;

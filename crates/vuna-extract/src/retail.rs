@@ -67,7 +67,7 @@ fn extract_json_ld(document: &Html, store: &str, page_url: &str, observed_at: Un
         let Ok(value) = serde_json::from_str::<Value>(raw.trim()) else { continue };
 
         let mut products = Vec::new();
-        collect_products(&value, &mut products);
+        collect_typed(&value, "Product", &mut products);
         for product in products {
             out.extend(observations_from_product(product, store, page_url, observed_at));
         }
@@ -76,32 +76,36 @@ fn extract_json_ld(document: &Html, store: &str, page_url: &str, observed_at: Un
     out
 }
 
-/// Recursively finds every object whose `@type` is (or includes) `"Product"`, anywhere in the
-/// JSON-LD value — handles a bare Product, an array of them, and `@graph`-wrapped nodes uniformly
-/// since we just walk every nested object/array without special-casing the wrapper key.
-fn collect_products<'a>(value: &'a Value, out: &mut Vec<&'a Value>) {
+/// Recursively finds every object whose `@type` is (or includes) `want`, anywhere in the JSON-LD
+/// value — handles a bare node, an array of them, and `@graph`-wrapped nodes uniformly since we
+/// just walk every nested object/array without special-casing the wrapper key. Document order is
+/// preserved, so the first hit is the first the page declared.
+///
+/// Shared with the declarative [`crate::adapter`] interpreter so a page's JSON-LD is located the
+/// same way whether it is read by this Rust extractor or by an `adapters/*.toml` manifest.
+pub(crate) fn collect_typed<'a>(value: &'a Value, want: &str, out: &mut Vec<&'a Value>) {
     match value {
         Value::Object(map) => {
-            if is_product_type(map) {
+            if has_type(map, want) {
                 out.push(value);
             }
             for v in map.values() {
-                collect_products(v, out);
+                collect_typed(v, want, out);
             }
         }
         Value::Array(items) => {
             for v in items {
-                collect_products(v, out);
+                collect_typed(v, want, out);
             }
         }
         _ => {}
     }
 }
 
-fn is_product_type(map: &serde_json::Map<String, Value>) -> bool {
+fn has_type(map: &serde_json::Map<String, Value>, want: &str) -> bool {
     match map.get("@type") {
-        Some(Value::String(s)) => s == "Product",
-        Some(Value::Array(types)) => types.iter().any(|v| v.as_str() == Some("Product")),
+        Some(Value::String(s)) => s == want,
+        Some(Value::Array(types)) => types.iter().any(|v| v.as_str() == Some(want)),
         _ => false,
     }
 }

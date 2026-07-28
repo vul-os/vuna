@@ -5,12 +5,12 @@ Companion to [Getting started](/products/vuna/docs/getting-started) (the *what*)
 the data flow, the object lifecycle, the KOTVA seam, and the storage math the "index, not pages"
 claim rests on.
 
-**Status as of this writing:** `vuna-core` (the contract) compiles and is unit-tested —
-`quorum.rs`'s reconciliation logic is real and covered; everything else is typed but not fully
-wired. `vuna-frontier`, `vuna-crawl`, `vuna-extract`, and `vuna-index` are being built out.
-`vuna-query` and `vuna-node` are stubs. `app/` exists and runs, but against a mock corpus, not a
-live `vuna-node`. Read everything below as the designed shape, not a description of a running
-network.
+**Status as of this writing:** `vuna-core` (the contract) compiles and is unit-tested, and
+`quorum.rs`'s reconciliation logic is real and covered. `vuna-frontier`, `vuna-crawl`,
+`vuna-extract`, and `vuna-index` are each implemented and unit-tested behind their seam traits, but
+not wired to each other — the crate that would wire them (`vuna-node`) and the read path
+(`vuna-query`) are both still stubs. `app/` exists and runs, but against a mock corpus, not a live
+`vuna-node`. Read everything below as the designed shape, not a description of a running network.
 
 ## The crate map
 
@@ -33,10 +33,10 @@ network.
 | Crate | Role | Status |
 |---|---|---|
 | **vuna-core** | Frozen contract: shared types + seam traits. No tantivy/libp2p/reqwest/crypto — always compiles offline. | Compiles, tested |
-| **vuna-frontier** | Distributed URL lists: subscribe, dedup, DHT crawl-assignment, K× replication of each `UrlEntry`. | In progress |
-| **vuna-crawl** | Polite fetch: reqwest + optional headless, robots.txt, per-host rate limits. Produces `FetchedPage`. | In progress |
-| **vuna-extract** | Pluggable extractors: `web` (chunks + links + snippet) and `retail` (declarative JSON-LD/JSON-endpoint adapters). | In progress |
-| **vuna-index** | Tantivy keyword index + per-space HNSW vectors + link/knowledge graph. | In progress |
+| **vuna-frontier** | Distributed URL lists: subscribe, dedup, DHT crawl-assignment, K× replication of each `UrlEntry`. | Done, tested |
+| **vuna-crawl** | Polite fetch: robots.txt, per-host rate limits, body cap. Produces `FetchedPage`. | Done, tested |
+| **vuna-extract** | Pluggable extractors: `web` (chunks + links + snippet), `retail` (JSON-LD / Open Graph), and an interpreter for declarative `adapters/*.toml` manifests. | Done, tested |
+| **vuna-index** | Tantivy keyword index + per-space HNSW vectors + link/knowledge graph. | Done, tested |
 | **vuna-query** | The KOTVA SEARCH read path: local-first search, optional peer/indexer fan-out, Min-PPR merge. | Stub |
 | **vuna-node** | The daemon: roles, the crawl→extract→index→publish loop, and the **only** crate that touches `kotva-core` (pinned by tag, never `HEAD`). | Stub |
 | **app/** | Tauri desktop app (Rust backend + React) — the downloadable node every user would run. | Builds, mock data only |
@@ -87,8 +87,10 @@ Embedder::embed → QueryEngine::search`.
 
 1. one latest in-window vote per distinct identity key (a ballot-stuffing floor, not a
    personhood check),
-2. availability accepted only if support ≥ `k`,
-3. quantity = median of agreeing observers, accepted only if ≥ `k` agree within tolerance.
+2. availability accepted only if support ≥ `k` **and** no other value ties it — a tie is
+   disagreement, and breaking it would invent a winner the observations don't contain,
+3. quantity = median (the upper one, for an even count) of the agreeing observers who reported a
+   count, accepted only if ≥ `k` of them fall within `qty_tolerance` of that median.
 
 `reconcile` returns `None` — not a fabricated value — when fewer than `k` distinct identities
 agree; the caller must surface "the network doesn't know." Distinct-identity-counting stops one
