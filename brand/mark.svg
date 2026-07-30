@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="vuna-mark-title">
+  <title id="vuna-mark-title">Vuna</title>
+  <!--
+    The ear. An ear of grain, its grains drawn as nodes on a stem.
+    Two readings, both true of vuna:
+      · an ear of wheat                   — vuna, Swahili "to harvest / reap"
+      · a stem with node-terminated edges — the link graph the index is built on
+    Two flat colours, no gradients, no filters, no <text>. The stem is `currentColor`
+    so this inlines into any surface. The grains are the one branded colour: override
+    with --vuna-grain when inlining, otherwise the internal prefers-color-scheme rule
+    picks the contrast-safe variant for the viewer's theme.
+    Geometry: 256 grid, baseline 226, tip 29. Stem sw 14, stalks sw 9, grains r 15
+    (tip r 16), five mirrored pairs on a spindle: +/-34, 42, 44, 42, 34.
+  -->
+  <style>
+    .vuna-grain { fill: var(--vuna-grain, #9A6A0A); }
+    @media (prefers-color-scheme: dark) {
+      .vuna-grain { fill: var(--vuna-grain, #E8B84B); }
+    }
+  </style>
+  <g fill="none" stroke="currentColor" stroke-linecap="round">
+    <path d="M128 226 V58" stroke-width="14"/>
+    <g stroke-width="9">
+      <path d="M128 98 L94 74"/><path d="M128 98 L162 74"/>
+      <path d="M128 130 L86 106"/><path d="M128 130 L170 106"/>
+      <path d="M128 162 L84 138"/><path d="M128 162 L172 138"/>
+      <path d="M128 194 L86 170"/><path d="M128 194 L170 170"/>
+      <path d="M128 222 L94 202"/><path d="M128 222 L162 202"/>
+    </g>
+  </g>
+  <g class="vuna-grain">
+    <circle cx="128" cy="44" r="16"/>
+    <circle cx="94" cy="74" r="15"/><circle cx="162" cy="74" r="15"/>
+    <circle cx="86" cy="106" r="15"/><circle cx="170" cy="106" r="15"/>
+    <circle cx="84" cy="138" r="15"/><circle cx="172" cy="138" r="15"/>
+    <circle cx="86" cy="170" r="15"/><circle cx="170" cy="170" r="15"/>
+    <circle cx="94" cy="202" r="15"/><circle cx="162" cy="202" r="15"/>
+  </g>
+</svg>

@@ -1,20 +1,31 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="Vuna">
-  <defs>
-    <linearGradient id="vuna-bg" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#2a1810"/>
-      <stop offset="1" stop-color="#1a0f09"/>
-    </linearGradient>
-    <linearGradient id="vuna-gold" x1="43" y1="20" x2="57" y2="46" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#f0cd7e"/>
-      <stop offset="1" stop-color="#c68f2e"/>
-    </linearGradient>
-  </defs>
-  <!-- tile -->
-  <rect width="100" height="100" rx="22" fill="url(#vuna-bg)"/>
-  <!-- wheat sheaf: three blades bound by a band, echoing the desktop app's mark -->
-  <path d="M50 19 L58 47 L42 47 Z" fill="url(#vuna-gold)"/>
-  <path d="M31 27 L49 51 L35 53 Z" fill="#e2762f"/>
-  <path d="M69 27 L51 51 L65 53 Z" fill="#e2762f"/>
-  <ellipse cx="50" cy="65" rx="21" ry="10.5" fill="#7a3a0b"/>
-  <path d="M31 61 A21 10.5 0 0 0 50 73" stroke="#f0cd7e" stroke-width="2.6" fill="none" stroke-linecap="round" opacity="0.85"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="vuna-logo-title">
+  <title id="vuna-logo-title">Vuna</title>
+  <!--
+    App tile. Family convention across the Vulos suite (kotva, patala, evermesh,
+    magnetite): a dark rounded-rect ground plus the mark in flat colours, corner
+    radius ~0.22x the side, sized for a product-grid listing. Same geometry as
+    brand/mark.svg, resolved for a dark ground and scaled to fill the tile.
+    Measured on #12100A: bone stem 14.3:1, grain gold 10.3:1.
+  -->
+  <rect width="256" height="256" rx="56" fill="#12100A"/>
+  <g transform="translate(128 129) scale(1.06) translate(-128 -128)">
+    <g fill="none" stroke="#E7DFCC" stroke-linecap="round">
+      <path d="M128 226 V58" stroke-width="14"/>
+      <g stroke-width="9">
+        <path d="M128 98 L94 74"/><path d="M128 98 L162 74"/>
+        <path d="M128 130 L86 106"/><path d="M128 130 L170 106"/>
+        <path d="M128 162 L84 138"/><path d="M128 162 L172 138"/>
+        <path d="M128 194 L86 170"/><path d="M128 194 L170 170"/>
+        <path d="M128 222 L94 202"/><path d="M128 222 L162 202"/>
+      </g>
+    </g>
+    <g fill="#E8B84B">
+      <circle cx="128" cy="44" r="16"/>
+      <circle cx="94" cy="74" r="15"/><circle cx="162" cy="74" r="15"/>
+      <circle cx="86" cy="106" r="15"/><circle cx="170" cy="106" r="15"/>
+      <circle cx="84" cy="138" r="15"/><circle cx="172" cy="138" r="15"/>
+      <circle cx="86" cy="170" r="15"/><circle cx="170" cy="170" r="15"/>
+      <circle cx="94" cy="202" r="15"/><circle cx="162" cy="202" r="15"/>
+    </g>
+  </g>
 </svg>

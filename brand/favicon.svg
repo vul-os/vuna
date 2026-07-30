@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="vuna-favicon-title">
+  <title id="vuna-favicon-title">Vuna</title>
+  <!--
+    Favicon / small-size variant. Same topology as brand/mark.svg — an ear of grain
+    whose grains are nodes — thickened and reduced from eleven grains to five so the
+    silhouette still reads at 16 device pixels. A favicon is loaded as an image and
+    inherits nothing from the page, so the stem colour flips on the internal media
+    query rather than on currentColor.
+  -->
+  <style>
+    .stem  { stroke: #221C12; }
+    .grain { fill: #9A6A0A; }
+    @media (prefers-color-scheme: dark) {
+      .stem  { stroke: #F2EBDA; }
+      .grain { fill: #E8B84B; }
+    }
+  </style>
+  <g class="stem" fill="none" stroke-linecap="round">
+    <path d="M128 216 V58" stroke-width="26"/>
+    <g stroke-width="17">
+      <path d="M128 134 L84 100"/><path d="M128 134 L172 100"/>
+      <path d="M128 194 L80 156"/><path d="M128 194 L176 156"/>
+    </g>
+  </g>
+  <g class="grain">
+    <circle cx="128" cy="46" r="25"/>
+    <circle cx="84" cy="100" r="23"/><circle cx="172" cy="100" r="23"/>
+    <circle cx="80" cy="156" r="23"/><circle cx="176" cy="156" r="23"/>
+  </g>
+</svg>

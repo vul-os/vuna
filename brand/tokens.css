@@ -1,0 +1,185 @@
+/* ============================================================================
+   vuna design tokens — the single authority for colour and type.
+   ----------------------------------------------------------------------------
+   Imported by the desktop app (app/src/index.css) and restated inline by the
+   landing page (site/index.html, which must stay a single self-contained file
+   with no external stylesheet fetch). If you change a value here, change it
+   there too — site/index.html carries a pointer back to this file.
+
+   Two themes: "winnowed paper" (light) and "loam" (dark). Both are warm — that
+   is vuna's slot in the Vulos family, where kotva is terracotta-on-warm-black,
+   patala vermilion-on-navy, magnetite violet-on-cold-iron and evermesh lime-on-
+   carbon.
+
+   COLOUR IS LOAD-BEARING. Five roles, four colours, and one of them is the
+   absence of colour:
+
+     grain (gold)   identity, and the `local` result source — your own shard.
+                    Nothing else is gold. If two things on a screen are gold,
+                    at least one of them is wrong.
+     peer  (slate)  reach beyond your node — another volunteer's shard.
+     (none)         `indexer` results. An opt-in indexer adds reach, never
+                    authority, so it gets no colour of its own on purpose.
+     running (green) built, tested, exercised — you can run it today.
+     stub  (ember)  specified in the design docs, not implemented yet.
+
+   Every text pair below is >= 4.5:1 and every graphic pair >= 3:1 against the
+   surfaces it is used on. Measured ratios are tabulated in brand/README.md;
+   re-derive them before changing any value.
+   ============================================================================ */
+
+:root {
+  color-scheme: light dark;
+
+  /* Type. Display serif + grotesk + mono, the same three-slot scheme the rest
+     of the family uses. All three are vendored woff2, never fetched. */
+  --font-display: "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
+  --font-sans: "Archivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Shape */
+  --radius-sm: 6px;
+  --radius: 12px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --maxw: 1140px;
+}
+
+/* ── Light: "winnowed paper" ─────────────────────────────────────────────── */
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --void: #f1eadb;      /* page ground */
+  --paper: #fdfaf3;     /* cards, panels */
+  --sunk: #e7dfcc;      /* wells, code blocks, tinted bands */
+  --surface-2: #f7f2e6; /* alternate section band */
+  --elevated: #ffffff;
+
+  --line: #ddd3bd;      /* decorative hairline */
+  --line-2: #c4b79c;    /* stronger decorative rule */
+  --edge: #847756;      /* component boundary — inputs, buttons, 3.33:1 min */
+
+  --ink: #221c12;       /* body text, 14.1:1 on --void */
+  --ink-2: #554b37;     /* secondary text, 7.2:1 */
+  --ink-3: #695e45;     /* micro-labels down to 11px, 4.8:1 min */
+
+  --grain: #9a6a0a;       /* gold graphic/border — 3.95:1 on --void */
+  --grain-fill: #c98a0e;  /* gold as a fill under --on-grain ink only */
+  --grain-text: #7a5308;  /* gold as text/link — 5.7:1 */
+  --grain-tint: rgba(154, 106, 10, 0.1);
+  --grain-line: rgba(154, 106, 10, 0.32);
+  --on-grain: #241d10;    /* ink on a --grain-fill button — 5.7:1 */
+
+  --peer: #3a5f94;
+  --peer-text: #2e4e7c;
+  --peer-tint: rgba(58, 95, 148, 0.1);
+
+  --running: #3f7a2e;
+  --running-text: #2e5c22;
+  --running-tint: rgba(63, 122, 46, 0.11);
+
+  --stub: #a8461b;
+  --stub-text: #8e3a14;
+  --stub-tint: rgba(168, 70, 27, 0.1);
+
+  --shadow-1: 0 1px 2px rgba(52, 38, 14, 0.07);
+  --shadow-2: 0 2px 8px rgba(52, 38, 14, 0.06), 0 26px 54px -26px rgba(52, 38, 14, 0.3);
+  --focus: 0 0 0 3px rgba(154, 106, 10, 0.42);
+  --bar-bg: rgba(241, 234, 219, 0.84);
+}
+
+/* ── Dark: "loam" ───────────────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --void: #12100a;
+    --paper: #1a170f;
+    --sunk: #0d0b07;
+    --surface-2: #221e14;
+    --elevated: #2a2418;
+
+    --line: #2e2819;
+    --line-2: #463e29;
+    --edge: #7c6e50;
+
+    --ink: #f2ebda;
+    --ink-2: #c1b499;
+    --ink-3: #95896f;
+
+    --grain: #e8b84b;
+    --grain-fill: #e8b84b;
+    --grain-text: #f0c86b;
+    --grain-tint: rgba(232, 184, 75, 0.12);
+    --grain-line: rgba(232, 184, 75, 0.34);
+    --on-grain: #191308;
+
+    --peer: #8ab2e8;
+    --peer-text: #a0c2ee;
+    --peer-tint: rgba(138, 178, 232, 0.13);
+
+    --running: #86c46a;
+    --running-text: #9ad47e;
+    --running-tint: rgba(134, 196, 106, 0.13);
+
+    --stub: #ee8a55;
+    --stub-text: #f2a077;
+    --stub-tint: rgba(238, 138, 85, 0.13);
+
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.55);
+    --shadow-2: 0 2px 8px rgba(0, 0, 0, 0.5), 0 26px 56px -24px rgba(0, 0, 0, 0.82);
+    --focus: 0 0 0 3px rgba(232, 184, 75, 0.4);
+    --bar-bg: rgba(18, 16, 10, 0.82);
+  }
+}
+
+/* An explicit choice wins over the OS in either direction. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --void: #12100a;
+  --paper: #1a170f;
+  --sunk: #0d0b07;
+  --surface-2: #221e14;
+  --elevated: #2a2418;
+
+  --line: #2e2819;
+  --line-2: #463e29;
+  --edge: #7c6e50;
+
+  --ink: #f2ebda;
+  --ink-2: #c1b499;
+  --ink-3: #95896f;
+
+  --grain: #e8b84b;
+  --grain-fill: #e8b84b;
+  --grain-text: #f0c86b;
+  --grain-tint: rgba(232, 184, 75, 0.12);
+  --grain-line: rgba(232, 184, 75, 0.34);
+  --on-grain: #191308;
+
+  --peer: #8ab2e8;
+  --peer-text: #a0c2ee;
+  --peer-tint: rgba(138, 178, 232, 0.13);
+
+  --running: #86c46a;
+  --running-text: #9ad47e;
+  --running-tint: rgba(134, 196, 106, 0.13);
+
+  --stub: #ee8a55;
+  --stub-text: #f2a077;
+  --stub-tint: rgba(238, 138, 85, 0.13);
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.55);
+  --shadow-2: 0 2px 8px rgba(0, 0, 0, 0.5), 0 26px 56px -24px rgba(0, 0, 0, 0.82);
+  --focus: 0 0 0 3px rgba(232, 184, 75, 0.4);
+  --bar-bg: rgba(18, 16, 10, 0.82);
+}
+
+/* The mark's grains read as a graphic, so they follow --grain, not --grain-fill.
+   brand/mark.svg picks this up when inlined and falls back to the light value. */
+:root {
+  --vuna-grain: var(--grain);
+}
