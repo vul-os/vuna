@@ -1,30 +1,31 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="vuna-favicon-title">
-  <title id="vuna-favicon-title">Vuna</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="vuna-logo-title">
+  <title id="vuna-logo-title">Vuna</title>
   <!--
-    Favicon / small-size variant. Same topology as brand/mark.svg — an ear of grain
-    whose grains are nodes — thickened and reduced from eleven grains to five so the
-    silhouette still reads at 16 device pixels. A favicon is loaded as an image and
-    inherits nothing from the page, so the stem colour flips on the internal media
-    query rather than on currentColor.
+    App tile. Family convention across the Vulos suite (kotva, patala, evermesh,
+    magnetite): a dark rounded-rect ground plus the mark in flat colours, corner
+    radius ~0.22x the side, sized for a product-grid listing. Same geometry as
+    brand/mark.svg, resolved for a dark ground and scaled to fill the tile.
+    Measured on #12100A: bone stem 14.3:1, grain gold 10.3:1.
   -->
-  <style>
-    .stem  { stroke: #221C12; }
-    .grain { fill: #9A6A0A; }
-    @media (prefers-color-scheme: dark) {
-      .stem  { stroke: #F2EBDA; }
-      .grain { fill: #E8B84B; }
-    }
-  </style>
-  <g class="stem" fill="none" stroke-linecap="round">
-    <path d="M128 216 V58" stroke-width="26"/>
-    <g stroke-width="17">
-      <path d="M128 134 L84 100"/><path d="M128 134 L172 100"/>
-      <path d="M128 194 L80 156"/><path d="M128 194 L176 156"/>
+  <rect width="256" height="256" rx="56" fill="#12100A"/>
+  <g transform="translate(128 129) scale(1.06) translate(-128 -128)">
+    <g fill="none" stroke="#E7DFCC" stroke-linecap="round">
+      <path d="M128 226 V58" stroke-width="14"/>
+      <g stroke-width="9">
+        <path d="M128 98 L94 74"/><path d="M128 98 L162 74"/>
+        <path d="M128 130 L86 106"/><path d="M128 130 L170 106"/>
+        <path d="M128 162 L84 138"/><path d="M128 162 L172 138"/>
+        <path d="M128 194 L86 170"/><path d="M128 194 L170 170"/>
+        <path d="M128 222 L94 202"/><path d="M128 222 L162 202"/>
+      </g>
     </g>
-  </g>
-  <g class="grain">
-    <circle cx="128" cy="46" r="25"/>
-    <circle cx="84" cy="100" r="23"/><circle cx="172" cy="100" r="23"/>
-    <circle cx="80" cy="156" r="23"/><circle cx="176" cy="156" r="23"/>
+    <g fill="#E8B84B">
+      <circle cx="128" cy="44" r="16"/>
+      <circle cx="94" cy="74" r="15"/><circle cx="162" cy="74" r="15"/>
+      <circle cx="86" cy="106" r="15"/><circle cx="170" cy="106" r="15"/>
+      <circle cx="84" cy="138" r="15"/><circle cx="172" cy="138" r="15"/>
+      <circle cx="86" cy="170" r="15"/><circle cx="170" cy="170" r="15"/>
+      <circle cx="94" cy="202" r="15"/><circle cx="162" cy="202" r="15"/>
+    </g>
   </g>
 </svg>
