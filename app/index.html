@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
     <title>Vuna — your node</title>
-    <link rel="icon" type="image/png" href="/src-tauri/icons/32x32.png" />
+    <!-- The window/tab icon. The bundled Tauri icons under src-tauri/icons/ are still the
+         previous mark; regenerate them from brand/logo-1024.png with
+         `npm run tauri icon ../brand/logo-1024.png` when the app is next packaged. -->
+    <link rel="icon" type="image/svg+xml" href="/vuna-icon.svg" />
   </head>
   <body>
     <div id="root"></div>

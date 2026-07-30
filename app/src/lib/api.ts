@@ -8,6 +8,23 @@ import type { NodeStatus, RankedHit, Stats } from "../types";
 
 const inTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
+/**
+ * Everything this app displays today is mock, in both directions:
+ *
+ *  - outside Tauri (`vite dev`/`preview`) it comes from the `CORPUS` fixture below;
+ *  - inside Tauri it comes from `src-tauri/src/commands.rs`, whose own doc comment opens
+ *    with "**mock data only**" — that crate does not depend on the `vuna-*` workspace
+ *    crates yet.
+ *
+ * So this is unconditionally `true` until `vuna-node` lands and the commands start
+ * delegating to a real node handle. The UI reads it to keep a mock-data banner on screen;
+ * it must never be quietly flipped to `false` before the wiring is real.
+ */
+export const USING_MOCKS = true;
+
+/** Which side of the boundary the fixtures are coming from, for the banner's detail line. */
+export const MOCK_ORIGIN = inTauri ? "src-tauri/src/commands.rs" : "src/lib/api.ts";
+
 async function invokeOrMock<T>(cmd: string, args: Record<string, unknown>, mock: () => T): Promise<T> {
   if (inTauri) {
     const { invoke } = await import("@tauri-apps/api/core");

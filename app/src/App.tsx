@@ -3,6 +3,7 @@ import { nodeStatus, search, stats as fetchStats } from "./lib/api";
 import type { NodeStatus, RankedHit, Stats } from "./types";
 import { Wordmark } from "./components/Logo";
 import { ThemeToggle } from "./components/ThemeToggle";
+import { MockBanner } from "./components/MockBanner";
 import { SearchBar } from "./components/SearchBar";
 import { ResultsList } from "./components/ResultsList";
 import { NodeDashboard } from "./components/NodeDashboard";
@@ -20,6 +21,7 @@ export default function App() {
 
   const debounceRef = useRef<number | undefined>(undefined);
   const requestSeq = useRef(0);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     nodeStatus().then(setStatus).catch(() => void 0);
@@ -46,6 +48,21 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // "/" focuses the query box from anywhere, the way every search tool does.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const el = document.activeElement;
+      const typing = el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement;
+      if (e.key === "/" && !typing && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        searchRef.current?.focus();
+        searchRef.current?.select();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   function onChange(v: string) {
     setQuery(v);
     window.clearTimeout(debounceRef.current);
@@ -57,30 +74,63 @@ export default function App() {
     runSearch(query);
   }
 
-  const reachLine = status
-    ? `Searching your local shard${status.peers_connected > 0 ? ` + ${status.peers_connected} peers` : ""}`
-    : "Searching your local shard";
+  const localCount = results.filter((r) => r.source === "local").length;
+  const peerCount = results.filter((r) => r.source === "peer").length;
+  const indexerCount = results.filter((r) => r.source === "indexer").length;
 
   return (
     <div className="app-shell">
       <header className="app-header">
         <Wordmark />
         <div className="header-right">
-          <span className="header-status">
-            <span className={`online-dot-small${status?.online ? " is-online" : ""}`} aria-hidden="true" />
+          <span className="header-status" title="Peers this node is currently connected to">
+            <span
+              className={`online-dot-small${status?.online ? " is-online" : ""}`}
+              aria-hidden="true"
+            />
             {status ? `${status.peers_connected} peers` : "connecting…"}
           </span>
           <ThemeToggle />
         </div>
       </header>
 
+      <MockBanner />
+
       <main className="layout">
         <section className="main-col">
           <div className="hero">
             <h1 className="hero-title">What are you harvesting today?</h1>
-            <SearchBar value={query} onChange={onChange} onSubmit={onSubmit} loading={loading} />
-            <p className="hero-meta">{reachLine} — index only, pages stay where they live.</p>
+            <SearchBar
+              inputRef={searchRef}
+              value={query}
+              onChange={onChange}
+              onSubmit={onSubmit}
+              loading={loading}
+            />
+
+            <div className="reach">
+              <span className="reach-line">
+                Searching your local shard
+                {status && status.peers_connected > 0 ? ` + ${status.peers_connected} peers` : ""} —
+                index only, pages stay where they live.
+              </span>
+              {searched && !loading && results.length > 0 && (
+                <span className="reach-counts">
+                  <span className="rc rc--local">{localCount} local</span>
+                  <span className="rc rc--peer">{peerCount} peer</span>
+                  <span className="rc rc--indexer">{indexerCount} indexer</span>
+                </span>
+              )}
+            </div>
           </div>
+
+          <p className="sr" role="status" aria-live="polite">
+            {loading
+              ? "Searching."
+              : searched
+                ? `${results.length} results: ${localCount} local, ${peerCount} peer, ${indexerCount} indexer. All mock data.`
+                : ""}
+          </p>
 
           <ResultsList results={results} query={query} loading={loading} searched={searched} />
         </section>
@@ -90,9 +140,9 @@ export default function App() {
 
       <footer className="app-footer">
         <p>
-          The index is <strong>derived and rebuildable</strong>, never authoritative — a stale shard
-          is a staleness problem, not a correctness one. No pages are archived, no token, no new
-          crypto.
+          The index is <strong>derived and rebuildable</strong>, never authoritative — a stale
+          shard is a staleness problem, not a correctness one. No pages are archived, no token,
+          no new crypto.
         </p>
       </footer>
     </div>

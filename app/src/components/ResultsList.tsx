@@ -28,8 +28,9 @@ export function ResultsList({ results, query, loading, searched }: Props) {
   if (searched && results.length === 0) {
     return (
       <div className="state-empty">
-        <LogoMark size={40} />
-        <p>No harvest for that query yet. Try broadening it, or subscribe to another list.</p>
+        <LogoMark size={44} />
+        <p>No harvest for that query yet.</p>
+        <span>Broaden it, or subscribe to another URL list from the panel.</span>
       </div>
     );
   }
@@ -37,17 +38,18 @@ export function ResultsList({ results, query, loading, searched }: Props) {
   if (!searched) {
     return (
       <div className="state-empty">
-        <LogoMark size={40} />
-        <p>Sow a query above to begin the harvest — showing a sample of the local shard.</p>
+        <LogoMark size={44} />
+        <p>Sow a query above to begin the harvest.</p>
+        <span>Showing a sample of the local shard until you do.</span>
       </div>
     );
   }
 
   return (
-    <ul className="results-list">
+    <ol className="results-list">
       {results.map((r, i) => (
         <ResultItem key={r.hit.url} hit={r} query={query} index={i} />
       ))}
-    </ul>
+    </ol>
   );
 }
