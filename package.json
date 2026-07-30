@@ -1,0 +1,18 @@
+{
+  "name": "vuna-site-tools",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Presentation-layer tooling for vuna: landing-page checks and light/dark screenshots of the site and the Tauri desktop shell. Nothing here is part of the engine — the Cargo workspace has no Node dependency.",
+  "scripts": {
+    "site-check": "node scripts/site-check.mjs",
+    "screenshots": "node scripts/screenshots.mjs",
+    "shots": "node scripts/screenshots.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.56.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
