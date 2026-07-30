@@ -17,7 +17,7 @@ on the [KOTVA](https://vulos.org) substrate. *Vuna* is Swahili for **to harvest 
 [![Status](https://img.shields.io/badge/status-v0%20preview-A8461B)](#status)
 [![Tests](https://img.shields.io/badge/tests-132%20passing-3F7A2E)](#build--run)
 
-[**Discussion history**](docs/00-discussion-history.md) · [**Design**](docs/01-design.md) · [**Architecture**](docs/02-architecture.md) · [**Viability**](docs/00-viability.md) · [**Economics**](docs/03-economics.md) · [**Brand**](brand/README.md) · [**Product page**](https://vulos.org/products/vuna)
+[**Discussion history**](docs/00-discussion-history.md) · [**Design**](docs/01-design.md) · [**Architecture**](docs/02-architecture.md) · [**Viability**](docs/00-viability.md) · [**Economics**](docs/03-economics.md) · [**Brand**](brand/README.md) · [**Product page**](https://vulos.org/projects/vuna)
 
 <br/>
 
