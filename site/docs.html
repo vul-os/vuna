@@ -192,6 +192,17 @@ code{font-family:var(--font-mono);font-variant-ligatures:none}
 .colophon a{color:var(--ink-2);border-bottom:1px solid var(--line-2)}
 .colophon a:hover{color:var(--grain-text);border-bottom-color:var(--grain-line)}
 .colophon code{font-family:var(--font-mono);font-size:12.5px}
+
+  /* ── Vulos suite chrome — identical on every product landing ───────────────
+     Two elements, and only two: a logo-only home button in the top bar, and
+     one line in the footer. Deliberately free of repo variables so the block
+     is byte-identical across the suite and can be diffed as one thing. */
+  .vulos-home { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 9px; flex: 0 0 auto; opacity: .72; transition: opacity .15s ease, transform .15s ease; }
+  .vulos-home:hover, .vulos-home:focus-visible { opacity: 1; transform: translateY(-1px); }
+  .vulos-home img { display: block; width: 22px; height: 22px; border-radius: 6px; }
+  .vulos-foot { display: inline-flex; align-items: center; gap: 9px; font-size: 13.5px; line-height: 1.45; text-decoration: none; color: inherit; opacity: .85; transition: opacity .15s ease; }
+  .vulos-foot:hover { opacity: 1; text-decoration: none; }
+  .vulos-foot img { display: block; width: 18px; height: 18px; border-radius: 5px; flex: 0 0 auto; }
 </style>
 <script src="./assets/vendor/marked.umd.js"></script>
 <script src="./assets/hl.js"></script>
@@ -217,7 +228,8 @@ code{font-family:var(--font-mono);font-variant-ligatures:none}
       <svg id="tt-i" width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"></svg>
     </button>
   </div>
-</div></header>
+</div>  <a class="vulos-home" href="https://vulos.org" target="_blank" rel="noopener" title="Vulos — open, self-hostable software" aria-label="Vulos — open, self-hostable software"><img src="./assets/vulos-logo.png" alt="" width="22" height="22"></a>
+</header>
 
 <div class="wrap shell">
   <aside class="nav-side">
@@ -254,16 +266,11 @@ code{font-family:var(--font-mono);font-variant-ligatures:none}
       <a href="#changelog">Changelog</a>
       <a href="https://github.com/vul-os/vuna" target="_blank" rel="noopener">GitHub <span class="ext" aria-hidden="true">↗</span></a>
     </nav>
-    <div class="foot-col">
-      <h2 class="foot-h">Part of Vulos</h2>
-      <p>Vuna is fully standalone and never requires Vulos infrastructure to run a node or the desktop app.</p>
-      <a href="https://vulos.org/projects" target="_blank" rel="noopener">Listed on Vulos <span class="ext" aria-hidden="true">↗</span></a>
-      <a href="https://vulos.org" target="_blank" rel="noopener">vulos.org <span class="ext" aria-hidden="true">↗</span></a>
-    </div>
+    <a class="vulos-foot" href="https://vulos.org" target="_blank" rel="noopener"><img src="./assets/vulos-logo.png" alt="" width="18" height="18"><span>Part of <strong>Vulos</strong> — open, self-hostable software</span></a>
   </div>
   <div class="colophon">
     <div class="colophon-row">
-      <p>Code <a href="https://github.com/vul-os/vuna/blob/main/LICENSE-MIT" target="_blank" rel="noopener">MIT</a> OR <a href="https://github.com/vul-os/vuna/blob/main/LICENSE-APACHE" target="_blank" rel="noopener">Apache-2.0</a> — © VulOS.</p>
+      <p>© Vuna contributors.</p>
       <p>Set in Fraunces, Archivo and IBM Plex Mono — SIL OFL 1.1, vendored in <code>site/fonts/</code>.</p>
     </div>
     <p class="colophon-claim">Nothing on this page is fetched from a third party.</p>
