@@ -20,8 +20,9 @@ hundreds-of-petabytes "reliable" storage tier a full open-web page archive needs
 
 ### Does Vuna have a token?
 
-No, and it's not planned. Vuna rides KOTVA's existing identity/PUB/DHT/SEARCH primitives instead
-of introducing new crypto or an incentive token. This is the honest, mission-aligned choice — but
+No, and it's not planned. Vuna is designed to use KOTVA's existing identity/PUB/DHT/SEARCH
+primitives instead of introducing new crypto or an incentive token — though that binding is a
+Wave-2 stub and is not wired up yet. This is the honest, mission-aligned choice — but
 it also means Vuna has no proven mechanism for motivating ongoing volunteer compute the way, say,
 mining rewards do elsewhere. See Viability §1 for why that's a real open risk, not a footnote.
 

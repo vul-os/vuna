@@ -65,8 +65,10 @@ A network of volunteer nodes crawls a **distributed, subscribable list of URLs**
 vector embeddings, link/knowledge-graph edges, a snippet, and a **pointer back to the live
 URL** — into a shared index replicated K× across the network. **Pages are never archived**,
 which collapses storage from *petabytes (datacenters)* to *~2 GB/node (volunteers)* for a
-billion-page index. No token, no page archive, no new crypto — it rides KOTVA identity /
-PUB / DHT / SEARCH.
+billion-page index. No token, no page archive, no new crypto — it is **designed to** ride
+KOTVA identity / PUB / DHT / SEARCH. That binding lives in `vuna-node`, which is a
+Wave-2 stub, and `kotva-core` is commented out in the workspace manifest — so **nothing
+in Vuna runs on KOTVA today.**
 
 ## Why it's different — everything is opt-in plurality
 

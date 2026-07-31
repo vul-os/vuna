@@ -20,8 +20,10 @@ list, others opt in, no central frontier authority), run **pluggable extractors*
 and contribute the result into a shared index replicated K× across the network. Pages themselves
 are never archived, which is what collapses storage from *petabytes* (the datacenter-operator
 scale a "reliable" open-web archive needs) to **single-digit gigabytes per node** even at
-billion-page scale. No token, no page archive, no new crypto — it rides KOTVA's identity, PUB,
-DHT, and SEARCH primitives.
+billion-page scale. No token, no page archive, no new crypto — it is **designed to** ride KOTVA's
+identity, PUB, DHT and SEARCH primitives. That binding lives in `vuna-node`, which is a Wave-2
+stub, and `kotva-core` is commented out in the workspace manifest — so **nothing in Vuna runs on
+KOTVA today.**
 
 ## Why it's built this way
 
