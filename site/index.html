@@ -140,7 +140,7 @@ code{font-family:var(--font-mono);font-variant-ligatures:none}
 .tt{width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--edge);border-radius:var(--pill);background:transparent;color:var(--ink-2);cursor:pointer;transition:color .16s,border-color .16s;flex:none}
 .tt:hover{color:var(--grain-text);border-color:var(--grain)}
 @media(max-width:1000px){.bar-nav{display:none}}
-@media(max-width:520px){.brand small{display:none}}
+@media(max-width:520px){.bar .brand small{display:none}}
 
 /* ── Buttons ─────────────────────────────────────────────────────────────── */
 .btn{display:inline-flex;align-items:center;gap:9px;padding:12px 20px;border-radius:var(--radius);font-family:var(--font-sans);font-weight:600;font-size:15.5px;border:1px solid var(--edge);cursor:pointer;transition:transform .14s var(--ease),box-shadow .2s,border-color .2s}
@@ -321,17 +321,40 @@ code{font-family:var(--font-mono);font-variant-ligatures:none}
 .well{height:392px;overflow:hidden;display:flex;justify-content:center;align-items:flex-start;background:var(--surface-2);border-bottom:1px solid var(--line)}
 .well img{width:341px;max-width:100%;height:auto;flex:none}
 
-/* ── Footer ──────────────────────────────────────────────────────────────── */
-.foot{border-top:1px solid var(--line);padding:34px 0 46px;margin-top:70px}
-.foot-in{display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:space-between}
-.foot .l{display:flex;align-items:center;gap:11px;color:var(--ink-2);font-size:14.5px}
-.foot .l img{width:20px;height:20px;border-radius:5px}
-.foot .l a{color:var(--ink);font-weight:600}
-.foot .r{display:flex;gap:22px;flex-wrap:wrap}
-.foot .r a{color:var(--ink-2);font-size:14.5px}
-.foot .r a:hover{color:var(--ink)}
-.foot .lic{width:100%;margin:16px 0 0;font-size:13.5px;color:var(--ink-3)}
-.foot .lic code{font-family:var(--font-mono);font-size:.9em}
+/* ── Footer ──────────────────────────────────────────────────────────────────
+   A colophon rather than a link bar. Three groups — who this is and where it
+   stands, where to read it, what it belongs to — then the fine print under a
+   hairline. The ground is --sunk, which is deeper than both --void and
+   --surface-2 in either theme, so the page visibly settles into the footer and
+   no top border is needed to separate it from whichever section ran last.
+   Every text colour used here is verified >= 4.5:1 on --sunk in both themes. */
+.foot{background:var(--sunk);padding:60px 0 44px}
+.foot-grid{display:grid;grid-template-columns:1.55fr 1fr 1.45fr;gap:44px}
+@media(max-width:880px){.foot-grid{grid-template-columns:1fr 1fr;gap:38px 32px}}
+@media(max-width:560px){.foot-grid{grid-template-columns:1fr;gap:34px}}
+@media(max-width:880px){.foot-id{grid-column:1/-1}}
+.foot-id .brand{align-items:flex-start}
+.foot-id .brand .ear{width:30px;height:30px}
+.foot-id .brand b{font-size:21px}
+.foot-blurb{margin:15px 0 0;font-size:14.5px;line-height:1.6;color:var(--ink-2);max-width:38ch}
+.foot-state{display:inline-flex;align-items:center;gap:8px;margin-top:16px;font-size:12.5px;font-weight:600;padding:5px 13px;border-radius:var(--pill);border:1px solid var(--stub);background:var(--stub-tint);color:var(--stub-text)}
+.foot-state .pip{width:6px;height:6px;border-radius:50%;background:var(--stub);flex:none}
+.foot-h{font-family:var(--font-mono);font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin:0 0 6px}
+.foot-col p{margin:0 0 10px;font-size:14.5px;line-height:1.6;color:var(--ink-2);max-width:34ch}
+.foot-col a{display:block;padding:6px 0;font-size:15px;color:var(--ink-2);width:fit-content;transition:color .16s}
+.foot-col a:hover{color:var(--grain-text)}
+.foot-col a .ext{color:var(--ink-3);font-size:.85em;margin-left:2px}
+.colophon{margin-top:44px;padding-top:22px;border-top:1px solid var(--line-2)}
+/* Two deterministic rows rather than three items sharing one: at 1440 the three
+   phrases ran together into a single unbroken line of fine print. Licence and
+   type sit side by side; the no-third-party claim gets its own line and a step
+   more contrast, because it is a substantive promise and not a credit. */
+.colophon-row{display:flex;flex-wrap:wrap;gap:6px 34px}
+.colophon p{margin:0;font-size:13px;line-height:1.6;color:var(--ink-3)}
+.colophon .colophon-claim{margin:10px 0 0;color:var(--ink-2)}
+.colophon a{color:var(--ink-2);border-bottom:1px solid var(--line-2)}
+.colophon a:hover{color:var(--grain-text);border-bottom-color:var(--grain-line)}
+.colophon code{font-family:var(--font-mono);font-size:.92em}
 
 /* ── One staggered load reveal. Nothing else moves. ──────────────────────── */
 @media (prefers-reduced-motion: no-preference){
@@ -530,15 +553,37 @@ npm run tauri dev          # or: npm run dev (plain Vite)</code></pre>
 
 </main>
 
-<footer class="foot"><div class="wrap foot-in">
-  <div class="l"><img src="./assets/vulos-icon-32.png" alt="" aria-hidden="true" width="20" height="20"><span>Listed on <a href="https://vulos.org/projects" target="_blank" rel="noopener">Vulos</a> — open, self-hostable software. Vuna is fully standalone and never requires Vulos infrastructure to run a node or the desktop app.</span></div>
-  <div class="r">
-    <a href="./docs.html">Docs</a>
-    <a href="https://github.com/vul-os/vuna" target="_blank" rel="noopener">GitHub</a>
-    <a href="https://github.com/vul-os/vuna/blob/main/LICENSE-MIT" target="_blank" rel="noopener">License</a>
-    <a href="https://vulos.org" target="_blank" rel="noopener">vulos.org</a>
+<footer class="foot"><div class="wrap">
+  <div class="foot-grid">
+    <div class="foot-id">
+      <a class="brand" href="./index.html" aria-label="Vuna — home">
+        <svg class="ear" viewBox="0 0 256 256" aria-hidden="true" fill="none"><g stroke="currentColor" stroke-linecap="round"><path d="M128 226V58" stroke-width="14"/><g stroke-width="9"><path d="M128 98 94 74"/><path d="M128 98l34-24"/><path d="M128 130 86 106"/><path d="M128 130l42-24"/><path d="M128 162 84 138"/><path d="M128 162l44-24"/><path d="M128 194 86 170"/><path d="M128 194l42-24"/><path d="M128 222 94 202"/><path d="M128 222l34-20"/></g></g><g fill="var(--grain)"><circle cx="128" cy="44" r="16"/><circle cx="94" cy="74" r="15"/><circle cx="162" cy="74" r="15"/><circle cx="86" cy="106" r="15"/><circle cx="170" cy="106" r="15"/><circle cx="84" cy="138" r="15"/><circle cx="172" cy="138" r="15"/><circle cx="86" cy="170" r="15"/><circle cx="170" cy="170" r="15"/><circle cx="94" cy="202" r="15"/><circle cx="162" cy="202" r="15"/></g></svg>
+        <span><b>vuna</b><small>reap the open web</small></span>
+      </a>
+      <p class="foot-blurb">A decentralized crawl → extract → index engine. It keeps the index, not the pages.</p>
+      <span class="foot-state"><span class="pip"></span>v0 preview — no live network yet</span>
+    </div>
+    <nav class="foot-col" aria-labelledby="foot-project">
+      <h2 class="foot-h" id="foot-project">Project</h2>
+      <a href="./docs.html">Docs</a>
+      <a href="./docs.html#roadmap">Roadmap</a>
+      <a href="./docs.html#changelog">Changelog</a>
+      <a href="https://github.com/vul-os/vuna" target="_blank" rel="noopener">GitHub <span class="ext" aria-hidden="true">↗</span></a>
+    </nav>
+    <div class="foot-col">
+      <h2 class="foot-h">Part of Vulos</h2>
+      <p>Vuna is fully standalone and never requires Vulos infrastructure to run a node or the desktop app.</p>
+      <a href="https://vulos.org/projects" target="_blank" rel="noopener">Listed on Vulos <span class="ext" aria-hidden="true">↗</span></a>
+      <a href="https://vulos.org" target="_blank" rel="noopener">vulos.org <span class="ext" aria-hidden="true">↗</span></a>
+    </div>
   </div>
-  <p class="lic">Code: MIT OR Apache-2.0 — © VulOS. Type is Fraunces, Archivo and IBM Plex Mono, all SIL OFL 1.1 and vendored in <code>site/fonts/</code>; nothing on this page is fetched from a third party.</p>
+  <div class="colophon">
+    <div class="colophon-row">
+      <p>Code <a href="https://github.com/vul-os/vuna/blob/main/LICENSE-MIT" target="_blank" rel="noopener">MIT</a> OR <a href="https://github.com/vul-os/vuna/blob/main/LICENSE-APACHE" target="_blank" rel="noopener">Apache-2.0</a> — © VulOS.</p>
+      <p>Set in Fraunces, Archivo and IBM Plex Mono — SIL OFL 1.1, vendored in <code>site/fonts/</code>.</p>
+    </div>
+    <p class="colophon-claim">Nothing on this page is fetched from a third party.</p>
+  </div>
 </div></footer>
 
 <script>

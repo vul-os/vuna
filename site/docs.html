@@ -102,7 +102,7 @@ code{font-family:var(--font-mono);font-variant-ligatures:none}
 .tt{width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--edge);border-radius:var(--pill);background:transparent;color:var(--ink-2);cursor:pointer;transition:color .16s,border-color .16s;flex:none}
 .tt:hover{color:var(--grain-text);border-color:var(--grain)}
 @media(max-width:1000px){.bar-nav{display:none}}
-@media(max-width:520px){.brand small{display:none}}
+@media(max-width:520px){.bar .brand small{display:none}}
 
 /* Docs shell */
 .shell{display:grid;grid-template-columns:250px 1fr;gap:40px;align-items:start;padding:36px 0 80px}
@@ -153,15 +153,34 @@ code{font-family:var(--font-mono);font-variant-ligatures:none}
 .md hr{border:none;height:15px;margin:2.4em 0;background:repeating-linear-gradient(112deg,var(--grain-line) 0 2px,transparent 2px 12px)}
 .err{color:var(--stub-text);background:var(--stub-tint);border:1px solid var(--stub);padding:14px 18px;border-radius:var(--radius);font-size:15.5px}
 
-/* Footer */
-.foot{border-top:1px solid var(--line);padding:34px 0 46px}
-.foot-in{display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:space-between}
-.foot .l{display:flex;align-items:center;gap:11px;color:var(--ink-2);font-size:14.5px}
-.foot .l img{width:20px;height:20px;border-radius:5px}
-.foot .l a{color:var(--ink);font-weight:600}
-.foot .r{display:flex;gap:22px;flex-wrap:wrap}
-.foot .r a{color:var(--ink-2);font-size:14.5px}
-.foot .r a:hover{color:var(--ink)}
+/* Footer — the same colophon as the landing page, on the same deeper --sunk
+   ground. Keep the two in step. */
+.foot{background:var(--sunk);padding:60px 0 44px}
+.foot-grid{display:grid;grid-template-columns:1.55fr 1fr 1.45fr;gap:44px}
+@media(max-width:880px){.foot-grid{grid-template-columns:1fr 1fr;gap:38px 32px}.foot-id{grid-column:1/-1}}
+@media(max-width:560px){.foot-grid{grid-template-columns:1fr;gap:34px}}
+.foot-id .brand{align-items:flex-start}
+.foot-id .brand .ear{width:30px;height:30px}
+.foot-id .brand b{font-size:21px}
+.foot-blurb{margin:15px 0 0;font-size:14.5px;line-height:1.6;color:var(--ink-2);max-width:38ch}
+.foot-state{display:inline-flex;align-items:center;gap:8px;margin-top:16px;font-size:12.5px;font-weight:600;padding:5px 13px;border-radius:var(--pill);border:1px solid var(--stub);background:var(--stub-tint);color:var(--stub-text)}
+.foot-state .pip{width:6px;height:6px;border-radius:50%;background:var(--stub);flex:none}
+.foot-h{font-family:var(--font-mono);font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin:0 0 6px}
+.foot-col p{margin:0 0 10px;font-size:14.5px;line-height:1.6;color:var(--ink-2);max-width:34ch}
+.foot-col a{display:block;padding:6px 0;font-size:15px;color:var(--ink-2);width:fit-content;transition:color .16s}
+.foot-col a:hover{color:var(--grain-text)}
+.foot-col a .ext{color:var(--ink-3);font-size:.85em;margin-left:2px}
+.colophon{margin-top:44px;padding-top:22px;border-top:1px solid var(--line-2)}
+/* Two deterministic rows rather than three items sharing one: at 1440 the three
+   phrases ran together into a single unbroken line of fine print. Licence and
+   type sit side by side; the no-third-party claim gets its own line and a step
+   more contrast, because it is a substantive promise and not a credit. */
+.colophon-row{display:flex;flex-wrap:wrap;gap:6px 34px}
+.colophon p{margin:0;font-size:13px;line-height:1.6;color:var(--ink-3)}
+.colophon .colophon-claim{margin:10px 0 0;color:var(--ink-2)}
+.colophon a{color:var(--ink-2);border-bottom:1px solid var(--line-2)}
+.colophon a:hover{color:var(--grain-text);border-bottom-color:var(--grain-line)}
+.colophon code{font-family:var(--font-mono);font-size:.92em}
 </style>
 <script src="./assets/vendor/marked.umd.js"></script>
 <script src="./assets/hl.js"></script>
@@ -207,13 +226,36 @@ code{font-family:var(--font-mono);font-variant-ligatures:none}
   </main>
 </div>
 
-<footer class="foot"><div class="wrap foot-in">
-  <div class="l"><img src="./assets/vulos-icon-32.png" alt="" aria-hidden="true" width="20" height="20"><span>Listed on <a href="https://vulos.org/projects" target="_blank" rel="noopener">Vulos</a> — open, self-hostable software. Vuna is fully standalone and never requires Vulos infrastructure to run a node or the desktop app.</span></div>
-  <div class="r">
-    <a href="./index.html">Home</a>
-    <a href="https://github.com/vul-os/vuna" target="_blank" rel="noopener">GitHub</a>
-    <a href="https://github.com/vul-os/vuna/blob/main/LICENSE-MIT" target="_blank" rel="noopener">License</a>
-    <a href="https://vulos.org" target="_blank" rel="noopener">vulos.org</a>
+<footer class="foot"><div class="wrap">
+  <div class="foot-grid">
+    <div class="foot-id">
+      <a class="brand" href="./index.html" aria-label="Vuna — home">
+        <svg class="ear" viewBox="0 0 256 256" aria-hidden="true" fill="none"><g stroke="currentColor" stroke-linecap="round"><path d="M128 226V58" stroke-width="14"/><g stroke-width="9"><path d="M128 98 94 74"/><path d="M128 98l34-24"/><path d="M128 130 86 106"/><path d="M128 130l42-24"/><path d="M128 162 84 138"/><path d="M128 162l44-24"/><path d="M128 194 86 170"/><path d="M128 194l42-24"/><path d="M128 222 94 202"/><path d="M128 222l34-20"/></g></g><g fill="var(--grain)"><circle cx="128" cy="44" r="16"/><circle cx="94" cy="74" r="15"/><circle cx="162" cy="74" r="15"/><circle cx="86" cy="106" r="15"/><circle cx="170" cy="106" r="15"/><circle cx="84" cy="138" r="15"/><circle cx="172" cy="138" r="15"/><circle cx="86" cy="170" r="15"/><circle cx="170" cy="170" r="15"/><circle cx="94" cy="202" r="15"/><circle cx="162" cy="202" r="15"/></g></svg>
+        <span><b>vuna</b><small>reap the open web</small></span>
+      </a>
+      <p class="foot-blurb">A decentralized crawl → extract → index engine. It keeps the index, not the pages.</p>
+      <span class="foot-state"><span class="pip"></span>v0 preview — no live network yet</span>
+    </div>
+    <nav class="foot-col" aria-labelledby="foot-project">
+      <h2 class="foot-h" id="foot-project">Project</h2>
+      <a href="./index.html">Home</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#changelog">Changelog</a>
+      <a href="https://github.com/vul-os/vuna" target="_blank" rel="noopener">GitHub <span class="ext" aria-hidden="true">↗</span></a>
+    </nav>
+    <div class="foot-col">
+      <h2 class="foot-h">Part of Vulos</h2>
+      <p>Vuna is fully standalone and never requires Vulos infrastructure to run a node or the desktop app.</p>
+      <a href="https://vulos.org/projects" target="_blank" rel="noopener">Listed on Vulos <span class="ext" aria-hidden="true">↗</span></a>
+      <a href="https://vulos.org" target="_blank" rel="noopener">vulos.org <span class="ext" aria-hidden="true">↗</span></a>
+    </div>
+  </div>
+  <div class="colophon">
+    <div class="colophon-row">
+      <p>Code <a href="https://github.com/vul-os/vuna/blob/main/LICENSE-MIT" target="_blank" rel="noopener">MIT</a> OR <a href="https://github.com/vul-os/vuna/blob/main/LICENSE-APACHE" target="_blank" rel="noopener">Apache-2.0</a> — © VulOS.</p>
+      <p>Set in Fraunces, Archivo and IBM Plex Mono — SIL OFL 1.1, vendored in <code>site/fonts/</code>.</p>
+    </div>
+    <p class="colophon-claim">Nothing on this page is fetched from a third party.</p>
   </div>
 </div></footer>
 
