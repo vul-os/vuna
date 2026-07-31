@@ -5,7 +5,9 @@
   "type": "module",
   "description": "Presentation-layer tooling for vuna: landing-page checks and light/dark screenshots of the site and the Tauri desktop shell. Nothing here is part of the engine — the Cargo workspace has no Node dependency.",
   "scripts": {
-    "site-check": "node scripts/site-check.mjs",
+    "site-check": "node scripts/site-check.mjs && node scripts/check-responsive.mjs",
+    "site-check:console": "node scripts/site-check.mjs",
+    "site-check:responsive": "node scripts/check-responsive.mjs",
     "screenshots": "node scripts/screenshots.mjs",
     "shots": "node scripts/screenshots.mjs"
   },
