@@ -8,7 +8,7 @@
 //! ## Which verticals need this, and why (corrected)
 //!
 //! This module used to state that quorum was a retail concern because the observed store is a
-//! non-participant that signs nothing, "unlike the web vertical [where] there is an authoritative
+//! non-participant that signs nothing, "unlike the web vertical \[where\] there is an authoritative
 //! feed to defer to". **That reason does not hold.** On the crawled open web the author signs
 //! nothing either: there is no participating publisher, no feed, and no key behind an arbitrary
 //! URL. The web vertical was therefore not the well-protected case the comment implied — it had
