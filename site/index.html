@@ -406,6 +406,17 @@ code{font-family:var(--font-mono);font-variant-ligatures:none}
   .d4{animation-delay:.28s} .d5{animation-delay:.36s}
   @keyframes rise{to{opacity:1;transform:none}}
 }
+
+  /* ── Vulos suite chrome — identical on every product landing ───────────────
+     Two elements, and only two: a logo-only home button in the top bar, and
+     one line in the footer. Deliberately free of repo variables so the block
+     is byte-identical across the suite and can be diffed as one thing. */
+  .vulos-home { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 9px; flex: 0 0 auto; opacity: .72; transition: opacity .15s ease, transform .15s ease; }
+  .vulos-home:hover, .vulos-home:focus-visible { opacity: 1; transform: translateY(-1px); }
+  .vulos-home img { display: block; width: 22px; height: 22px; border-radius: 6px; }
+  .vulos-foot { display: inline-flex; align-items: center; gap: 9px; font-size: 13.5px; line-height: 1.45; text-decoration: none; color: inherit; opacity: .85; transition: opacity .15s ease; }
+  .vulos-foot:hover { opacity: 1; text-decoration: none; }
+  .vulos-foot img { display: block; width: 18px; height: 18px; border-radius: 5px; flex: 0 0 auto; }
 </style>
 <script src="./assets/hl.js" defer></script>
 </head>
@@ -427,6 +438,7 @@ code{font-family:var(--font-mono);font-variant-ligatures:none}
     <a href="./docs.html">Docs</a>
   </nav>
   <div class="bar-right">
+    <a class="vulos-home" href="https://vulos.org" target="_blank" rel="noopener" title="Vulos — open, self-hostable software" aria-label="Vulos — open, self-hostable software"><img src="./assets/vulos-logo.png" alt="" width="22" height="22"></a>
     <button class="tt" id="tt" type="button" aria-label="Switch theme">
       <svg id="tt-i" width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"></svg>
     </button>
@@ -584,7 +596,7 @@ npm run tauri dev          # or: npm run dev (plain Vite)</code></pre>
 <section class="sec tint"><div class="wrap">
   <span class="kick"><span class="n">06</span> &nbsp;/&nbsp; The gaps</span>
   <h2>What this page does <em>not</em> claim.</h2>
-  <p class="lead">The design docs are longer than the code. That is the accurate state of the project, and hiding it would make everything above worth less.</p>
+  <p class="lead">The design docs are longer than the code. That is the accurate state of the project, and hiding it would make everything above worth less. Code is <a class="inl" href="https://github.com/vul-os/vuna/blob/main/LICENSE-MIT" target="_blank" rel="noopener">MIT</a> OR <a class="inl" href="https://github.com/vul-os/vuna/blob/main/LICENSE-APACHE" target="_blank" rel="noopener">Apache-2.0</a>.</p>
   <ul class="gaps">
     <li><span class="st stub">not built</span><div><b>The end-to-end path</b><p>There is no crawl → extract → index → query round trip. <code>vuna-query</code> and <code>vuna-node</code> are Wave-2 stubs; the four implemented crates are exercised against their own fixtures, not against each other over a network.</p></div></li>
     <li><span class="st stub">not built</span><div><b>A live network</b><p>Zero nodes, zero users, zero bytes of real index. Every number in the screenshots above comes from the fixtures in <code>app/src/lib/api.ts</code> and <code>app/src-tauri/src/commands.rs</code>.</p></div></li>
@@ -614,15 +626,12 @@ npm run tauri dev          # or: npm run dev (plain Vite)</code></pre>
       <a href="https://github.com/vul-os/vuna" target="_blank" rel="noopener">GitHub <span class="ext" aria-hidden="true">↗</span></a>
     </nav>
     <div class="foot-col">
-      <h2 class="foot-h">Part of Vulos</h2>
-      <p>Vuna is fully standalone and never requires Vulos infrastructure to run a node or the desktop app.</p>
-      <a href="https://vulos.org/projects" target="_blank" rel="noopener">Listed on Vulos <span class="ext" aria-hidden="true">↗</span></a>
-      <a href="https://vulos.org" target="_blank" rel="noopener">vulos.org <span class="ext" aria-hidden="true">↗</span></a>
+      <a class="vulos-foot" href="https://vulos.org" target="_blank" rel="noopener"><img src="./assets/vulos-logo.png" alt="" width="18" height="18"><span>Part of <strong>Vulos</strong> — open, self-hostable software</span></a>
     </div>
   </div>
   <div class="colophon">
     <div class="colophon-row">
-      <p>Code <a href="https://github.com/vul-os/vuna/blob/main/LICENSE-MIT" target="_blank" rel="noopener">MIT</a> OR <a href="https://github.com/vul-os/vuna/blob/main/LICENSE-APACHE" target="_blank" rel="noopener">Apache-2.0</a> — © VulOS.</p>
+      <p>© Vuna contributors.</p>
       <p>Set in Fraunces, Archivo and IBM Plex Mono — SIL OFL 1.1, vendored in <code>site/fonts/</code>.</p>
     </div>
     <p class="colophon-claim">Nothing on this page is fetched from a third party.</p>
