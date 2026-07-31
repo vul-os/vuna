@@ -129,6 +129,9 @@ code{font-family:var(--font-mono);font-variant-ligatures:none}
 .bar{position:sticky;top:0;z-index:60;background:var(--bar-bg);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
 .bar-in{display:flex;align-items:center;gap:20px;height:66px}
 .brand{display:flex;align-items:center;gap:11px;flex:none}
+/* The header wordmark is a 26px-tall link inside a 66px bar — it looked like a
+   comfortable target and was not one. Padding makes the hit area match. */
+.bar .brand{padding:6px 0}
 .brand .ear{width:26px;height:26px;flex:none;color:var(--ink)}
 .brand b{font-family:var(--font-display);font-weight:600;font-size:22px;letter-spacing:-.02em;line-height:1;display:block}
 .brand small{display:block;font-family:var(--font-display);font-style:italic;font-size:13px;color:var(--ink-3);line-height:1.2;margin-top:1px}
@@ -170,6 +173,13 @@ code{font-family:var(--font-mono);font-variant-ligatures:none}
 .lede i{color:var(--ink-3)}
 .blurb{font-size:16.5px;color:var(--ink-2);margin:20px 0 0;max-width:68ch}
 .cta{display:flex;flex-wrap:wrap;gap:13px;margin-top:30px}
+/* On a phone the three buttons wrapped 2 + 1, orphaning GitHub on its own row.
+   Give the primary the full width and let the two secondaries share the next. */
+@media(max-width:520px){
+  .cta{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .cta .btn{justify-content:center}
+  .cta .btn:first-child{grid-column:1/-1}
+}
 
 /* ── Reading key ─────────────────────────────────────────────────────────── */
 .key{margin:46px 0 0;border:1px solid var(--line-2);border-radius:var(--radius-lg);background:var(--paper);box-shadow:var(--shadow-1);overflow:hidden}
@@ -247,6 +257,30 @@ code{font-family:var(--font-mono);font-variant-ligatures:none}
 .st.spec{color:var(--peer-text);background:var(--peer-tint);border-color:var(--peer)}
 .hard{margin:26px 0 0;padding:18px 22px;border:1px solid var(--stub);border-left-width:4px;border-radius:var(--radius);background:var(--stub-tint);font-size:16px;color:var(--ink);max-width:82ch}
 .hard b{color:var(--stub-text)}
+/* Below 620px the ledger cannot stay a table. It is 660px wide, so State and
+   Tests — the two columns the whole section exists for, and the ones the
+   reading key calls load-bearing — sat entirely off-screen behind a horizontal
+   scroll nobody discovers. This is also the table the hero's primary button
+   sends you to. Each row becomes a card: crate and state on one line, then what
+   it does, then the count. The header row stays in the DOM for assistive tech
+   and is hidden visually, so the Tests cell gets a written label instead. */
+@media(max-width:620px){
+  .ledger-wrap{overflow-x:visible}
+  .ledger{min-width:0;display:block}
+  .ledger thead{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+  .ledger tbody{display:block}
+  .ledger tr{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;padding:16px 18px;border-bottom:1px solid var(--line)}
+  .ledger tr:last-child{border-bottom:none}
+  .ledger td{display:block;padding:0;border:none}
+  /* `order` pulls the state pill up beside the crate name, against DOM order —
+     the two together are what makes the section skimmable, and reading four
+     lines of prose to reach the status defeats the point of the pill. */
+  .ledger .crate{order:1;flex:1 1 auto;font-size:15px}
+  .ledger td:nth-child(3){order:2;flex:none}
+  .ledger .what{order:3;flex:1 0 100%;margin:0}
+  .ledger .tests{order:4;flex:1 0 100%;margin:0;font-size:13px}
+  .ledger .tests::before{content:"tests: "}
+}
 
 /* ── Storage table ───────────────────────────────────────────────────────── */
 .tbl{width:100%;border-collapse:collapse;font-size:15px;min-width:440px}
@@ -256,6 +290,15 @@ code{font-family:var(--font-mono);font-variant-ligatures:none}
 .tbl td{color:var(--ink-2);font-variant-numeric:tabular-nums}
 .tbl td b{color:var(--ink);font-family:var(--font-mono);font-weight:500}
 .tbl tr:last-child td{border-bottom:none}
+/* The storage table was 440px wide against a 338px column at 390, so the
+   redundancy figure — the only number in it that matters — was clipped. It has
+   three short columns and fits once the cell padding stops being desktop-sized. */
+@media(max-width:560px){
+  .tbl{min-width:0;font-size:14px}
+  .tbl th,.tbl td{padding:11px 9px}
+  .tbl th:first-child,.tbl td:first-child{padding-left:0}
+  .tbl th:last-child,.tbl td:last-child{padding-right:0}
+}
 
 /* ── Provenance panel ────────────────────────────────────────────────────── */
 .prov{border:1px solid var(--line-2);border-radius:var(--radius-lg);background:var(--paper);overflow:hidden;box-shadow:var(--shadow-1)}
@@ -354,7 +397,7 @@ code{font-family:var(--font-mono);font-variant-ligatures:none}
 .colophon .colophon-claim{margin:10px 0 0;color:var(--ink-2)}
 .colophon a{color:var(--ink-2);border-bottom:1px solid var(--line-2)}
 .colophon a:hover{color:var(--grain-text);border-bottom-color:var(--grain-line)}
-.colophon code{font-family:var(--font-mono);font-size:.92em}
+.colophon code{font-family:var(--font-mono);font-size:12.5px}
 
 /* ── One staggered load reveal. Nothing else moves. ──────────────────────── */
 @media (prefers-reduced-motion: no-preference){
@@ -442,7 +485,7 @@ code{font-family:var(--font-mono);font-variant-ligatures:none}
   </div>
 
   <div class="scroll" style="margin-top:52px"><table class="tbl">
-    <caption>Storage at ~6 KB per page &nbsp;<span class="st spec">design claim</span></caption>
+    <caption>Storage at ~6 KB per page <span class="st spec">design claim</span></caption>
     <thead><tr><th scope="col">Corpus</th><th scope="col">One copy</th><th scope="col">×3 redundant / 10k nodes</th></tr></thead>
     <tbody>
       <tr><td>1 billion pages</td><td>~6 TB</td><td><b>~1.8 GB / node</b></td></tr>
@@ -473,7 +516,7 @@ code{font-family:var(--font-mono);font-variant-ligatures:none}
   <h2>v0 preview — honest about <em>what's real</em>.</h2>
   <p class="lead"><strong>132 tests green</strong> describes what compiles and behaves against its own fixtures. It is not 132 features shipped. Four of the six stage crates are implemented; there are zero live nodes and zero real users today.</p>
 
-  <div class="scroll"><table class="ledger">
+  <div class="scroll ledger-wrap"><table class="ledger">
     <thead><tr><th scope="col">Component</th><th scope="col">What it does</th><th scope="col">State</th><th scope="col">Tests</th></tr></thead>
     <tbody>
       <tr><td class="crate">vuna-core</td><td class="what">Frozen contract — types, seam traits, the retail <strong>quorum</strong> reconciler.</td><td><span class="st run">done</span></td><td class="tests">19</td></tr>
