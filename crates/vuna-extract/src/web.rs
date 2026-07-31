@@ -60,6 +60,9 @@ impl Extractor for WebExtractor {
             chunks,
             links,
             discovered,
+            // Hashed from the same `page.body` every field above was derived from, so the anchor
+            // and the extraction can never describe different bytes.
+            source_hash: crate::source_hash(page),
         }))
     }
 }

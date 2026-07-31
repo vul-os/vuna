@@ -43,6 +43,10 @@ mod tests {
             snippet: snippet.to_string(),
             chunks: vec![Chunk { ordinal: 0, text: body.to_string() }],
             indexed_at: 0,
+            // Distinct per document so these fixtures never accidentally look like two nodes
+            // corroborating one another; the index itself does not check the anchor (see
+            // vuna_core::trust — that is an admission-path concern, not an indexing one).
+            source_hash: cid(id_byte.wrapping_add(0x80)),
         }
     }
 

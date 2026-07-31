@@ -12,6 +12,9 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 scraper = "0.27.0"
+# BLAKE3-256 for WebDoc::source_hash — the same content-addressing hash KOTVA uses and the same
+# one vuna-frontier hashes UrlIds with, so the workspace has exactly one hashing convention.
+blake3 = "1"
 # Reads the declarative `adapters/*.toml` manifests (see src/adapter). Parsing only — no writer.
 toml = { version = "0.8", default-features = false, features = ["parse"] }
 url = "2.5.8"

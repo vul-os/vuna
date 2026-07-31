@@ -18,6 +18,14 @@
 //! | query fan-out + ranking | `vuna-query` | [`query::QueryEngine`] |
 //! | substrate binding | `vuna-node` | [`kotva::NodeIdentity`], [`kotva::Publisher`] |
 //!
+//! ## How a claim gets checked
+//! Anyone may contribute index entries about pages you never fetched. So the contract states, for
+//! every derived artifact, **which of three disciplines checks it** — [`trust::TrustTier`]:
+//! *recomputable* (re-derive from bytes you hold), *corroborable* (`k` independent observers agree,
+//! or the answer is `None`), or *local-only* (never accepted from a peer; rebuilt yourself). A type
+//! declares its tier by implementing [`trust::TrustAnchored`]; an artifact that cannot say which
+//! tier it belongs to is not finished. See [`trust`] for what each tier does *not* buy.
+//!
 //! ## The one idea that makes it future-proof
 //! **Embedding spaces and extractor kinds are the same opt-in plurality.** A node declares which
 //! [`space::EmbeddingSpace`]s and which [`extract::ExtractorKind`]s it serves
@@ -34,6 +42,7 @@ pub mod query;
 pub mod node;
 pub mod kotva;
 pub mod quorum;
+pub mod trust;
 
 pub use error::{Error, Result};
 
@@ -43,6 +52,14 @@ pub type UnixSecs = u64;
 
 /// A content address: `BLAKE3-256` of canonical bytes, as computed by the KOTVA binding. Core
 /// treats it as an opaque 32-byte identifier — it never hashes, so it pulls in no crypto dep.
+///
+/// **`Default` is deliberately not implemented, and must not be added.** A defaultable content
+/// address is one that can be silently conjured where a real one was required — most concretely,
+/// `#[serde(default)]` on a hash field becomes a compile error rather than a hole through which an
+/// unanchored artifact arrives looking anchored (see
+/// [`extract::WebDoc::source_hash`](extract::WebDoc::source_hash)). Where a "no id yet" value is
+/// genuinely wanted, [`ContentId::ZERO`] says so explicitly at the point it is chosen, and
+/// [`trust::TrustAnchored::anchor`] refuses it as a match.
 #[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, serde::Serialize, serde::Deserialize)]
 pub struct ContentId(pub [u8; 32]);
 

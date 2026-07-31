@@ -18,6 +18,10 @@ pub trait Embedder: Send + Sync {
 
 /// A document as indexed — the durable per-URL record. Note: **no raw page**, only derived signal
 /// plus a pointer back to the live URL.
+///
+/// This is the artifact a peer actually contributes to the shared index, so it carries
+/// [`source_hash`](Self::source_hash) forward from the extraction. Dropping the anchor here would
+/// reopen the same hole one stage later: a replicated `IndexedDoc` with nothing to check against.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct IndexedDoc {
     pub url: String,
@@ -27,6 +31,9 @@ pub struct IndexedDoc {
     /// Retained so re-embedding into a NEW space needs no re-crawl.
     pub chunks: Vec<Chunk>,
     pub indexed_at: UnixSecs,
+    /// The [`WebDoc::source_hash`] this record was derived from — carried verbatim, never
+    /// recomputed here (there are no bytes left to recompute it from). See [`crate::trust`].
+    pub source_hash: ContentId,
 }
 
 impl IndexedDoc {
@@ -38,6 +45,7 @@ impl IndexedDoc {
             snippet: doc.snippet.clone(),
             chunks: doc.chunks.clone(),
             indexed_at: now,
+            source_hash: doc.source_hash,
         }
     }
 }
