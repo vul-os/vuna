@@ -139,11 +139,8 @@ code{font-family:var(--font-mono);font-variant-ligatures:none}
 .bar-right{display:flex;align-items:center;gap:12px;flex:none}
 .tt{width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--edge);border-radius:var(--pill);background:transparent;color:var(--ink-2);cursor:pointer;transition:color .16s,border-color .16s;flex:none}
 .tt:hover{color:var(--grain-text);border-color:var(--grain)}
-.vulos{display:inline-flex;align-items:center;gap:8px;padding:6px 13px;border:1px solid var(--edge);border-radius:var(--pill);font-size:13.5px;color:var(--ink-2);transition:color .16s,border-color .16s}
-.vulos:hover{color:var(--ink);border-color:var(--grain)}
-.vulos img{width:16px;height:16px;border-radius:4px}
 @media(max-width:1000px){.bar-nav{display:none}}
-@media(max-width:520px){.vulos .label{display:none}.vulos{padding:6px 9px}.brand small{display:none}}
+@media(max-width:520px){.brand small{display:none}}
 
 /* ── Buttons ─────────────────────────────────────────────────────────────── */
 .btn{display:inline-flex;align-items:center;gap:9px;padding:12px 20px;border-radius:var(--radius);font-family:var(--font-sans);font-weight:600;font-size:15.5px;border:1px solid var(--edge);cursor:pointer;transition:transform .14s var(--ease),box-shadow .2s,border-color .2s}
@@ -310,14 +307,7 @@ code{font-family:var(--font-mono);font-variant-ligatures:none}
 .well{height:392px;overflow:hidden;display:flex;justify-content:center;align-items:flex-start;background:var(--surface-2);border-bottom:1px solid var(--line)}
 .well img{width:341px;max-width:100%;height:auto;flex:none}
 
-/* ── Vulos band + footer ─────────────────────────────────────────────────── */
-.band{display:flex;gap:24px;align-items:center;border:1px solid var(--line-2);border-radius:var(--radius-lg);background:var(--paper);padding:32px}
-@media(max-width:680px){.band{flex-direction:column;text-align:center}}
-.band img{width:54px;height:54px;border-radius:14px;flex:none}
-.band h3{font-size:20px;margin:0 0 6px}
-.band p{margin:0;color:var(--ink-2);font-size:15px;max-width:72ch}
-.band p a{color:var(--ink);font-weight:600}
-.band a.more{display:inline-block;margin-top:12px;color:var(--grain-text);font-weight:600;font-size:15px;border-bottom:1px solid var(--grain-line)}
+/* ── Footer ──────────────────────────────────────────────────────────────── */
 .foot{border-top:1px solid var(--line);padding:34px 0 46px;margin-top:70px}
 .foot-in{display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:space-between}
 .foot .l{display:flex;align-items:center;gap:11px;color:var(--ink-2);font-size:14.5px}
@@ -359,9 +349,6 @@ code{font-family:var(--font-mono);font-variant-ligatures:none}
     <button class="tt" id="tt" type="button" aria-label="Switch theme">
       <svg id="tt-i" width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"></svg>
     </button>
-    <a class="vulos" href="https://vulos.org/projects" target="_blank" rel="noopener" title="Back to the Vulos suite">
-      <img src="./assets/vulos-icon-32.png" alt="" aria-hidden="true" width="16" height="16"><span class="label">Vulos</span>
-    </a>
   </div>
 </div></header>
 
@@ -526,21 +513,10 @@ cd app &amp;&amp; npm install
   </ul>
 </div></section>
 
-<section class="sec" style="padding-top:0"><div class="wrap">
-  <div class="band">
-    <img src="./assets/vulos-icon-128.png" alt="" aria-hidden="true" width="54" height="54">
-    <div>
-      <h3>Part of Vulos</h3>
-      <p><a href="https://vulos.org/projects" target="_blank" rel="noopener">Vulos</a> is a family of open, self-hostable apps. Vuna is fully standalone — it never requires Vulos infrastructure to run a node or the desktop app — and it shares its identity / DHT / PUB substrate, <a href="https://vulos.org/kotva" target="_blank" rel="noopener">KOTVA</a>, with siblings like <a href="https://vulos.org/projects/envoir" target="_blank" rel="noopener">envoir</a>. No hub, no account, no coupling.</p>
-      <a class="more" href="https://vulos.org/projects" target="_blank" rel="noopener">Explore Vulos →</a>
-    </div>
-  </div>
-</div></section>
-
 </main>
 
 <footer class="foot"><div class="wrap foot-in">
-  <div class="l"><img src="./assets/vulos-icon-32.png" alt="" aria-hidden="true" width="20" height="20"><span>Listed on <a href="https://vulos.org/projects" target="_blank" rel="noopener">Vulos</a> — open, self-hostable software. Vuna is standalone and at v0 preview.</span></div>
+  <div class="l"><img src="./assets/vulos-icon-32.png" alt="" aria-hidden="true" width="20" height="20"><span>Listed on <a href="https://vulos.org/projects" target="_blank" rel="noopener">Vulos</a> — open, self-hostable software. Vuna is fully standalone and never requires Vulos infrastructure to run a node or the desktop app.</span></div>
   <div class="r">
     <a href="./docs.html">Docs</a>
     <a href="https://github.com/vul-os/vuna" target="_blank" rel="noopener">GitHub</a>

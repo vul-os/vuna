@@ -101,11 +101,8 @@ code{font-family:var(--font-mono);font-variant-ligatures:none}
 .bar-right{display:flex;align-items:center;gap:12px;flex:none}
 .tt{width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--edge);border-radius:var(--pill);background:transparent;color:var(--ink-2);cursor:pointer;transition:color .16s,border-color .16s;flex:none}
 .tt:hover{color:var(--grain-text);border-color:var(--grain)}
-.vulos{display:inline-flex;align-items:center;gap:8px;padding:6px 13px;border:1px solid var(--edge);border-radius:var(--pill);font-size:13.5px;color:var(--ink-2);transition:color .16s,border-color .16s}
-.vulos:hover{color:var(--ink);border-color:var(--grain)}
-.vulos img{width:16px;height:16px;border-radius:4px}
 @media(max-width:1000px){.bar-nav{display:none}}
-@media(max-width:520px){.vulos .label{display:none}.vulos{padding:6px 9px}.brand small{display:none}}
+@media(max-width:520px){.brand small{display:none}}
 
 /* Docs shell */
 .shell{display:grid;grid-template-columns:250px 1fr;gap:40px;align-items:start;padding:36px 0 80px}
@@ -176,9 +173,6 @@ code{font-family:var(--font-mono);font-variant-ligatures:none}
     <button class="tt" id="tt" type="button" aria-label="Switch theme">
       <svg id="tt-i" width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"></svg>
     </button>
-    <a class="vulos" href="https://vulos.org/projects" target="_blank" rel="noopener" title="Back to the Vulos suite">
-      <img src="./assets/vulos-icon-32.png" alt="" aria-hidden="true" width="16" height="16"><span class="label">Vulos</span>
-    </a>
   </div>
 </div></header>
 
@@ -201,7 +195,7 @@ code{font-family:var(--font-mono);font-variant-ligatures:none}
 </div>
 
 <footer class="foot"><div class="wrap foot-in">
-  <div class="l"><img src="./assets/vulos-icon-32.png" alt="" aria-hidden="true" width="20" height="20"><span>Listed on <a href="https://vulos.org/projects" target="_blank" rel="noopener">Vulos</a> — open, self-hostable software. Vuna is standalone and at v0 preview.</span></div>
+  <div class="l"><img src="./assets/vulos-icon-32.png" alt="" aria-hidden="true" width="20" height="20"><span>Listed on <a href="https://vulos.org/projects" target="_blank" rel="noopener">Vulos</a> — open, self-hostable software. Vuna is fully standalone and never requires Vulos infrastructure to run a node or the desktop app.</span></div>
   <div class="r">
     <a href="./index.html">Home</a>
     <a href="https://github.com/vul-os/vuna" target="_blank" rel="noopener">GitHub</a>
