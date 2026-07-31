@@ -4,21 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Vuna — a decentralized crawl → extract → index engine that stores the index, not the pages</title>
-<meta name="description" content="Vuna is a v0-preview decentralized crawl → extract → index/graph engine on the KOTVA substrate. It stores the index, not the pages — one engine with pluggable search/RAG and retail-radar extractors, opt-in embedding-model spaces, a distributed subscribable URL frontier, ~2 GB/node at billion-page scale. Ranking is local-first, so there is no global score and no position to sell. No token.">
+<meta name="description" content="Vuna is a v0-preview decentralized crawl → extract → index/graph engine designed for the KOTVA substrate. It stores the index, not the pages — one engine with pluggable search/RAG and retail-radar extractors, opt-in embedding-model spaces, a distributed subscribable URL frontier, ~2 GB/node at billion-page scale. Ranking is local-first, so there is no global score and no position to sell. No token.">
   <link rel="canonical" href="https://vulos.org/projects/vuna/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Vuna">
   <meta property="og:title" content="Vuna — a decentralized crawl → extract → index engine that stores the index, not the pages">
-  <meta property="og:description" content="Vuna is a v0-preview decentralized crawl → extract → index/graph engine on the KOTVA substrate. It stores the index, not the pages — one engine with pluggable search/RAG and retail-radar extractors, opt-in embedding-model spaces, a distributed subscribable URL frontier, ~2 GB/node at billion-page scale. Ranking is local-first, so there is no global score and no position to sell. No token.">
+  <meta property="og:description" content="Vuna is a v0-preview decentralized crawl → extract → index/graph engine designed for the KOTVA substrate. It stores the index, not the pages — one engine with pluggable search/RAG and retail-radar extractors, opt-in embedding-model spaces, a distributed subscribable URL frontier, ~2 GB/node at billion-page scale. Ranking is local-first, so there is no global score and no position to sell. No token.">
   <meta property="og:url" content="https://vulos.org/projects/vuna/">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Vuna — a decentralized crawl → extract → index engine that stores the index, not the pages">
-  <meta name="twitter:description" content="Vuna is a v0-preview decentralized crawl → extract → index/graph engine on the KOTVA substrate. It stores the index, not the pages — one engine with pluggable search/RAG and retail-radar extractors, opt-in embedding-model spaces, a distributed subscribable URL frontier, ~2 GB/node at billion-page scale. Ranking is local-first, so there is no global score and no position to sell. No token.">
+  <meta name="twitter:description" content="Vuna is a v0-preview decentralized crawl → extract → index/graph engine designed for the KOTVA substrate. It stores the index, not the pages — one engine with pluggable search/RAG and retail-radar extractors, opt-in embedding-model spaces, a distributed subscribable URL frontier, ~2 GB/node at billion-page scale. Ranking is local-first, so there is no global score and no position to sell. No token.">
   <meta property="og:image" content="https://vulos.org/projects/vuna/assets/og-card.png">
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Vuna — Vuna is a v0-preview decentralized crawl → extract → index/graph engine on the KOTVA substrate. It stores the index, not the pages — one engine with pluggable s">
+  <meta property="og:image:alt" content="Vuna — Vuna is a v0-preview decentralized crawl → extract → index/graph engine designed for the KOTVA substrate. It stores the index, not the pages — one engine with pluggable s">
   <meta name="twitter:image" content="https://vulos.org/projects/vuna/assets/og-card.png">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#F1EADB" media="(prefers-color-scheme: light)">
@@ -440,7 +440,7 @@ code{font-family:var(--font-mono);font-variant-ligatures:none}
   <span class="badge rise d1"><span class="pip"></span>v0 preview — it does not yet crawl-to-query end to end</span>
   <h1 class="rise d2">Keep the <em>tally</em>, not the field.</h1>
   <p class="lede rise d2">A decentralized crawl → extract → index engine that stores the <strong>index, not the pages</strong>. <i>Vuna</i> is Swahili for <i>to harvest, to reap</i>.</p>
-  <p class="blurb rise d3">Volunteer nodes crawl a <strong>distributed, subscribable list of URLs</strong>, run <strong>pluggable extractors</strong> over each page, and contribute the result — keyword postings, vector embeddings, link-graph edges, a snippet, and a pointer back to the live URL — into a shared index replicated across the network. The page body is never archived, which is what collapses storage from datacenter scale to roughly <strong>2 GB per volunteer node</strong> at billion-page scale. One engine, two verticals so far — web search/RAG and retail price-radar — on the <a class="inl" href="https://vulos.org/kotva" target="_blank" rel="noopener">KOTVA</a> substrate's identity, PUB, DHT and SEARCH primitives. No token, no page archive, no new crypto.</p>
+  <p class="blurb rise d3">Volunteer nodes crawl a <strong>distributed, subscribable list of URLs</strong>, run <strong>pluggable extractors</strong> over each page, and contribute the result — keyword postings, vector embeddings, link-graph edges, a snippet, and a pointer back to the live URL — into a shared index replicated across the network. The page body is never archived, which is what collapses storage from datacenter scale to roughly <strong>2 GB per volunteer node</strong> at billion-page scale. One engine, two verticals so far — web search/RAG and retail price-radar — designed against the <a class="inl" href="https://vulos.org/kotva" target="_blank" rel="noopener">KOTVA</a> substrate's identity, PUB, DHT and SEARCH primitives. That binding lives in <code>vuna-node</code>, which is a Wave-2 stub, so nothing here runs on KOTVA today. No token, no page archive, no new crypto.</p>
   <div class="cta rise d3">
     <a class="btn btn-a" href="#status">Read the status table first</a>
     <a class="btn btn-b" href="./docs.html">Docs</a>
@@ -481,7 +481,7 @@ code{font-family:var(--font-mono);font-variant-ligatures:none}
   <div class="cols">
     <div><h3>No page archive</h3><p>Only postings, vectors, graph edges, a snippet and a pointer back to the live URL. The author's copy stays the only copy, and the index is <strong>derived, rebuildable, never authoritative</strong> — on any disagreement the author's signed content wins.</p></div>
     <div><h3>Quorum where nobody signs</h3><p>In the retail vertical the store is a non-participant that signs nothing, so agreement across <em>k</em> distinct, anchored observers is the only ground truth. <code>vuna-core::quorum</code> is built and tested; one observer cannot stuff the ballot.</p></div>
-    <div><h3>KOTVA, not new crypto</h3><p>Identity, PUB, DHT and SEARCH all come from the substrate. <code>vuna-node</code> is the only crate that binds it, which is why the rest of the workspace compiles and tests fully offline.</p></div>
+    <div><h3>KOTVA, not new crypto</h3><p>Identity, PUB, DHT and SEARCH are all meant to come from the substrate rather than be reinvented here. <code>vuna-node</code> is the only crate that will bind it — and today it is a stub, with the <code>kotva-core</code> dependency still commented out in <code>Cargo.toml</code> and no crate in the tree declaring it. That is why the rest of the workspace compiles and tests fully offline.</p></div>
   </div>
 
   <div class="scroll" style="margin-top:52px"><table class="tbl">
